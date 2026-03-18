@@ -109,30 +109,30 @@ export default function AnalyticsPage() {
         <StatCard
           title="Total Students"
           value="12,847"
-          description="Across all schools"
-          icon={<Users className="h-4 w-4" />}
-          trend={{ value: 18, isPositive: true }}
+          changeLabel="Across all schools"
+          icon={Users}
+          change={18}
         />
         <StatCard
           title="Active Schools"
           value="68"
-          description="+6 this month"
-          icon={<School className="h-4 w-4" />}
-          trend={{ value: 9.7, isPositive: true }}
+          changeLabel="+6 this month"
+          icon={School}
+          change={9.7}
         />
         <StatCard
           title="Questions in Bank"
           value="15,420"
-          description="Across 8 subjects"
-          icon={<FileQuestion className="h-4 w-4" />}
-          trend={{ value: 12, isPositive: true }}
+          changeLabel="Across 8 subjects"
+          icon={FileQuestion}
+          change={12}
         />
         <StatCard
           title="Exams Completed"
           value="89,234"
-          description="This academic year"
-          icon={<BookOpen className="h-4 w-4" />}
-          trend={{ value: 24, isPositive: true }}
+          changeLabel="This academic year"
+          icon={BookOpen}
+          change={24}
         />
       </div>
 

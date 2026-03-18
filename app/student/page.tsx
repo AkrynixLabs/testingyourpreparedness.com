@@ -151,30 +151,30 @@ export default function StudentDashboard() {
         <StatCard
           title="Exams Completed"
           value="24"
-          description="This semester"
-          icon={<CheckCircle2 className="h-4 w-4" />}
-          trend={{ value: 8, isPositive: true }}
+          changeLabel="This semester"
+          icon={CheckCircle2}
+          change={8}
         />
         <StatCard
           title="Average Score"
           value="76%"
-          description="+4% from last month"
-          icon={<Target className="h-4 w-4" />}
-          trend={{ value: 4, isPositive: true }}
+          changeLabel="from last month"
+          icon={Target}
+          change={4}
         />
         <StatCard
           title="Class Rank"
           value="#5"
-          description="Out of 45 students"
-          icon={<Award className="h-4 w-4" />}
-          trend={{ value: 2, isPositive: true }}
+          changeLabel="Out of 45 students"
+          icon={Award}
+          change={2}
         />
         <StatCard
           title="Study Hours"
           value="42h"
-          description="This month"
-          icon={<Clock className="h-4 w-4" />}
-          trend={{ value: 12, isPositive: true }}
+          changeLabel="This month"
+          icon={Clock}
+          change={12}
         />
       </div>
 

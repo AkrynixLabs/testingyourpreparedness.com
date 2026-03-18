@@ -184,30 +184,30 @@ export default function SuperAdminBillingPage() {
         <StatCard
           title="Monthly Revenue"
           value={`GHS ${mrr.toLocaleString()}`}
-          description="From active subscriptions"
-          icon={<DollarSign className="h-4 w-4" />}
-          trend={{ value: 15, isPositive: true }}
+          changeLabel="From active subscriptions"
+          icon={DollarSign}
+          change={15}
         />
         <StatCard
           title="Active Subscriptions"
           value={activeSubscriptions.toString()}
-          description="Paying schools"
-          icon={<CheckCircle2 className="h-4 w-4" />}
-          trend={{ value: 3, isPositive: true }}
+          changeLabel="Paying schools"
+          icon={CheckCircle2}
+          change={3}
         />
         <StatCard
           title="Past Due"
           value={pastDue.toString()}
-          description="Requiring attention"
-          icon={<AlertTriangle className="h-4 w-4" />}
-          trend={{ value: 1, isPositive: false }}
+          changeLabel="Requiring attention"
+          icon={AlertTriangle}
+          change={-1}
         />
         <StatCard
           title="Avg Revenue/School"
           value={`GHS ${Math.round(mrr / activeSubscriptions)}`}
-          description="Per active school"
-          icon={<TrendingUp className="h-4 w-4" />}
-          trend={{ value: 8, isPositive: true }}
+          changeLabel="Per active school"
+          icon={TrendingUp}
+          change={8}
         />
       </div>
 
