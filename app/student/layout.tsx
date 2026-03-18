@@ -1,6 +1,13 @@
 "use client"
 
 import { DashboardShell } from "@/components/dashboard-shell"
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Award,
+  TrendingUp,
+  BookOpen,
+} from "lucide-react"
 
 export default function StudentLayout({
   children,
@@ -8,22 +15,23 @@ export default function StudentLayout({
   children: React.ReactNode
 }) {
   const studentNavigation = [
-    { name: "Dashboard", href: "/student", icon: "LayoutDashboard" },
-    { name: "Available Exams", href: "/student/exams", icon: "ClipboardList" },
-    { name: "My Results", href: "/student/results", icon: "Award" },
-    { name: "Progress", href: "/student/progress", icon: "TrendingUp" },
-    { name: "Study Materials", href: "/student/materials", icon: "BookOpen" },
+    {
+      items: [
+        { title: "Dashboard", href: "/student", icon: LayoutDashboard },
+        { title: "Available Exams", href: "/student/exams", icon: ClipboardList },
+        { title: "My Results", href: "/student/results", icon: Award },
+        { title: "Progress", href: "/student/progress", icon: TrendingUp },
+        { title: "Study Materials", href: "/student/materials", icon: BookOpen },
+      ],
+    },
   ]
 
   return (
     <DashboardShell
-      role="student"
+      userRole="Student"
       navigation={studentNavigation}
-      user={{
-        name: "Kwame Asante",
-        email: "kwame.asante@student.edu.gh",
-        avatar: "KA",
-      }}
+      userName="Kwame Asante"
+      userEmail="kwame.asante@student.edu.gh"
     >
       {children}
     </DashboardShell>

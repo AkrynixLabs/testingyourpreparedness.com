@@ -106,7 +106,7 @@ export function DashboardShell({
                   </h4>
                 )}
                 <ul className="space-y-1">
-                  {group.items.map((item) => {
+                  {(group.items || []).map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
                     return (
                       <li key={item.href}>
