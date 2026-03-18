@@ -27,7 +27,7 @@ export function StatCard({
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
             <p className="text-2xl font-bold tracking-tight">{value}</p>
           </div>
-          {Icon && (
+          {Icon && typeof Icon === 'function' && (
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Icon className="h-5 w-5 text-primary" />
             </div>
