@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -101,7 +100,7 @@ export function DashboardShell({
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 py-4">
+        <div className="flex-1 py-4 overflow-y-auto">
           <nav className="px-2 space-y-6">
             {navigation.map((group, groupIndex) => (
               <div key={groupIndex}>
@@ -111,10 +110,11 @@ export function DashboardShell({
                   </h4>
                 )}
                 <ul className="space-y-1">
-                  {(group.items || []).map((item) => {
+                  {(group.items || []).map((item, itemIndex) => {
+                    const Icon = item.icon
                     const isActive = mounted && (pathname === item.href || pathname.startsWith(item.href + "/"))
                     return (
-                      <li key={item.href}>
+                      <li key={`${groupIndex}-${itemIndex}`}>
                         <Link
                           href={item.href}
                           className={cn(
@@ -125,7 +125,7 @@ export function DashboardShell({
                           )}
                           onClick={() => setSidebarOpen(false)}
                         >
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <Icon className="h-5 w-5 flex-shrink-0" />
                           <span className="flex-1">{item.title}</span>
                           {item.badge && (
                             <span className="px-2 py-0.5 text-xs rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
@@ -140,7 +140,7 @@ export function DashboardShell({
               </div>
             ))}
           </nav>
-        </ScrollArea>
+        </div>
 
         {/* User section */}
         <div className="border-t border-sidebar-border p-4">
