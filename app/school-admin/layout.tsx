@@ -10,6 +10,7 @@ import {
   CreditCard,
   Settings,
   UserPlus,
+  PlusCircle,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -30,6 +31,7 @@ const navigation: NavGroup[] = [
     title: "Assessments",
     items: [
       { title: "Assigned Tests", href: "/school-admin/assessments", icon: ClipboardList },
+      { title: "Assign New", href: "/school-admin/assessments/assign", icon: PlusCircle },
       { title: "Results", href: "/school-admin/results", icon: BarChart3 },
     ],
   },

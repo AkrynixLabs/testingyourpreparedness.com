@@ -400,28 +400,11 @@ export default function ExamTakingPage() {
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               Submit Exam?
             </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-2 text-muted-foreground text-sm">
-                <p>
-                  You have answered <strong>{answeredCount}</strong> out of{" "}
-                  <strong>{totalQuestions}</strong> questions.
-                </p>
-                {totalQuestions - answeredCount > 0 && (
-                  <p className="text-amber-600">
-                    Warning: You have {totalQuestions - answeredCount} unanswered
-                    question(s).
-                  </p>
-                )}
-                {flaggedQuestions.size > 0 && (
-                  <p className="text-amber-600">
-                    You have {flaggedQuestions.size} flagged question(s) to review.
-                  </p>
-                )}
-                <p className="pt-2">
-                  Once submitted, you cannot change your answers. Are you sure you
-                  want to submit?
-                </p>
-              </div>
+            <AlertDialogDescription>
+              You have answered {answeredCount} out of {totalQuestions} questions.
+              {totalQuestions - answeredCount > 0 && ` Warning: You have ${totalQuestions - answeredCount} unanswered question(s).`}
+              {flaggedQuestions.size > 0 && ` You have ${flaggedQuestions.size} flagged question(s) to review.`}
+              {" "}Once submitted, you cannot change your answers. Are you sure you want to submit?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
