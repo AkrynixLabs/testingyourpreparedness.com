@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -54,6 +54,11 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -107,7 +112,7 @@ export function DashboardShell({
                 )}
                 <ul className="space-y-1">
                   {(group.items || []).map((item) => {
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                    const isActive = mounted && (pathname === item.href || pathname.startsWith(item.href + "/"))
                     return (
                       <li key={item.href}>
                         <Link
