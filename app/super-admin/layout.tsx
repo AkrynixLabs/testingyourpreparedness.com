@@ -11,6 +11,8 @@ import {
   Settings,
   FileText,
   ShieldCheck,
+  CheckSquare,
+  FileQuestion,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -25,6 +27,13 @@ const navigation: NavGroup[] = [
       { title: "Schools", href: "/super-admin/schools", icon: School, badge: "127" },
       { title: "Content Admins", href: "/super-admin/content-admins", icon: Users },
       { title: "Subjects & Topics", href: "/super-admin/subjects", icon: BookOpen },
+    ],
+  },
+  {
+    title: "Content",
+    items: [
+      { title: "Review Queue", href: "/super-admin/review-queue", icon: CheckSquare, badge: "24" },
+      { title: "Question Bank", href: "/super-admin/question-bank", icon: FileQuestion, badge: "8.7K" },
     ],
   },
   {

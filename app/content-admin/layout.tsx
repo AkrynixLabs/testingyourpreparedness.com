@@ -7,8 +7,8 @@ import {
   Upload,
   ClipboardList,
   PlusCircle,
-  CheckSquare,
   Settings,
+  Clock,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -20,10 +20,10 @@ const navigation: NavGroup[] = [
   {
     title: "Questions",
     items: [
-      { title: "Question Bank", href: "/content-admin/questions", icon: FileQuestion, badge: "8.7K" },
+      { title: "My Questions", href: "/content-admin/questions", icon: FileQuestion, badge: "156" },
       { title: "Create Question", href: "/content-admin/questions/create", icon: PlusCircle },
       { title: "Bulk Upload", href: "/content-admin/questions/upload", icon: Upload },
-      { title: "Review Queue", href: "/content-admin/questions/review", icon: CheckSquare, badge: "12" },
+      { title: "Pending Approval", href: "/content-admin/questions/pending", icon: Clock, badge: "8" },
     ],
   },
   {
