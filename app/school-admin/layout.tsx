@@ -57,6 +57,7 @@ export default function SchoolAdminLayout({
       userRole="School Administrator"
       userName="Mr. Kofi Asante"
       userEmail="admin@achimota.edu.gh"
+      settingsHref="/school-admin/settings"
     >
       {children}
     </DashboardShell>

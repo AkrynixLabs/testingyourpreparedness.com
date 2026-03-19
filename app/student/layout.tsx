@@ -41,6 +41,8 @@ export default function StudentLayout({
       navigation={studentNavigation}
       userName="Kwame Asante"
       userEmail="kwame.asante@student.edu.gh"
+      profileHref="/student/profile"
+      settingsHref="/student/settings"
     >
       {children}
     </DashboardShell>

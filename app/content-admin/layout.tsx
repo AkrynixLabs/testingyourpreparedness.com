@@ -51,6 +51,7 @@ export default function ContentAdminLayout({
       userRole="Content Administrator"
       userName="Ama Boateng"
       userEmail="content@typ.edu.gh"
+      settingsHref="/content-admin/settings"
     >
       {children}
     </DashboardShell>
