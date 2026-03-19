@@ -7,6 +7,8 @@ import {
   Award,
   TrendingUp,
   BookOpen,
+  Trophy,
+  Settings,
 } from "lucide-react"
 
 export default function StudentLayout({
@@ -22,6 +24,8 @@ export default function StudentLayout({
         { title: "My Results", href: "/student/results", icon: Award },
         { title: "Progress", href: "/student/progress", icon: TrendingUp },
         { title: "Study Materials", href: "/student/materials", icon: BookOpen },
+        { title: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
+        { title: "Settings", href: "/student/settings", icon: Settings },
       ],
     },
   ]
