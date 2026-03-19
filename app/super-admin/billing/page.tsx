@@ -101,39 +101,50 @@ const subscriptions = [
   },
 ]
 
+interface Subscription {
+  id: number
+  school: string
+  plan: string
+  amount: number
+  students: number
+  status: string
+  nextBilling: string
+  since: string
+}
+
 const subscriptionColumns = [
   {
     key: "school",
-    label: "School",
-    render: (value: string) => (
+    header: "School",
+    render: (item: Subscription) => (
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">{value}</span>
+        <span className="font-medium">{item.school}</span>
       </div>
     ),
   },
   {
     key: "plan",
-    label: "Plan",
-    render: (value: string) => (
-      <Badge variant="secondary">{value}</Badge>
+    header: "Plan",
+    render: (item: Subscription) => (
+      <Badge variant="secondary">{item.plan}</Badge>
     ),
   },
   {
     key: "amount",
-    label: "Amount",
-    render: (value: number) => (
-      <span className="font-medium">GHS {value}/mo</span>
+    header: "Amount",
+    render: (item: Subscription) => (
+      <span className="font-medium">GHS {item.amount}/mo</span>
     ),
   },
   {
     key: "students",
-    label: "Students",
+    header: "Students",
   },
   {
     key: "status",
-    label: "Status",
-    render: (value: string) => {
+    header: "Status",
+    render: (item: Subscription) => {
       const statusStyles: Record<string, string> = {
         active: "bg-emerald-500/10 text-emerald-600",
         past_due: "bg-red-500/10 text-red-600",
@@ -145,15 +156,15 @@ const subscriptionColumns = [
         cancelled: "Cancelled",
       }
       return (
-        <Badge className={statusStyles[value]}>
-          {statusLabels[value]}
+        <Badge className={statusStyles[item.status]}>
+          {statusLabels[item.status]}
         </Badge>
       )
     },
   },
   {
     key: "nextBilling",
-    label: "Next Billing",
+    header: "Next Billing",
   },
 ]
 
