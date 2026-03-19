@@ -17,6 +17,7 @@ import {
   DollarSign,
   TrendingUp,
   Activity,
+  Trophy,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -53,6 +54,7 @@ const navigation: NavGroup[] = [
     title: "Analytics & Insights",
     items: [
       { title: "Platform Analytics", href: "/super-admin/analytics", icon: TrendingUp },
+      { title: "School Leaderboard", href: "/super-admin/leaderboard", icon: Trophy },
       { title: "Live Activity", href: "/super-admin/live-activity", icon: Activity },
       { title: "Reports", href: "/super-admin/reports", icon: BarChart3 },
       { title: "Audit Logs", href: "/super-admin/audit-logs", icon: ShieldCheck },
