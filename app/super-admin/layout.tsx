@@ -78,6 +78,7 @@ export default function SuperAdminLayout({
       userRole="Super Administrator"
       userName="Dr. Kwaku Mensah"
       userEmail="admin@typ.edu.gh"
+      settingsHref="/super-admin/settings"
     >
       {children}
     </DashboardShell>

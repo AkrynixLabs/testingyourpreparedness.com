@@ -42,6 +42,8 @@ interface DashboardShellProps {
   userRole: string
   userName: string
   userEmail: string
+  profileHref?: string
+  settingsHref?: string
 }
 
 export function DashboardShell({
@@ -50,6 +52,8 @@ export function DashboardShell({
   userRole,
   userName,
   userEmail,
+  profileHref,
+  settingsHref,
 }: DashboardShellProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -162,14 +166,22 @@ export function DashboardShell({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
+              {profileHref && (
+                <DropdownMenuItem asChild>
+                  <Link href={profileHref}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {settingsHref && (
+                <DropdownMenuItem asChild>
+                  <Link href={settingsHref}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/login" className="text-destructive">

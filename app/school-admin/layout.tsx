@@ -11,6 +11,7 @@ import {
   Settings,
   UserPlus,
   PlusCircle,
+  Trophy,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -25,6 +26,7 @@ const navigation: NavGroup[] = [
       { title: "All Students", href: "/school-admin/students", icon: Users, badge: "1,240" },
       { title: "Add Students", href: "/school-admin/students/add", icon: UserPlus },
       { title: "Classes/Forms", href: "/school-admin/classes", icon: GraduationCap },
+      { title: "Leaderboard", href: "/school-admin/leaderboard", icon: Trophy },
     ],
   },
   {
@@ -55,6 +57,7 @@ export default function SchoolAdminLayout({
       userRole="School Administrator"
       userName="Mr. Kofi Asante"
       userEmail="admin@achimota.edu.gh"
+      settingsHref="/school-admin/settings"
     >
       {children}
     </DashboardShell>

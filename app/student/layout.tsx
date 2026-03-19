@@ -7,8 +7,8 @@ import {
   Award,
   TrendingUp,
   BookOpen,
-  Trophy,
   Settings,
+  User,
 } from "lucide-react"
 
 export default function StudentLayout({
@@ -24,7 +24,12 @@ export default function StudentLayout({
         { title: "My Results", href: "/student/results", icon: Award },
         { title: "Progress", href: "/student/progress", icon: TrendingUp },
         { title: "Study Materials", href: "/student/materials", icon: BookOpen },
-        { title: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
+      ],
+    },
+    {
+      title: "Account",
+      items: [
+        { title: "Profile", href: "/student/profile", icon: User },
         { title: "Settings", href: "/student/settings", icon: Settings },
       ],
     },
@@ -36,6 +41,8 @@ export default function StudentLayout({
       navigation={studentNavigation}
       userName="Kwame Asante"
       userEmail="kwame.asante@student.edu.gh"
+      profileHref="/student/profile"
+      settingsHref="/student/settings"
     >
       {children}
     </DashboardShell>
