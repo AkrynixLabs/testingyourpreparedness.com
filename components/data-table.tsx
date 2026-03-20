@@ -105,8 +105,8 @@ export function DataTable<T extends Record<string, unknown>>({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <Table>
+      <div className="rounded-lg border border-border overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
               {columns.map((column) => (
@@ -146,8 +146,8 @@ export function DataTable<T extends Record<string, unknown>>({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground text-center sm:text-left">
           Showing {startIndex + 1} to {Math.min(startIndex + pageSize, filteredData.length)} of{" "}
           {filteredData.length} results
         </p>
@@ -160,8 +160,8 @@ export function DataTable<T extends Record<string, unknown>>({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium px-2">
-            Page {currentPage} of {totalPages || 1}
+          <span className="text-sm font-medium px-2 whitespace-nowrap">
+            {currentPage} / {totalPages || 1}
           </span>
           <Button
             variant="outline"

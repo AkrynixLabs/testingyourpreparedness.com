@@ -199,30 +199,32 @@ export default function ExamTakingPage() {
             <h1 className="font-semibold">{examData.title}</h1>
             <Badge variant="secondary">{examData.subject}</Badge>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 font-mono text-lg font-bold ${
+              className={`flex items-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-4 py-2 font-mono text-sm sm:text-lg font-bold ${
                 isLowTime
                   ? "bg-red-500/10 text-red-600 animate-pulse"
                   : "bg-primary/10 text-primary"
               }`}
             >
-              <Clock className="h-5 w-5" />
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
               {formatTime(timeRemaining)}
             </div>
             <Button
               onClick={() => setShowSubmitDialog(true)}
-              className="gap-2"
+              className="gap-1 sm:gap-2 text-sm sm:text-base"
+              size="sm"
             >
               <Send className="h-4 w-4" />
-              Submit Exam
+              <span className="hidden sm:inline">Submit Exam</span>
+              <span className="sm:hidden">Submit</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container py-6 px-4">
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="container py-4 sm:py-6 px-3 sm:px-4">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main Question Area */}
           <div className="space-y-6">
             {/* Progress */}
@@ -241,33 +243,33 @@ export default function ExamTakingPage() {
             </Card>
 
             {/* Question Card */}
-            <Card className="min-h-[400px]">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-xl leading-relaxed">
+            <Card className="min-h-[300px] sm:min-h-[400px]">
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:justify-between">
+                  <CardTitle className="text-lg sm:text-xl leading-relaxed order-2 sm:order-1">
                     {question.text}
                   </CardTitle>
                   <Button
                     variant={flaggedQuestions.has(question.id) ? "default" : "outline"}
                     size="sm"
                     onClick={() => toggleFlag(question.id)}
-                    className="shrink-0"
+                    className="shrink-0 self-end sm:self-auto order-1 sm:order-2"
                   >
-                    <Flag className="h-4 w-4 mr-2" />
-                    {flaggedQuestions.has(question.id) ? "Flagged" : "Flag"}
+                    <Flag className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">{flaggedQuestions.has(question.id) ? "Flagged" : "Flag"}</span>
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                 <RadioGroup
                   value={answers[question.id] || ""}
                   onValueChange={(value) => handleAnswerSelect(question.id, value)}
-                  className="space-y-3"
+                  className="space-y-2 sm:space-y-3"
                 >
                   {question.options.map((option) => (
                     <div
                       key={option.id}
-                      className={`flex items-center space-x-3 rounded-lg border p-4 transition-colors cursor-pointer hover:bg-muted/50 ${
+                      className={`flex items-center space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 transition-colors cursor-pointer hover:bg-muted/50 active:bg-muted ${
                         answers[question.id] === option.id
                           ? "border-primary bg-primary/5"
                           : ""
@@ -277,9 +279,9 @@ export default function ExamTakingPage() {
                       <RadioGroupItem value={option.id} id={option.id} />
                       <Label
                         htmlFor={option.id}
-                        className="flex-1 cursor-pointer text-base"
+                        className="flex-1 cursor-pointer text-sm sm:text-base"
                       >
-                        <span className="font-semibold mr-2">
+                        <span className="font-semibold mr-1 sm:mr-2">
                           {option.id.toUpperCase()}.
                         </span>
                         {option.text}
@@ -311,13 +313,13 @@ export default function ExamTakingPage() {
           </div>
 
           {/* Sidebar - Question Navigator */}
-          <div className="space-y-4">
+          <div className="space-y-4 order-first lg:order-last">
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 p-4 sm:p-6 sm:pb-3">
                 <CardTitle className="text-base">Question Navigator</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 gap-2">
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="grid grid-cols-8 sm:grid-cols-5 gap-1.5 sm:gap-2">
                   {examData.questions.map((q, index) => {
                     const isAnswered = answers[q.id] !== undefined
                     const isFlagged = flaggedQuestions.has(q.id)
@@ -327,7 +329,7 @@ export default function ExamTakingPage() {
                       <button
                         key={q.id}
                         onClick={() => goToQuestion(index)}
-                        className={`relative h-10 w-10 rounded-lg border text-sm font-medium transition-all ${
+                        className={`relative h-8 w-8 sm:h-10 sm:w-10 rounded-lg border text-xs sm:text-sm font-medium transition-all active:scale-95 ${
                           isCurrent
                             ? "border-primary bg-primary text-primary-foreground"
                             : isAnswered
@@ -337,7 +339,7 @@ export default function ExamTakingPage() {
                       >
                         {index + 1}
                         {isFlagged && (
-                          <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-500" />
+                          <span className="absolute -right-0.5 -top-0.5 sm:-right-1 sm:-top-1 h-2 w-2 sm:h-3 sm:w-3 rounded-full bg-amber-500" />
                         )}
                       </button>
                     )
