@@ -1,0 +1,745 @@
+// TYP data model. See docs/data-model.md for the frontend-derived source of truth
+// this schema implements, and docs/inconsistencies.md for the conflicts each
+// design choice below resolves (referenced inline as "resolves #N").
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Users & Roles
+// ---------------------------------------------------------------------------
+
+enum Role {
+  super_admin
+  content_admin
+  school_admin
+  student
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatar       String?
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  schoolAdmin         SchoolAdmin?
+  student             Student?
+  contentAdminProfile ContentAdminProfile?
+
+  createdQuestions   Question[]   @relation("QuestionCreatedBy")
+  reviewedQuestions  Question[]   @relation("QuestionReviewedBy")
+  createdAssessments Assessment[] @relation("AssessmentCreatedBy")
+  sentInvitations    Invitation[] @relation("InvitationInvitedBy")
+  auditLogs          AuditLog[]
+}
+
+// One admin per school is "primary" (protected from removal); others are regular.
+model SchoolAdmin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+enum ContentAdminStatus {
+  active
+  inactive
+  pending
+}
+
+model ContentAdminProfile {
+  id         String                @id @default(cuid())
+  userId     String                @unique
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     ContentAdminStatus    @default(pending)
+  subjects   ContentAdminSubject[]
+  lastActive DateTime?
+  createdAt  DateTime              @default(now())
+}
+
+model ContentAdminSubject {
+  contentAdminId String
+  contentAdmin   ContentAdminProfile @relation(fields: [contentAdminId], references: [id], onDelete: Cascade)
+  subjectId      String
+  subject        Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([contentAdminId, subjectId])
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  expired
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  schoolId    String
+  school      School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email       String
+  invitedById String
+  invitedBy   User             @relation("InvitationInvitedBy", fields: [invitedById], references: [id])
+  status      InvitationStatus @default(pending)
+  createdAt   DateTime         @default(now())
+
+  @@index([schoolId])
+}
+
+// ---------------------------------------------------------------------------
+// Exam Program / Track (CLAUDE.md decision: first-class entity, one program
+// per subject)
+// ---------------------------------------------------------------------------
+
+model Program {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  active      Boolean   @default(true)
+  subjects    Subject[]
+
+  // See SubscriptionPlan.programId / Subscription.programId - null on both
+  // today (platform-wide billing); these back-relations exist so a program
+  // can later be scoped by a plan/subscription without a migration.
+  subscriptionPlans SubscriptionPlan[]
+  subscriptions     Subscription[]
+}
+
+// ---------------------------------------------------------------------------
+// School
+// ---------------------------------------------------------------------------
+
+enum OwnershipType {
+  public
+  private
+  international
+  religious
+}
+
+enum EducationLevel {
+  junior_high
+  senior_high
+  basic
+}
+
+enum SchoolStatus {
+  active
+  pending
+  suspended // resolves #3: "Suspend" action needs a matching status
+}
+
+model School {
+  id                 String         @id @default(cuid())
+  code               String         @unique // e.g. "ACH-001"
+  name               String
+  registrationNumber String? // GES registration number
+  ownershipType      OwnershipType // resolves #7: split from educationLevel
+  educationLevel     EducationLevel // resolves #7: split from ownershipType
+  region             String
+  district           String
+  town               String
+  address            String
+  postalCode         String?
+  email              String
+  phone              String
+  website            String?
+  established        Int? // year
+  logo               String?
+  status             SchoolStatus   @default(pending)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  admins         SchoolAdmin[]
+  classes        Class[]
+  students       Student[]
+  invitations    Invitation[]
+  assignments    AssessmentAssignment[]
+  subscription   Subscription?
+  paymentMethods PaymentMethod[]
+}
+
+// ---------------------------------------------------------------------------
+// Class / Form (CLAUDE.md decision: "Form N[A/B/C]" naming is canonical)
+// ---------------------------------------------------------------------------
+
+model Class {
+  id           String    @id @default(cuid()) // canonical id, distinct from displayName (resolves #5)
+  displayName  String // e.g. "Form 3A"
+  schoolId     String
+  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  form         Int // 1-3
+  section      String // "A" | "B" | "C"
+  teacherName  String? // free text - no Teacher account entity exists in the frontend
+  academicYear String
+  students     Student[]
+
+  assignments AssessmentAssignmentClass[]
+
+  @@unique([schoolId, form, section, academicYear])
+  @@index([schoolId])
+}
+
+// ---------------------------------------------------------------------------
+// Student & Guardian
+// ---------------------------------------------------------------------------
+
+enum EnrollmentType {
+  school
+  independent
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum StudentStatus {
+  active
+  inactive
+  pending
+}
+
+model Student {
+  id             String         @id @default(cuid())
+  userId         String         @unique
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentType EnrollmentType
+  schoolId       String? // null when independent
+  school         School?        @relation(fields: [schoolId], references: [id])
+  classId        String?
+  class          Class?         @relation(fields: [classId], references: [id])
+  dateOfBirth    DateTime?
+  gender         Gender?
+  address        String?
+  notes          String?
+  status         StudentStatus  @default(active)
+  createdAt      DateTime       @default(now())
+
+  guardian            Guardian?
+  examAttempts        ExamAttempt[]
+  subscription        Subscription?
+  paymentMethods      PaymentMethod[]
+  achievements        StudentAchievement[]
+  studyGoals          StudyGoal[]
+  bookmarkedMaterials StudentMaterialBookmark[]
+  assignmentTargets   AssessmentAssignmentStudent[]
+
+  @@index([schoolId])
+  @@index([classId])
+}
+
+enum GuardianRelation {
+  mother
+  father
+  guardian
+  other
+}
+
+// Single source of truth - resolves the guardian info duplicated across
+// student/profile, student/settings, and the school-admin add-student form.
+model Guardian {
+  id         String           @id @default(cuid())
+  studentId  String           @unique
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name       String
+  phone      String
+  email      String?
+  relation   GuardianRelation
+  approvedAt DateTime? // gates independent-student signup checkout
+}
+
+// ---------------------------------------------------------------------------
+// Subject / Topic
+// ---------------------------------------------------------------------------
+
+model Subject {
+  id             String                @id @default(cuid())
+  programId      String
+  program        Program               @relation(fields: [programId], references: [id])
+  name           String
+  code           String // e.g. "MAT", "ENG"
+  topics         Topic[]
+  questions      Question[]
+  assessments    Assessment[]
+  studyMaterials StudyMaterial[]
+  contentAdmins  ContentAdminSubject[]
+
+  @@unique([programId, code])
+}
+
+// Promoted to first-class per data-model.md - was a plain string with fragile
+// name-matching linkage.
+model Topic {
+  id        String     @id @default(cuid())
+  subjectId String
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  name      String
+  questions Question[]
+
+  @@unique([subjectId, name])
+}
+
+// ---------------------------------------------------------------------------
+// Question
+// ---------------------------------------------------------------------------
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
+}
+
+enum QuestionStatus {
+  draft
+  pending
+  approved
+  rejected
+}
+
+model Question {
+  id                 String         @id @default(cuid())
+  subjectId          String
+  subject            Subject        @relation(fields: [subjectId], references: [id])
+  topicId            String
+  topic              Topic          @relation(fields: [topicId], references: [id])
+  text               String
+  options            Json // string[2-6]
+  correctAnswerIndex Int
+  explanation        String?
+  difficulty         Difficulty
+  marks              Int
+  year               Int?
+  status             QuestionStatus @default(draft)
+  // Separate from `status`: whether an approved question is currently
+  // eligible for use in assessments (resolves the question-bank
+  // active/archived vs. authoring-status conflation flagged in the data model doc).
+  isActive           Boolean        @default(true)
+  createdById        String
+  createdBy          User           @relation("QuestionCreatedBy", fields: [createdById], references: [id])
+  reviewedById       String?
+  reviewedBy         User?          @relation("QuestionReviewedBy", fields: [reviewedById], references: [id])
+  rejectionReason    String?
+  timesUsed          Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  assessmentQuestions AssessmentQuestion[]
+
+  @@index([subjectId, topicId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Assessment (authoring/library) & AssessmentAssignment (a published
+// assessment assigned to classes/students by a school admin) - two distinct
+// lifecycles, kept as separate status enums per data-model.md.
+// ---------------------------------------------------------------------------
+
+enum AssessmentStatus {
+  draft
+  pending
+  published
+  archived
+}
+
+model Assessment {
+  id          String           @id @default(cuid())
+  title       String
+  subjectId   String
+  subject     Subject          @relation(fields: [subjectId], references: [id])
+  duration    Int // minutes
+  difficulty  Difficulty?
+  status      AssessmentStatus @default(draft)
+  createdById String
+  createdBy   User             @relation("AssessmentCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  questions    AssessmentQuestion[]
+  assignments  AssessmentAssignment[]
+  examAttempts ExamAttempt[]
+}
+
+model AssessmentQuestion {
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question   @relation(fields: [questionId], references: [id])
+  order        Int
+
+  @@id([assessmentId, questionId])
+}
+
+enum AssignmentStatus {
+  scheduled
+  active
+  paused
+  completed
+}
+
+model AssessmentAssignment {
+  id           String           @id @default(cuid())
+  assessmentId String
+  assessment   Assessment       @relation(fields: [assessmentId], references: [id])
+  schoolId     String
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  startDate    DateTime
+  endDate      DateTime
+  status       AssignmentStatus @default(scheduled)
+
+  // options block from the assign wizard
+  shuffleQuestions Boolean @default(false)
+  shuffleOptions   Boolean @default(false)
+  showResults      Boolean @default(true)
+  showAnswers      Boolean @default(false)
+  passingScore     Int? // percent
+  allowRetake      Boolean @default(false)
+  maxAttempts      Int? // null = unlimited
+  sendNotification Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  classes      AssessmentAssignmentClass[]
+  students     AssessmentAssignmentStudent[]
+  examAttempts ExamAttempt[]
+
+  @@index([schoolId])
+}
+
+model AssessmentAssignmentClass {
+  assignmentId String
+  assignment   AssessmentAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class                @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@id([assignmentId, classId])
+}
+
+model AssessmentAssignmentStudent {
+  assignmentId String
+  assignment   AssessmentAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([assignmentId, studentId])
+}
+
+// ---------------------------------------------------------------------------
+// ExamAttempt / Result
+// ---------------------------------------------------------------------------
+
+model ExamAttempt {
+  id           String                @id @default(cuid())
+  studentId    String
+  student      Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessmentId String
+  assessment   Assessment            @relation(fields: [assessmentId], references: [id])
+  assignmentId String? // set when taken via a school assignment; null for independent/open access
+  assignment   AssessmentAssignment? @relation(fields: [assignmentId], references: [id])
+
+  answers            Json // { [questionId]: selectedIndex }
+  flaggedQuestionIds Json // string[]
+  startedAt          DateTime
+  submittedAt        DateTime?
+  score              Int?
+  totalMarks         Int?
+  // Grade thresholds (A>=80, B>=70, C>=60, D>=50, F<50) computed server-side
+  // once at submission - one function, not per-page, per data-model.md.
+  grade              String?
+  timeSpentSeconds   Int?
+
+  @@index([studentId])
+  @@index([assignmentId])
+}
+
+// ---------------------------------------------------------------------------
+// Study Materials, Study Goals, Achievements
+// ---------------------------------------------------------------------------
+
+enum MaterialType {
+  document
+  video
+}
+
+enum MaterialFormat {
+  PDF
+  MP4
+}
+
+model StudyMaterial {
+  id          String         @id @default(cuid())
+  title       String
+  subjectId   String
+  subject     Subject        @relation(fields: [subjectId], references: [id])
+  type        MaterialType
+  format      MaterialFormat
+  fileUrl     String // Vercel Blob URL
+  size        Int? // bytes
+  duration    Int? // seconds, for video
+  views       Int            @default(0)
+  rating      Float?
+  description String?
+  topics      String[] // free-text topic tags shown on the material card
+  lastUpdated DateTime       @default(now())
+
+  bookmarks StudentMaterialBookmark[]
+}
+
+model StudentMaterialBookmark {
+  studentId  String
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  materialId String
+  material   StudyMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, materialId])
+}
+
+enum StudyGoalUnit {
+  exam_count
+  percentage
+  day_streak
+}
+
+model StudyGoal {
+  id        String        @id @default(cuid())
+  studentId String
+  student   Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  goal      String
+  unit      StudyGoalUnit // resolves the mixed-units flag in data-model.md
+  progress  Int
+  total     Int
+  dueDate   DateTime?
+}
+
+// One canonical catalog - resolves the two competing badge lists between
+// student/profile and student/progress.
+model Achievement {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  icon        String
+  criteria    String // human-readable earn criteria
+
+  students StudentAchievement[]
+}
+
+model StudentAchievement {
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime    @default(now())
+
+  @@id([studentId, achievementId])
+}
+
+// ---------------------------------------------------------------------------
+// Subscription Plans, Billing & Payments
+//
+// Canonical pricing (this session, superseding all four conflicting frontend
+// sources - see docs/inconsistencies.md #2): Starter/Professional/Enterprise
+// at GHS 150/350/750 per month, student limits 100/500/unlimited.
+// Independent-student plans are a separate tier set (audience: independent).
+// ---------------------------------------------------------------------------
+
+enum PlanAudience {
+  school
+  independent
+}
+
+enum BillingCycle {
+  monthly
+  term
+  yearly
+}
+
+model SubscriptionPlan {
+  id           String       @id // "starter" | "professional" | "enterprise" | independent plan slugs
+  audience     PlanAudience
+  name         String
+  monthlyPrice Int? // GHS, whole cedis - null if plan is term/year only
+  yearlyPrice  Int?
+  termPrice    Int?
+  currency     String       @default("GHS")
+  studentLimit Int? // null = unlimited; only meaningful for `school` audience
+  features     Json // string[]
+  popular      Boolean      @default(false)
+  // null = platform-wide (access to every Program); set = scoped to one Program.
+  // Every current plan is null - billing is platform-wide for now (see
+  // docs/data-model.md#billing-scope-vs-program--resolved-2026-08-05).
+  // This column exists so program-scoped plans can be introduced later by
+  // inserting new rows, with no migration and no effect on existing subscribers.
+  programId    String?
+  program      Program?     @relation(fields: [programId], references: [id])
+
+  subscriptions Subscription[]
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  cancelled
+}
+
+model Subscription {
+  id              String             @id @default(cuid())
+  planId          String
+  plan            SubscriptionPlan   @relation(fields: [planId], references: [id])
+  schoolId        String?            @unique // exactly one of schoolId/studentId is set
+  school          School?            @relation(fields: [schoolId], references: [id])
+  studentId       String?            @unique
+  student         Student?           @relation(fields: [studentId], references: [id])
+  billingCycle    BillingCycle
+  status          SubscriptionStatus @default(active)
+  currentStudents Int                @default(0) // school subscriptions only
+  startDate       DateTime           @default(now())
+  renewalDate     DateTime
+  // Same meaning as SubscriptionPlan.programId; independently settable in case
+  // a platform-wide plan is ever purchased with a program-limited entitlement,
+  // or vice versa. Defaults to the plan's programId in practice.
+  programId       String?
+  program         Program?           @relation(fields: [programId], references: [id])
+
+  invoices Invoice[]
+}
+
+enum InvoiceStatus {
+  paid
+  pending
+  overdue
+}
+
+model Invoice {
+  id             String        @id // "INV-YYYY-NNN"
+  subscriptionId String
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  amount         Int
+  status         InvoiceStatus @default(pending)
+  period         String // e.g. "Jan 2026"
+  dueDate        DateTime
+  paidDate       DateTime?
+
+  payments Payment[]
+}
+
+enum PaymentStatus {
+  completed
+  pending
+  failed
+  refunded
+}
+
+enum PaymentType {
+  new
+  renewal
+  upgrade
+}
+
+enum PaymentMethodType {
+  card
+  mobile_money
+  bank_transfer
+}
+
+// One canonical entity - resolves #6 (three parallel Payment/Transaction
+// shapes with differing ID prefixes and status/type vocabularies).
+model Payment {
+  id                String            @id // "PAY-XXXXXX", assigned in the DAL
+  invoiceId         String?
+  invoice           Invoice?          @relation(fields: [invoiceId], references: [id])
+  amount            Int
+  status            PaymentStatus     @default(pending)
+  type              PaymentType
+  method            PaymentMethodType
+  paystackReference String?           @unique
+  createdAt         DateTime          @default(now())
+}
+
+enum MomoProvider {
+  mtn_momo // display: "MTN MoMo" (resolves #8 spelling drift)
+  vodafone_cash
+  airteltigo_money
+}
+
+model PaymentMethod {
+  id        String            @id @default(cuid())
+  type      PaymentMethodType
+  schoolId  String?
+  school    School?           @relation(fields: [schoolId], references: [id])
+  studentId String?
+  student   Student?          @relation(fields: [studentId], references: [id])
+  isDefault Boolean           @default(false)
+
+  // card fields
+  cardBrand  String?
+  cardLast4  String?
+  cardExpiry String?
+
+  // mobile money fields
+  momoProvider MomoProvider?
+  momoNumber   String?
+
+  @@index([schoolId])
+  @@index([studentId])
+}
+
+// ---------------------------------------------------------------------------
+// Audit Log
+// ---------------------------------------------------------------------------
+
+enum AuditAction {
+  login
+  logout
+  create
+  update
+  delete
+  approve
+  reject
+  export
+  login_failed
+}
+
+enum AuditCategory {
+  auth
+  content
+  school
+  user
+  billing
+  data
+  settings
+}
+
+enum AuditStatus {
+  success
+  warning
+  error
+}
+
+model AuditLog {
+  id          String        @id @default(cuid())
+  actorId     String?
+  actor       User?         @relation(fields: [actorId], references: [id])
+  action      AuditAction
+  category    AuditCategory
+  description String
+  ipAddress   String?
+  status      AuditStatus   @default(success)
+  details     Json? // polymorphic payload, shape varies per action
+  timestamp   DateTime      @default(now())
+
+  @@index([category, timestamp])
+}
