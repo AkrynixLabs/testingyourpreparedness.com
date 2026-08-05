@@ -9,9 +9,21 @@ __v0_jsx-dev-runtime.ts
 next.user-config.*
 
 # Environment variables
+.env
 .env*.local
 
 # Common ignores
 node_modules/
 .next/
 .DS_Store
+/lib/generated/prisma
+*.tsbuildinfo
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Prisma CLI agent-skill reference docs (auto-installed by `prisma init`, not app code)
+.agents/
+.claude/skills/
+.windsurf/skills/
+skills-lock.json
