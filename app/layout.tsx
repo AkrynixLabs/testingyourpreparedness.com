@@ -1,20 +1,21 @@
 import type { Metadata } from 'next'
 import { Inter, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SessionProvider } from '@/components/session-provider'
 import './globals.css'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: '--font-inter'
 });
-const geistMono = Geist_Mono({ 
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: '--font-geist-mono'
 });
 
 export const metadata: Metadata = {
-  title: 'TYP - Testing Your Preparedness | BECE Exam Preparation Platform',
-  description: 'Ghana\'s premier BECE exam preparation platform. Empowering students with comprehensive assessments, personalized learning, and detailed analytics.',
+  title: 'TYP - Testing Your Preparedness | Exam Prep for BECE, WASSCE, Nursing & University',
+  description: 'Ghana\'s all-in-one exam prep and digital skills platform — BECE, WASSCE, nursing, university entrance, and job-ready digital skills, with practice tests, analytics, and personalized learning.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -43,8 +44,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
-        {children}
-        <Analytics />
+        <SessionProvider>
+          {children}
+          <Analytics />
+        </SessionProvider>
       </body>
     </html>
   )

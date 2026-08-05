@@ -3,46 +3,49 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
+
+const ROLE_HOME: Record<string, string> = {
+  super_admin: "/super-admin",
+  content_admin: "/content-admin",
+  school_admin: "/school-admin",
+  student: "/student",
+}
 
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
-  const [role, setRole] = useState("student")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setIsLoading(true)
-    
-    // Simulate login delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Redirect based on role
-    switch (role) {
-      case "super-admin":
-        router.push("/super-admin")
-        break
-      case "content-admin":
-        router.push("/content-admin")
-        break
-      case "school-admin":
-        router.push("/school-admin")
-        break
-      case "student":
-      default:
-        router.push("/student")
-        break
+
+    const result = await signIn("credentials", { email, password, redirect: false })
+
+    if (!result || result.error) {
+      setIsLoading(false)
+      setError("Invalid email or password.")
+      return
     }
+
+    const sessionResponse = await fetch("/api/auth/session")
+    const session = await sessionResponse.json()
+    const role = session?.user?.role as string | undefined
+    router.push((role && ROLE_HOME[role]) || "/")
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-muted/30">
+    <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <header className="p-4">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
@@ -66,28 +69,21 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="role">I am a</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="school-admin">School Administrator</SelectItem>
-                    <SelectItem value="content-admin">Content Administrator</SelectItem>
-                    <SelectItem value="super-admin">Super Administrator</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {error && (
+                <p className="text-sm text-destructive text-center" role="alert">
+                  {error}
+                </p>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  required 
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -99,11 +95,13 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Input 
-                    id="password" 
-                    type={showPassword ? "text" : "password"} 
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                   <button
                     type="button"
@@ -126,12 +124,6 @@ export default function LoginPage() {
               <Link href="/signup" className="text-primary font-medium hover:underline">
                 Sign up
               </Link>
-            </div>
-
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-xs text-muted-foreground text-center">
-                Demo: Select any role and enter any email/password to explore the dashboard
-              </p>
             </div>
           </CardContent>
         </Card>
