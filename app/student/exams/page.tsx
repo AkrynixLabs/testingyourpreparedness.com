@@ -146,9 +146,33 @@ const getScoreColor = (percentage: number) => {
   return "text-red-600"
 }
 
+const matchesFilters = (
+  exam: { title: string; subject: string },
+  searchQuery: string,
+  subjectFilter: string
+) => {
+  const matchesSearch = exam.title
+    .toLowerCase()
+    .includes(searchQuery.toLowerCase())
+  const matchesSubject =
+    subjectFilter === "all" ||
+    exam.subject.toLowerCase().replace(/\s+/g, "-") === subjectFilter
+  return matchesSearch && matchesSubject
+}
+
 export default function StudentExamsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [subjectFilter, setSubjectFilter] = useState("all")
+
+  const filteredAvailableExams = availableExams.filter((exam) =>
+    matchesFilters(exam, searchQuery, subjectFilter)
+  )
+  const filteredScheduledExams = scheduledExams.filter((exam) =>
+    matchesFilters(exam, searchQuery, subjectFilter)
+  )
+  const filteredCompletedExams = completedExams.filter((exam) =>
+    matchesFilters(exam, searchQuery, subjectFilter)
+  )
 
   return (
     <div className="space-y-6">
@@ -191,19 +215,19 @@ export default function StudentExamsPage() {
       <Tabs defaultValue="available" className="space-y-6">
         <TabsList>
           <TabsTrigger value="available">
-            Available ({availableExams.length})
+            Available ({filteredAvailableExams.length})
           </TabsTrigger>
           <TabsTrigger value="scheduled">
-            Scheduled ({scheduledExams.length})
+            Scheduled ({filteredScheduledExams.length})
           </TabsTrigger>
           <TabsTrigger value="completed">
-            Completed ({completedExams.length})
+            Completed ({filteredCompletedExams.length})
           </TabsTrigger>
         </TabsList>
 
         {/* Available Exams */}
         <TabsContent value="available" className="space-y-4">
-          {availableExams.map((exam) => (
+          {filteredAvailableExams.map((exam) => (
             <Card key={exam.id} className="transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -250,7 +274,7 @@ export default function StudentExamsPage() {
 
         {/* Scheduled Exams */}
         <TabsContent value="scheduled" className="space-y-4">
-          {scheduledExams.map((exam) => (
+          {filteredScheduledExams.map((exam) => (
             <Card key={exam.id} className="transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -292,7 +316,7 @@ export default function StudentExamsPage() {
 
         {/* Completed Exams */}
         <TabsContent value="completed" className="space-y-4">
-          {completedExams.map((exam) => {
+          {filteredCompletedExams.map((exam) => {
             const percentage = Math.round((exam.score / exam.totalMarks) * 100)
             return (
               <Card key={exam.id} className="transition-shadow hover:shadow-md">

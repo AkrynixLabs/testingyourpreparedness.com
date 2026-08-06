@@ -1,6 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { notFound, useParams } from "next/navigation"
+import { examResults } from "@/lib/demo-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,9 +20,6 @@ import {
   AlertCircle,
 } from "lucide-react"
 import {
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -29,92 +28,14 @@ import {
   Tooltip,
 } from "recharts"
 
-const resultData = {
-  id: 1,
-  title: "Integrated Science Quiz 5",
-  subject: "Science",
-  date: "Mar 15, 2026",
-  duration: "52 minutes",
-  totalTime: "1 hour",
-  score: 85,
-  totalMarks: 100,
-  rank: 3,
-  totalStudents: 45,
-  correctAnswers: 34,
-  incorrectAnswers: 6,
-  totalQuestions: 40,
-  grade: "A",
-  percentile: 93,
-  topicBreakdown: [
-    { topic: "Living Things", correct: 8, total: 10, percentage: 80 },
-    { topic: "Energy & Forces", correct: 7, total: 8, percentage: 87.5 },
-    { topic: "Matter & Materials", correct: 9, total: 10, percentage: 90 },
-    { topic: "Earth & Environment", correct: 6, total: 7, percentage: 85.7 },
-    { topic: "Human Body", correct: 4, total: 5, percentage: 80 },
-  ],
-  questions: [
-    {
-      id: 1,
-      text: "Which of the following is NOT a characteristic of living things?",
-      yourAnswer: "Rusting",
-      correctAnswer: "Rusting",
-      isCorrect: true,
-      topic: "Living Things",
-    },
-    {
-      id: 2,
-      text: "The process by which green plants make their own food is called:",
-      yourAnswer: "Photosynthesis",
-      correctAnswer: "Photosynthesis",
-      isCorrect: true,
-      topic: "Living Things",
-    },
-    {
-      id: 3,
-      text: "Which gas is needed for photosynthesis to take place?",
-      yourAnswer: "Oxygen",
-      correctAnswer: "Carbon dioxide",
-      isCorrect: false,
-      topic: "Living Things",
-      explanation: "Plants need carbon dioxide (CO2) from the air to perform photosynthesis. They release oxygen as a byproduct.",
-    },
-    {
-      id: 4,
-      text: "The basic unit of life is the:",
-      yourAnswer: "Cell",
-      correctAnswer: "Cell",
-      isCorrect: true,
-      topic: "Living Things",
-    },
-    {
-      id: 5,
-      text: "Which of these is a renewable source of energy?",
-      yourAnswer: "Solar energy",
-      correctAnswer: "Solar energy",
-      isCorrect: true,
-      topic: "Energy & Forces",
-    },
-    {
-      id: 6,
-      text: "The force that pulls objects towards the center of the Earth is called:",
-      yourAnswer: "Friction",
-      correctAnswer: "Gravity",
-      isCorrect: false,
-      topic: "Energy & Forces",
-      explanation: "Gravity is the force that attracts objects toward the center of the Earth. Friction is a force that opposes motion between surfaces.",
-    },
-  ],
-  classAverage: 72,
-  highestScore: 92,
-  lowestScore: 45,
-}
-
-const pieData = [
-  { name: "Correct", value: resultData.correctAnswers, color: "#10b981" },
-  { name: "Incorrect", value: resultData.incorrectAnswers, color: "#ef4444" },
-]
-
 export default function ResultDetailPage() {
+  const params = useParams<{ id: string }>()
+  const resultData = examResults.find((r) => r.id === Number(params.id))
+
+  if (!resultData) {
+    notFound()
+  }
+
   const percentage = Math.round((resultData.score / resultData.totalMarks) * 100)
 
   return (

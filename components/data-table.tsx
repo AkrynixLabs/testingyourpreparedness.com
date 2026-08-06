@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 
 interface Column<T> {
   key: keyof T | string
@@ -47,6 +47,8 @@ export function DataTable<T extends Record<string, unknown>>({
   const [search, setSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(initialPageSize)
+  const [sortKey, setSortKey] = useState<keyof T | string | null>(null)
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
 
   // Filter data based on search
   const filteredData = searchKey
@@ -59,10 +61,31 @@ export function DataTable<T extends Record<string, unknown>>({
       })
     : data
 
+  // Sort data
+  const sortedData = sortKey
+    ? [...filteredData].sort((a, b) => {
+        const aValue = a[sortKey as keyof T]
+        const bValue = b[sortKey as keyof T]
+        if (aValue === bValue) return 0
+        const comparison = aValue > bValue ? 1 : -1
+        return sortDirection === "asc" ? comparison : -comparison
+      })
+    : filteredData
+
+  const handleSort = (column: Column<T>) => {
+    if (!column.sortable) return
+    if (sortKey === column.key) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+    } else {
+      setSortKey(column.key)
+      setSortDirection("asc")
+    }
+  }
+
   // Pagination
-  const totalPages = Math.ceil(filteredData.length / pageSize)
+  const totalPages = Math.ceil(sortedData.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
-  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
+  const paginatedData = sortedData.slice(startIndex, startIndex + pageSize)
 
   return (
     <div className="space-y-4">
@@ -110,8 +133,25 @@ export function DataTable<T extends Record<string, unknown>>({
           <TableHeader>
             <TableRow className="bg-muted/50">
               {columns.map((column) => (
-                <TableHead key={String(column.key)} className="font-semibold">
-                  {column.header}
+                <TableHead
+                  key={String(column.key)}
+                  className={`font-semibold ${column.sortable ? "cursor-pointer select-none" : ""}`}
+                  onClick={() => handleSort(column)}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {column.header}
+                    {column.sortable && (
+                      sortKey === column.key ? (
+                        sortDirection === "asc" ? (
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                      )
+                    )}
+                  </span>
                 </TableHead>
               ))}
               {actions && <TableHead className="font-semibold w-[100px]">Actions</TableHead>}

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { examResults as results } from "@/lib/demo-data"
 import {
   Award,
   TrendingUp,
@@ -14,93 +15,6 @@ import {
   Target,
   FileText,
 } from "lucide-react"
-
-const results = [
-  {
-    id: 1,
-    title: "Mathematics Mock Exam 2",
-    subject: "Mathematics",
-    score: 78,
-    totalMarks: 100,
-    date: "Mar 10, 2026",
-    duration: "1h 45m",
-    rank: 5,
-    totalStudents: 45,
-    correctAnswers: 39,
-    totalQuestions: 50,
-    trend: "up",
-  },
-  {
-    id: 2,
-    title: "Social Studies Practice Test",
-    subject: "Social Studies",
-    score: 65,
-    totalMarks: 80,
-    date: "Mar 8, 2026",
-    duration: "1h 20m",
-    rank: 12,
-    totalStudents: 45,
-    correctAnswers: 26,
-    totalQuestions: 40,
-    trend: "down",
-  },
-  {
-    id: 3,
-    title: "ICT Assessment",
-    subject: "ICT",
-    score: 42,
-    totalMarks: 50,
-    date: "Mar 5, 2026",
-    duration: "50m",
-    rank: 3,
-    totalStudents: 45,
-    correctAnswers: 21,
-    totalQuestions: 25,
-    trend: "up",
-  },
-  {
-    id: 4,
-    title: "English Language Test 2",
-    subject: "English",
-    score: 72,
-    totalMarks: 100,
-    date: "Mar 2, 2026",
-    duration: "1h 30m",
-    rank: 8,
-    totalStudents: 45,
-    correctAnswers: 36,
-    totalQuestions: 50,
-    trend: "up",
-  },
-  {
-    id: 5,
-    title: "Integrated Science Quiz 4",
-    subject: "Science",
-    score: 85,
-    totalMarks: 100,
-    date: "Feb 28, 2026",
-    duration: "1h",
-    rank: 2,
-    totalStudents: 45,
-    correctAnswers: 34,
-    totalQuestions: 40,
-    trend: "up",
-  },
-  {
-    id: 6,
-    title: "Mathematics Mock Exam 1",
-    subject: "Mathematics",
-    score: 68,
-    totalMarks: 100,
-    date: "Feb 25, 2026",
-    duration: "1h 50m",
-    rank: 10,
-    totalStudents: 45,
-    correctAnswers: 34,
-    totalQuestions: 50,
-    trend: "down",
-  },
-]
 
 const getScoreColor = (percentage: number) => {
   if (percentage >= 80) return "text-emerald-600"

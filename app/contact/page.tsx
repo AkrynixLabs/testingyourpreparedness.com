@@ -47,9 +47,19 @@ const faqs = [
   },
 ]
 
+const initialContactForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  role: "",
+  subject: "",
+  message: "",
+}
+
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState(initialContactForm)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +71,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <PublicHeader />
       
       <main className="flex-1">
@@ -135,20 +145,39 @@ export default function ContactPage() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
-                          <Input id="firstName" placeholder="Your first name" required />
+                          <Input
+                            id="firstName"
+                            placeholder="Your first name"
+                            value={form.firstName}
+                            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                            required
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
-                          <Input id="lastName" placeholder="Your last name" required />
+                          <Input
+                            id="lastName"
+                            placeholder="Your last name"
+                            value={form.lastName}
+                            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                            required
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="you@example.com" required />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          required
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="role">I am a...</Label>
-                        <Select>
+                        <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select your role" />
                           </SelectTrigger>
@@ -163,7 +192,7 @@ export default function ContactPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="subject">Subject</Label>
-                        <Select>
+                        <Select value={form.subject} onValueChange={(value) => setForm({ ...form, subject: value })}>
                           <SelectTrigger>
                             <SelectValue placeholder="What is this about?" />
                           </SelectTrigger>
@@ -182,6 +211,8 @@ export default function ContactPage() {
                           id="message"
                           placeholder="How can we help you?"
                           rows={5}
+                          value={form.message}
+                          onChange={(e) => setForm({ ...form, message: e.target.value })}
                           required
                         />
                       </div>
@@ -205,7 +236,13 @@ export default function ContactPage() {
                       <p className="text-muted-foreground mb-4">
                         Thank you for reaching out. We will get back to you within 24 hours.
                       </p>
-                      <Button variant="outline" onClick={() => setSubmitted(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setForm(initialContactForm)
+                          setSubmitted(false)
+                        }}
+                      >
                         Send Another Message
                       </Button>
                     </div>

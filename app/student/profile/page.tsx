@@ -9,13 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
+import { achievements } from "@/lib/demo-data"
 import {
   Camera,
   Save,
   Trophy,
   Target,
   Flame,
-  Star,
   Award,
   BookOpen,
   Clock,
@@ -28,15 +28,6 @@ import {
   Edit2,
   CheckCircle2,
 } from "lucide-react"
-
-const achievements = [
-  { name: "Top Performer", description: "Achieved 90%+ in 5 exams", icon: Star, earned: true, date: "Mar 2024" },
-  { name: "Perfect Score", description: "Got 100% on any exam", icon: Trophy, earned: true, date: "Feb 2024" },
-  { name: "Study Streak", description: "7-day study streak", icon: Flame, earned: true, date: "Mar 2024" },
-  { name: "Subject Master", description: "Top 3 in Mathematics", icon: Target, earned: true, date: "Mar 2024" },
-  { name: "Consistency King", description: "Complete 20 exams", icon: Award, earned: true, date: "Jan 2024" },
-  { name: "National Star", description: "Top 100 nationally", icon: Trophy, earned: false, progress: 65 },
-]
 
 const recentActivity = [
   { type: "exam", title: "Mathematics Mock Exam", result: "92%", date: "2 hours ago", status: "passed" },
@@ -54,9 +45,18 @@ const subjectProgress = [
   { subject: "ICT", score: 91, exams: 8, rank: 2 },
 ]
 
+const initialProfileForm = {
+  firstName: "Kwame",
+  lastName: "Asante",
+  email: "kwame.asante@student.edu.gh",
+  phone: "+233 24 123 4567",
+  bio: "Passionate about learning and striving to be the best in Mathematics and ICT.",
+}
+
 export default function StudentProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [profileForm, setProfileForm] = useState(initialProfileForm)
 
   const handleSave = () => {
     setSaving(true)
@@ -64,6 +64,11 @@ export default function StudentProfilePage() {
       setSaving(false)
       setIsEditing(false)
     }, 1500)
+  }
+
+  const handleCancel = () => {
+    setProfileForm(initialProfileForm)
+    setIsEditing(false)
   }
 
   return (
@@ -80,7 +85,7 @@ export default function StudentProfilePage() {
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
               {saving ? "Saving..." : "Save Changes"}
@@ -109,7 +114,7 @@ export default function StudentProfilePage() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-bold">Kwame Asante</h2>
+                      <h2 className="text-2xl font-bold">{profileForm.firstName} {profileForm.lastName}</h2>
                       <Badge className="bg-emerald-500/10 text-emerald-600">Active</Badge>
                     </div>
                     <p className="text-muted-foreground">Student ID: STU-2024-00542</p>
@@ -211,26 +216,48 @@ export default function StudentProfilePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue="Kwame" />
+                    <Input
+                      id="firstName"
+                      value={profileForm.firstName}
+                      onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue="Asante" />
+                    <Input
+                      id="lastName"
+                      value={profileForm.lastName}
+                      onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+                    />
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue="kwame.asante@student.edu.gh" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" defaultValue="+233 24 123 4567" />
+                    <Input
+                      id="phone"
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" placeholder="Tell us a bit about yourself..." defaultValue="Passionate about learning and striving to be the best in Mathematics and ICT." />
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell us a bit about yourself..."
+                    value={profileForm.bio}
+                    onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -272,11 +299,11 @@ export default function StudentProfilePage() {
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">kwame.asante@student.edu.gh</span>
+                <span className="text-sm">{profileForm.email}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">+233 24 123 4567</span>
+                <span className="text-sm">{profileForm.phone}</span>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -310,7 +337,9 @@ export default function StudentProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Achievements</CardTitle>
-              <CardDescription>5 of 6 badges earned</CardDescription>
+              <CardDescription>
+                {achievements.filter((a) => a.earned).length} of {achievements.length} badges earned
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {achievements.map((achievement) => (

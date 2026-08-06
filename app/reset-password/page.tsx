@@ -1,16 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { GraduationCap, Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { GraduationCap, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react"
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  )
+}
+
+function ResetPasswordForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -37,7 +47,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="marketing min-h-screen flex flex-col bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center">
@@ -53,7 +63,24 @@ export default function ResetPasswordPage() {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {!success ? (
+          {!token ? (
+            <Card>
+              <CardHeader className="text-center">
+                <div className="mx-auto h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500" />
+                </div>
+                <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
+                <CardDescription>
+                  This password reset link is missing or invalid. Please request a new one.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/forgot-password">
+                  <Button className="w-full">Request New Link</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : !success ? (
             <Card>
               <CardHeader className="text-center">
                 <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
