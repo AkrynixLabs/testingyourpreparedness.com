@@ -8,7 +8,7 @@ import { subscriptionPlans } from "@/lib/demo-data"
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <PublicHeader />
       
       <main className="flex-1">

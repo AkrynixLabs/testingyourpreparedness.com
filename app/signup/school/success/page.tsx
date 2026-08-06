@@ -15,7 +15,7 @@ import {
 
 export default function SchoolRegistrationSuccessPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="marketing min-h-screen bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center">

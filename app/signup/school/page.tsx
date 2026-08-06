@@ -48,7 +48,7 @@ const regions = [
   "Savannah",
 ]
 
-const schoolTypes = [
+const ownershipTypes = [
   { value: "public", label: "Public School" },
   { value: "private", label: "Private School" },
   { value: "international", label: "International School" },
@@ -114,7 +114,7 @@ export default function SchoolRegistrationPage() {
   const [formData, setFormData] = useState({
     // School Information
     schoolName: "",
-    schoolType: "",
+    ownershipType: "",
     registrationNumber: "",
     yearEstablished: "",
     website: "",
@@ -183,7 +183,7 @@ export default function SchoolRegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="marketing min-h-screen bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -244,13 +244,13 @@ export default function SchoolRegistrationPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="schoolType">School Type *</Label>
-                    <Select value={formData.schoolType} onValueChange={(v) => updateFormData("schoolType", v)}>
+                    <Label htmlFor="ownershipType">Ownership Type *</Label>
+                    <Select value={formData.ownershipType} onValueChange={(v) => updateFormData("ownershipType", v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select school type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {schoolTypes.map((type) => (
+                        {ownershipTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.label}
                           </SelectItem>

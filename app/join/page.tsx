@@ -72,7 +72,7 @@ export default function JoinSchoolPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-muted/30">
+    <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <header className="p-4">
         <Link href="/signup/student" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />

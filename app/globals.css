@@ -115,6 +115,8 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-emerald: var(--emerald);
+  --color-emerald-foreground: var(--emerald-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -135,5 +137,78 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/*
+  Marketing theme — scoped to the public/homepage surface via the `.marketing`
+  class. Deliberately does NOT override background/foreground/primary/border —
+  those stay whatever the root light theme already defines (white surfaces,
+  dark text, brand blue), matching every other page. This block only adds
+  a livelier chart-color set for category tiles, plus texture/motion utilities.
+  Never touch the root/.dark tokens above; those drive every authenticated
+  dashboard and must stay untouched.
+*/
+.marketing {
+  --emerald: #16a34a;
+  --emerald-foreground: #ffffff;
+  --chart-1: #2563eb;
+  --chart-2: #16a34a;
+  --chart-3: #7c3aed;
+  --chart-4: #ea580c;
+  --chart-5: #db2777;
+}
+
+/* Scantron-style bubble grid — a nod to the answer sheets every exam track shares */
+.marketing .bg-scantron {
+  background-image: radial-gradient(circle, color-mix(in oklch, var(--foreground) 14%, transparent) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Subtle film-grain texture so flat dark sections don't read as a solid color fill */
+.marketing .bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+@keyframes marketing-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.marketing .animate-float {
+  animation: marketing-float 5s ease-in-out infinite;
+}
+.marketing .animate-float-delayed {
+  animation: marketing-float 5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes marketing-glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+}
+.marketing .animate-glow-pulse {
+  animation: marketing-glow-pulse 4s ease-in-out infinite;
+}
+
+.marketing .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.marketing .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing .animate-float,
+  .marketing .animate-float-delayed,
+  .marketing .animate-glow-pulse {
+    animation: none;
+  }
+  .marketing .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
