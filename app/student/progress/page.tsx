@@ -1,5 +1,6 @@
 "use client"
 
+import { achievements } from "@/lib/demo-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -55,13 +56,6 @@ const radarData = subjectProgress.map((s) => ({
   target: s.target,
 }))
 
-const achievements = [
-  { name: "Perfect Score", description: "Scored 100% on an exam", earned: true, date: "Feb 15, 2026" },
-  { name: "Study Streak", description: "7-day study streak", earned: true, date: "Mar 10, 2026" },
-  { name: "Top 5", description: "Ranked in top 5 of class", earned: true, date: "Mar 8, 2026" },
-  { name: "Quick Learner", description: "Complete 10 exams in a week", earned: false, progress: 7 },
-  { name: "Subject Master", description: "Score 90%+ in all subjects", earned: false, progress: 2 },
-]
 
 const studyGoals = [
   { goal: "Complete 5 Math practice exams", progress: 3, total: 5, dueDate: "Mar 25" },
@@ -354,7 +348,7 @@ export default function StudentProgressPage() {
                     {!achievement.earned && achievement.progress !== undefined && (
                       <div className="mt-2">
                         <Progress
-                          value={(achievement.progress / 10) * 100}
+                          value={achievement.progress}
                           className="h-1.5"
                         />
                       </div>

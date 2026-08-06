@@ -42,7 +42,7 @@ const savedPaymentMethods = [
   {
     id: "momo-1",
     type: "mobile_money",
-    provider: "MTN Mobile Money",
+    provider: "MTN MoMo",
     number: "**** 5678",
     isDefault: false,
   },

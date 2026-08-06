@@ -60,7 +60,7 @@ interface Assessment {
   questionCount: number
   duration: number
   difficulty: "Easy" | "Medium" | "Hard" | "Mixed"
-  status: "draft" | "published" | "archived"
+  status: "draft" | "pending" | "published" | "archived"
   timesAssigned: number
   avgScore: number | null
   createdBy: string
@@ -126,6 +126,20 @@ const assessments: Assessment[] = [
     updatedAt: "2024-01-15"
   },
   {
+    id: "7",
+    title: "Mathematics Practice Set B",
+    subject: "Mathematics",
+    questionCount: 35,
+    duration: 60,
+    difficulty: "Medium",
+    status: "pending",
+    timesAssigned: 0,
+    avgScore: null,
+    createdBy: "Kofi Mensah",
+    createdAt: "2024-01-16",
+    updatedAt: "2024-01-16"
+  },
+  {
     id: "5",
     title: "RME Weekly Quiz - Week 3",
     subject: "RME",
@@ -173,6 +187,7 @@ export default function AssessmentsPage() {
     total: assessments.length,
     published: assessments.filter(a => a.status === "published").length,
     draft: assessments.filter(a => a.status === "draft").length,
+    pending: assessments.filter(a => a.status === "pending").length,
     totalQuestions: assessments.reduce((sum, a) => sum + a.questionCount, 0)
   }
 
@@ -191,6 +206,8 @@ export default function AssessmentsPage() {
     switch (status) {
       case "published":
         return "default"
+      case "pending":
+        return "secondary"
       case "draft":
         return "secondary"
       case "archived":
@@ -204,6 +221,8 @@ export default function AssessmentsPage() {
     switch (status) {
       case "published":
         return <CheckCircle2 className="h-3 w-3" />
+      case "pending":
+        return <Clock className="h-3 w-3" />
       case "draft":
         return <AlertCircle className="h-3 w-3" />
       case "archived":
@@ -230,7 +249,7 @@ export default function AssessmentsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -266,6 +285,19 @@ export default function AssessmentsPage() {
               <div>
                 <p className="text-2xl font-bold">{stats.draft}</p>
                 <p className="text-sm text-muted-foreground">Drafts</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.pending}</p>
+                <p className="text-sm text-muted-foreground">Pending Review</p>
               </div>
             </div>
           </CardContent>
@@ -321,6 +353,7 @@ export default function AssessmentsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="pending">Pending Review</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
@@ -422,8 +455,8 @@ export default function AssessmentsPage() {
                           <DropdownMenuSeparator />
                           {assessment.status === "draft" && (
                             <DropdownMenuItem>
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Publish
+                              <Clock className="h-4 w-4 mr-2" />
+                              Submit for Review
                             </DropdownMenuItem>
                           )}
                           {assessment.status === "published" && (

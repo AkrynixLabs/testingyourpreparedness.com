@@ -36,13 +36,13 @@ const plans = [
   {
     id: "starter",
     name: "Starter",
-    monthlyPrice: 100,
-    yearlyPrice: 960,
+    monthlyPrice: 150,
+    yearlyPrice: 1440,
     currency: "GHS",
-    studentLimit: 50,
+    studentLimit: 100,
     description: "Perfect for small schools getting started",
     features: [
-      "Up to 50 students",
+      "Up to 100 students",
       "Basic assessments",
       "Standard reports",
       "Email support",
@@ -54,13 +54,13 @@ const plans = [
   {
     id: "professional",
     name: "Professional",
-    monthlyPrice: 250,
-    yearlyPrice: 2400,
+    monthlyPrice: 350,
+    yearlyPrice: 3360,
     currency: "GHS",
-    studentLimit: 200,
+    studentLimit: 500,
     description: "Ideal for growing schools with more needs",
     features: [
-      "Up to 200 students",
+      "Up to 500 students",
       "Unlimited assessments",
       "Detailed analytics",
       "Priority support",
@@ -74,13 +74,13 @@ const plans = [
   {
     id: "enterprise",
     name: "Enterprise",
-    monthlyPrice: 500,
-    yearlyPrice: 4800,
+    monthlyPrice: 750,
+    yearlyPrice: 7200,
     currency: "GHS",
-    studentLimit: 500,
+    studentLimit: -1,
     description: "For large institutions with advanced requirements",
     features: [
-      "Up to 500 students",
+      "Unlimited students",
       "Unlimited everything",
       "Advanced analytics",
       "Dedicated account manager",
@@ -98,7 +98,7 @@ const plans = [
 const currentPlan = {
   id: "professional",
   name: "Professional",
-  price: 250,
+  price: 350,
   billingCycle: "monthly" as "monthly" | "yearly",
 }
 
@@ -234,7 +234,7 @@ export default function UpgradePage() {
                     )}
                     <div className="flex items-center justify-center gap-1 mt-2 text-sm text-muted-foreground">
                       <Users className="h-4 w-4" />
-                      Up to {plan.studentLimit} students
+                      {plan.studentLimit === -1 ? "Unlimited" : `Up to ${plan.studentLimit}`} students
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-4">

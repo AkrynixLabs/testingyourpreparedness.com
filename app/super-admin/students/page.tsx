@@ -64,14 +64,14 @@ import {
 
 // Demo data
 const allStudents = [
-  { id: "S001", name: "Kwame Asante", email: "kwame.asante@gmail.com", type: "school", school: "Presec Legon", form: "JHS 3", registeredDate: "2025-01-15", lastActive: "2 hours ago", examsCompleted: 24, avgScore: 78, status: "active" },
-  { id: "S002", name: "Akua Mensah", email: "akua.m@gmail.com", type: "school", school: "Wesley Girls", form: "JHS 2", registeredDate: "2025-02-01", lastActive: "1 day ago", examsCompleted: 18, avgScore: 85, status: "active" },
-  { id: "S003", name: "Kofi Owusu", email: "kofi.owusu@yahoo.com", type: "independent", school: null, form: "JHS 3", registeredDate: "2025-01-20", lastActive: "5 mins ago", examsCompleted: 32, avgScore: 72, status: "active" },
-  { id: "S004", name: "Abena Darko", email: "abena.d@gmail.com", type: "independent", school: null, form: "JHS 1", registeredDate: "2025-03-05", lastActive: "3 days ago", examsCompleted: 8, avgScore: 68, status: "active" },
-  { id: "S005", name: "Yaw Boateng", email: "yaw.boat@outlook.com", type: "school", school: "Achimota School", form: "JHS 3", registeredDate: "2024-11-10", lastActive: "1 week ago", examsCompleted: 45, avgScore: 81, status: "inactive" },
-  { id: "S006", name: "Esi Ampong", email: "esi.amp@gmail.com", type: "school", school: "Holy Child", form: "JHS 2", registeredDate: "2025-02-14", lastActive: "30 mins ago", examsCompleted: 15, avgScore: 88, status: "active" },
-  { id: "S007", name: "Kweku Frimpong", email: "kweku.f@gmail.com", type: "independent", school: null, form: "JHS 3", registeredDate: "2025-01-08", lastActive: "2 days ago", examsCompleted: 28, avgScore: 75, status: "active" },
-  { id: "S008", name: "Adwoa Sarpong", email: "adwoa.s@yahoo.com", type: "school", school: "Mfantsipim", form: "JHS 1", registeredDate: "2025-03-01", lastActive: "Never", examsCompleted: 0, avgScore: 0, status: "pending" },
+  { id: "S001", name: "Kwame Asante", email: "kwame.asante@gmail.com", type: "school", school: "Presec Legon", form: "Form 3", registeredDate: "2025-01-15", lastActive: "2 hours ago", examsCompleted: 24, avgScore: 78, status: "active" },
+  { id: "S002", name: "Akua Mensah", email: "akua.m@gmail.com", type: "school", school: "Wesley Girls", form: "Form 2", registeredDate: "2025-02-01", lastActive: "1 day ago", examsCompleted: 18, avgScore: 85, status: "active" },
+  { id: "S003", name: "Kofi Owusu", email: "kofi.owusu@yahoo.com", type: "independent", school: null, form: "Form 3", registeredDate: "2025-01-20", lastActive: "5 mins ago", examsCompleted: 32, avgScore: 72, status: "active" },
+  { id: "S004", name: "Abena Darko", email: "abena.d@gmail.com", type: "independent", school: null, form: "Form 1", registeredDate: "2025-03-05", lastActive: "3 days ago", examsCompleted: 8, avgScore: 68, status: "active" },
+  { id: "S005", name: "Yaw Boateng", email: "yaw.boat@outlook.com", type: "school", school: "Achimota School", form: "Form 3", registeredDate: "2024-11-10", lastActive: "1 week ago", examsCompleted: 45, avgScore: 81, status: "inactive" },
+  { id: "S006", name: "Esi Ampong", email: "esi.amp@gmail.com", type: "school", school: "Holy Child", form: "Form 2", registeredDate: "2025-02-14", lastActive: "30 mins ago", examsCompleted: 15, avgScore: 88, status: "active" },
+  { id: "S007", name: "Kweku Frimpong", email: "kweku.f@gmail.com", type: "independent", school: null, form: "Form 3", registeredDate: "2025-01-08", lastActive: "2 days ago", examsCompleted: 28, avgScore: 75, status: "active" },
+  { id: "S008", name: "Adwoa Sarpong", email: "adwoa.s@yahoo.com", type: "school", school: "Mfantsipim", form: "Form 1", registeredDate: "2025-03-01", lastActive: "Never", examsCompleted: 0, avgScore: 0, status: "pending" },
 ]
 
 const registrationTrend = [
@@ -101,9 +101,9 @@ const regionDistribution = [
 ]
 
 const formDistribution = [
-  { form: "JHS 1", count: 12400, percentage: 27 },
-  { form: "JHS 2", count: 15800, percentage: 35 },
-  { form: "JHS 3", count: 17480, percentage: 38 },
+  { form: "Form 1", count: 12400, percentage: 27 },
+  { form: "Form 2", count: 15800, percentage: 35 },
+  { form: "Form 3", count: 17480, percentage: 38 },
 ]
 
 export default function StudentsPage() {
@@ -301,7 +301,7 @@ export default function StudentsPage() {
             <Card className="border-border/50">
               <CardHeader>
                 <CardTitle className="text-lg">Distribution by Form</CardTitle>
-                <CardDescription>Student count per JHS level</CardDescription>
+                <CardDescription>Student count per form</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -398,9 +398,9 @@ export default function StudentsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Forms</SelectItem>
-                      <SelectItem value="JHS 1">JHS 1</SelectItem>
-                      <SelectItem value="JHS 2">JHS 2</SelectItem>
-                      <SelectItem value="JHS 3">JHS 3</SelectItem>
+                      <SelectItem value="Form 1">Form 1</SelectItem>
+                      <SelectItem value="Form 2">Form 2</SelectItem>
+                      <SelectItem value="Form 3">Form 3</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={dateRange} onValueChange={setDateRange}>

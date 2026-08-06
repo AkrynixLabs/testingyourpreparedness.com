@@ -13,10 +13,10 @@ export function PublicFooter() {
               <span className="font-bold text-xl tracking-tight">TYP</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Testing Your Preparedness - Ghana&apos;s premier BECE exam preparation platform.
+              Testing Your Preparedness — Ghana&apos;s all-in-one platform for BECE, WASSCE, nursing, university entrance exam prep, and digital skills.
             </p>
             <p className="text-xs text-muted-foreground">
-              Empowering students across Ghana to achieve academic excellence.
+              Empowering students across Ghana to achieve academic and career excellence.
             </p>
           </div>
 

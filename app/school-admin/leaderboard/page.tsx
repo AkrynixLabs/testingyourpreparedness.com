@@ -40,40 +40,40 @@ import {
 
 // School-wide student leaderboard
 const schoolLeaderboard = [
-  { rank: 1, name: "Ama Serwaa", class: "JHS 3A", score: 92.5, exams: 24, streak: 15, change: 0 },
-  { rank: 2, name: "Emmanuel Tetteh", class: "JHS 3B", score: 91.8, exams: 24, streak: 12, change: 1 },
-  { rank: 3, name: "Grace Asiedu", class: "JHS 3C", score: 90.2, exams: 23, streak: 18, change: 2 },
-  { rank: 4, name: "Daniel Owusu", class: "JHS 3A", score: 89.5, exams: 24, streak: 9, change: -2 },
-  { rank: 5, name: "Kofi Mensah", class: "JHS 3A", score: 89.2, exams: 24, streak: 11, change: 0 },
-  { rank: 6, name: "Abena Osei", class: "JHS 3B", score: 87.8, exams: 23, streak: 8, change: 1 },
-  { rank: 7, name: "Yaw Boateng", class: "JHS 2A", score: 85.4, exams: 22, streak: 10, change: 3 },
-  { rank: 8, name: "Kwame Asante", class: "JHS 3A", score: 84.1, exams: 24, streak: 7, change: -1 },
-  { rank: 9, name: "Efua Darko", class: "JHS 2B", score: 82.9, exams: 21, streak: 5, change: 0 },
-  { rank: 10, name: "Nana Adjei", class: "JHS 3C", score: 81.5, exams: 24, streak: 6, change: 2 },
+  { rank: 1, name: "Ama Serwaa", class: "Form 3A", score: 92.5, exams: 24, streak: 15, change: 0 },
+  { rank: 2, name: "Emmanuel Tetteh", class: "Form 3B", score: 91.8, exams: 24, streak: 12, change: 1 },
+  { rank: 3, name: "Grace Asiedu", class: "Form 3C", score: 90.2, exams: 23, streak: 18, change: 2 },
+  { rank: 4, name: "Daniel Owusu", class: "Form 3A", score: 89.5, exams: 24, streak: 9, change: -2 },
+  { rank: 5, name: "Kofi Mensah", class: "Form 3A", score: 89.2, exams: 24, streak: 11, change: 0 },
+  { rank: 6, name: "Abena Osei", class: "Form 3B", score: 87.8, exams: 23, streak: 8, change: 1 },
+  { rank: 7, name: "Yaw Boateng", class: "Form 2A", score: 85.4, exams: 22, streak: 10, change: 3 },
+  { rank: 8, name: "Kwame Asante", class: "Form 3A", score: 84.1, exams: 24, streak: 7, change: -1 },
+  { rank: 9, name: "Efua Darko", class: "Form 2B", score: 82.9, exams: 21, streak: 5, change: 0 },
+  { rank: 10, name: "Nana Adjei", class: "Form 3C", score: 81.5, exams: 24, streak: 6, change: 2 },
 ]
 
 // Class leaderboards
 const classLeaderboards: Record<string, typeof schoolLeaderboard> = {
-  "JHS 3A": [
-    { rank: 1, name: "Ama Serwaa", class: "JHS 3A", score: 92.5, exams: 24, streak: 15, change: 0 },
-    { rank: 2, name: "Kofi Mensah", class: "JHS 3A", score: 89.2, exams: 24, streak: 11, change: 1 },
-    { rank: 3, name: "Daniel Owusu", class: "JHS 3A", score: 89.5, exams: 24, streak: 9, change: -1 },
-    { rank: 4, name: "Kwame Asante", class: "JHS 3A", score: 84.1, exams: 24, streak: 7, change: 0 },
-    { rank: 5, name: "Akua Mensah", class: "JHS 3A", score: 79.8, exams: 23, streak: 4, change: 2 },
+  "Form 3A": [
+    { rank: 1, name: "Ama Serwaa", class: "Form 3A", score: 92.5, exams: 24, streak: 15, change: 0 },
+    { rank: 2, name: "Kofi Mensah", class: "Form 3A", score: 89.2, exams: 24, streak: 11, change: 1 },
+    { rank: 3, name: "Daniel Owusu", class: "Form 3A", score: 89.5, exams: 24, streak: 9, change: -1 },
+    { rank: 4, name: "Kwame Asante", class: "Form 3A", score: 84.1, exams: 24, streak: 7, change: 0 },
+    { rank: 5, name: "Akua Mensah", class: "Form 3A", score: 79.8, exams: 23, streak: 4, change: 2 },
   ],
-  "JHS 3B": [
-    { rank: 1, name: "Emmanuel Tetteh", class: "JHS 3B", score: 91.8, exams: 24, streak: 12, change: 0 },
-    { rank: 2, name: "Abena Osei", class: "JHS 3B", score: 87.8, exams: 23, streak: 8, change: 0 },
-    { rank: 3, name: "Kwesi Appiah", class: "JHS 3B", score: 78.2, exams: 21, streak: 3, change: 1 },
-    { rank: 4, name: "Adwoa Kumi", class: "JHS 3B", score: 76.5, exams: 24, streak: 9, change: -1 },
-    { rank: 5, name: "Yaw Mensah", class: "JHS 3B", score: 74.2, exams: 22, streak: 2, change: 0 },
+  "Form 3B": [
+    { rank: 1, name: "Emmanuel Tetteh", class: "Form 3B", score: 91.8, exams: 24, streak: 12, change: 0 },
+    { rank: 2, name: "Abena Osei", class: "Form 3B", score: 87.8, exams: 23, streak: 8, change: 0 },
+    { rank: 3, name: "Kwesi Appiah", class: "Form 3B", score: 78.2, exams: 21, streak: 3, change: 1 },
+    { rank: 4, name: "Adwoa Kumi", class: "Form 3B", score: 76.5, exams: 24, streak: 9, change: -1 },
+    { rank: 5, name: "Yaw Mensah", class: "Form 3B", score: 74.2, exams: 22, streak: 2, change: 0 },
   ],
-  "JHS 3C": [
-    { rank: 1, name: "Grace Asiedu", class: "JHS 3C", score: 90.2, exams: 23, streak: 18, change: 0 },
-    { rank: 2, name: "Nana Adjei", class: "JHS 3C", score: 81.5, exams: 24, streak: 6, change: 1 },
-    { rank: 3, name: "Esi Boateng", class: "JHS 3C", score: 79.3, exams: 22, streak: 5, change: 0 },
-    { rank: 4, name: "Kofi Asante", class: "JHS 3C", score: 77.8, exams: 23, streak: 4, change: 2 },
-    { rank: 5, name: "Ama Darko", class: "JHS 3C", score: 75.1, exams: 21, streak: 3, change: -2 },
+  "Form 3C": [
+    { rank: 1, name: "Grace Asiedu", class: "Form 3C", score: 90.2, exams: 23, streak: 18, change: 0 },
+    { rank: 2, name: "Nana Adjei", class: "Form 3C", score: 81.5, exams: 24, streak: 6, change: 1 },
+    { rank: 3, name: "Esi Boateng", class: "Form 3C", score: 79.3, exams: 22, streak: 5, change: 0 },
+    { rank: 4, name: "Kofi Asante", class: "Form 3C", score: 77.8, exams: 23, streak: 4, change: 2 },
+    { rank: 5, name: "Ama Darko", class: "Form 3C", score: 75.1, exams: 21, streak: 3, change: -2 },
   ],
 }
 
@@ -82,9 +82,9 @@ const subjectLeaderboards = [
   {
     subject: "Mathematics",
     topStudents: [
-      { rank: 1, name: "Ama Serwaa", class: "JHS 3A", score: 96.5 },
-      { rank: 2, name: "Emmanuel Tetteh", class: "JHS 3B", score: 94.2 },
-      { rank: 3, name: "Grace Asiedu", class: "JHS 3C", score: 92.8 },
+      { rank: 1, name: "Ama Serwaa", class: "Form 3A", score: 96.5 },
+      { rank: 2, name: "Emmanuel Tetteh", class: "Form 3B", score: 94.2 },
+      { rank: 3, name: "Grace Asiedu", class: "Form 3C", score: 92.8 },
     ],
     classAvg: 72.5,
     schoolAvg: 68.5,
@@ -92,9 +92,9 @@ const subjectLeaderboards = [
   {
     subject: "English Language",
     topStudents: [
-      { rank: 1, name: "Grace Asiedu", class: "JHS 3C", score: 95.3 },
-      { rank: 2, name: "Ama Serwaa", class: "JHS 3A", score: 93.7 },
-      { rank: 3, name: "Abena Osei", class: "JHS 3B", score: 91.2 },
+      { rank: 1, name: "Grace Asiedu", class: "Form 3C", score: 95.3 },
+      { rank: 2, name: "Ama Serwaa", class: "Form 3A", score: 93.7 },
+      { rank: 3, name: "Abena Osei", class: "Form 3B", score: 91.2 },
     ],
     classAvg: 74.8,
     schoolAvg: 70.2,
@@ -102,9 +102,9 @@ const subjectLeaderboards = [
   {
     subject: "Integrated Science",
     topStudents: [
-      { rank: 1, name: "Emmanuel Tetteh", class: "JHS 3B", score: 94.8 },
-      { rank: 2, name: "Daniel Owusu", class: "JHS 3A", score: 93.1 },
-      { rank: 3, name: "Kofi Mensah", class: "JHS 3A", score: 91.5 },
+      { rank: 1, name: "Emmanuel Tetteh", class: "Form 3B", score: 94.8 },
+      { rank: 2, name: "Daniel Owusu", class: "Form 3A", score: 93.1 },
+      { rank: 3, name: "Kofi Mensah", class: "Form 3A", score: 91.5 },
     ],
     classAvg: 70.3,
     schoolAvg: 65.8,
@@ -112,9 +112,9 @@ const subjectLeaderboards = [
   {
     subject: "Social Studies",
     topStudents: [
-      { rank: 1, name: "Ama Serwaa", class: "JHS 3A", score: 92.4 },
-      { rank: 2, name: "Grace Asiedu", class: "JHS 3C", score: 90.8 },
-      { rank: 3, name: "Nana Adjei", class: "JHS 3C", score: 88.5 },
+      { rank: 1, name: "Ama Serwaa", class: "Form 3A", score: 92.4 },
+      { rank: 2, name: "Grace Asiedu", class: "Form 3C", score: 90.8 },
+      { rank: 3, name: "Nana Adjei", class: "Form 3C", score: 88.5 },
     ],
     classAvg: 71.2,
     schoolAvg: 68.9,
@@ -122,9 +122,9 @@ const subjectLeaderboards = [
   {
     subject: "ICT",
     topStudents: [
-      { rank: 1, name: "Kofi Mensah", class: "JHS 3A", score: 97.2 },
-      { rank: 2, name: "Emmanuel Tetteh", class: "JHS 3B", score: 95.5 },
-      { rank: 3, name: "Kwame Asante", class: "JHS 3A", score: 94.1 },
+      { rank: 1, name: "Kofi Mensah", class: "Form 3A", score: 97.2 },
+      { rank: 2, name: "Emmanuel Tetteh", class: "Form 3B", score: 95.5 },
+      { rank: 3, name: "Kwame Asante", class: "Form 3A", score: 94.1 },
     ],
     classAvg: 78.5,
     schoolAvg: 74.2,
@@ -133,19 +133,19 @@ const subjectLeaderboards = [
 
 // Class performance comparison
 const classComparison = [
-  { class: "JHS 3A", students: 45, avgScore: 82.4, examsCompleted: 1080, topPerformer: "Ama Serwaa", change: 2.3 },
-  { class: "JHS 3B", students: 42, avgScore: 78.6, examsCompleted: 1008, topPerformer: "Emmanuel Tetteh", change: 1.8 },
-  { class: "JHS 3C", students: 44, avgScore: 76.2, examsCompleted: 968, topPerformer: "Grace Asiedu", change: 3.1 },
-  { class: "JHS 2A", students: 48, avgScore: 74.5, examsCompleted: 912, topPerformer: "Yaw Boateng", change: -0.5 },
-  { class: "JHS 2B", students: 46, avgScore: 72.8, examsCompleted: 874, topPerformer: "Efua Darko", change: 1.2 },
-  { class: "JHS 2C", students: 43, avgScore: 71.3, examsCompleted: 860, topPerformer: "Kwesi Antwi", change: 0.8 },
-  { class: "JHS 1A", students: 50, avgScore: 68.9, examsCompleted: 750, topPerformer: "Akua Mensah", change: 4.2 },
-  { class: "JHS 1B", students: 47, avgScore: 67.5, examsCompleted: 705, topPerformer: "Kofi Darko", change: 2.1 },
+  { class: "Form 3A", students: 45, avgScore: 82.4, examsCompleted: 1080, topPerformer: "Ama Serwaa", change: 2.3 },
+  { class: "Form 3B", students: 42, avgScore: 78.6, examsCompleted: 1008, topPerformer: "Emmanuel Tetteh", change: 1.8 },
+  { class: "Form 3C", students: 44, avgScore: 76.2, examsCompleted: 968, topPerformer: "Grace Asiedu", change: 3.1 },
+  { class: "Form 2A", students: 48, avgScore: 74.5, examsCompleted: 912, topPerformer: "Yaw Boateng", change: -0.5 },
+  { class: "Form 2B", students: 46, avgScore: 72.8, examsCompleted: 874, topPerformer: "Efua Darko", change: 1.2 },
+  { class: "Form 2C", students: 43, avgScore: 71.3, examsCompleted: 860, topPerformer: "Kwesi Antwi", change: 0.8 },
+  { class: "Form 1A", students: 50, avgScore: 68.9, examsCompleted: 750, topPerformer: "Akua Mensah", change: 4.2 },
+  { class: "Form 1B", students: 47, avgScore: 67.5, examsCompleted: 705, topPerformer: "Kofi Darko", change: 2.1 },
 ]
 
 export default function SchoolLeaderboardPage() {
   const [timeframe, setTimeframe] = useState("month")
-  const [selectedClass, setSelectedClass] = useState("JHS 3A")
+  const [selectedClass, setSelectedClass] = useState("Form 3A")
   const [selectedSubject, setSelectedSubject] = useState("all")
 
   const getRankIcon = (rank: number) => {
@@ -228,7 +228,7 @@ export default function SchoolLeaderboardPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Top Performer</p>
                 <p className="text-2xl font-bold">Ama Serwaa</p>
-                <p className="text-xs text-muted-foreground">JHS 3A - 92.5%</p>
+                <p className="text-xs text-muted-foreground">Form 3A - 92.5%</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                 <Crown className="h-5 w-5 text-amber-500" />
@@ -371,11 +371,11 @@ export default function SchoolLeaderboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
-                    { name: "Ama Serwaa", badges: 8, class: "JHS 3A" },
-                    { name: "Emmanuel Tetteh", badges: 7, class: "JHS 3B" },
-                    { name: "Grace Asiedu", badges: 6, class: "JHS 3C" },
-                    { name: "Kofi Mensah", badges: 5, class: "JHS 3A" },
-                    { name: "Daniel Owusu", badges: 5, class: "JHS 3A" },
+                    { name: "Ama Serwaa", badges: 8, class: "Form 3A" },
+                    { name: "Emmanuel Tetteh", badges: 7, class: "Form 3B" },
+                    { name: "Grace Asiedu", badges: 6, class: "Form 3C" },
+                    { name: "Kofi Mensah", badges: 5, class: "Form 3A" },
+                    { name: "Daniel Owusu", badges: 5, class: "Form 3A" },
                   ].map((student, idx) => (
                     <div key={idx} className="flex items-center gap-3">
                       <span className="text-sm font-bold text-muted-foreground w-4">{idx + 1}</span>
@@ -404,11 +404,11 @@ export default function SchoolLeaderboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
-                    { name: "Grace Asiedu", streak: 18, class: "JHS 3C" },
-                    { name: "Ama Serwaa", streak: 15, class: "JHS 3A" },
-                    { name: "Emmanuel Tetteh", streak: 12, class: "JHS 3B" },
-                    { name: "Kofi Mensah", streak: 11, class: "JHS 3A" },
-                    { name: "Yaw Boateng", streak: 10, class: "JHS 2A" },
+                    { name: "Grace Asiedu", streak: 18, class: "Form 3C" },
+                    { name: "Ama Serwaa", streak: 15, class: "Form 3A" },
+                    { name: "Emmanuel Tetteh", streak: 12, class: "Form 3B" },
+                    { name: "Kofi Mensah", streak: 11, class: "Form 3A" },
+                    { name: "Yaw Boateng", streak: 10, class: "Form 2A" },
                   ].map((student, idx) => (
                     <div key={idx} className="flex items-center gap-3">
                       <span className="text-sm font-bold text-muted-foreground w-4">{idx + 1}</span>
@@ -441,9 +441,9 @@ export default function SchoolLeaderboardPage() {
                 <SelectValue placeholder="Select Class" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="JHS 3A">JHS 3A</SelectItem>
-                <SelectItem value="JHS 3B">JHS 3B</SelectItem>
-                <SelectItem value="JHS 3C">JHS 3C</SelectItem>
+                <SelectItem value="Form 3A">Form 3A</SelectItem>
+                <SelectItem value="Form 3B">Form 3B</SelectItem>
+                <SelectItem value="Form 3C">Form 3C</SelectItem>
               </SelectContent>
             </Select>
           </div>

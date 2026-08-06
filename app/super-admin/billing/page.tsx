@@ -307,7 +307,7 @@ export default function SuperAdminBillingPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Starter Plan</CardTitle>
-            <CardDescription>GHS 100/month</CardDescription>
+            <CardDescription>GHS 150/month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
@@ -316,7 +316,7 @@ export default function SuperAdminBillingPage() {
             <p className="text-sm text-muted-foreground">active schools</p>
             <div className="mt-4 text-sm">
               <span className="font-medium">
-                GHS {subscriptions.filter(s => s.plan === "Starter" && s.status === "active").length * 100}
+                GHS {subscriptions.filter(s => s.plan === "Starter" && s.status === "active").length * 150}
               </span>
               <span className="text-muted-foreground"> /month</span>
             </div>
@@ -325,7 +325,7 @@ export default function SuperAdminBillingPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Professional Plan</CardTitle>
-            <CardDescription>GHS 250/month</CardDescription>
+            <CardDescription>GHS 350/month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
@@ -334,7 +334,7 @@ export default function SuperAdminBillingPage() {
             <p className="text-sm text-muted-foreground">active schools</p>
             <div className="mt-4 text-sm">
               <span className="font-medium">
-                GHS {subscriptions.filter(s => s.plan === "Professional" && s.status === "active").length * 250}
+                GHS {subscriptions.filter(s => s.plan === "Professional" && s.status === "active").length * 350}
               </span>
               <span className="text-muted-foreground"> /month</span>
             </div>
@@ -343,7 +343,7 @@ export default function SuperAdminBillingPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Enterprise Plan</CardTitle>
-            <CardDescription>GHS 500/month</CardDescription>
+            <CardDescription>GHS 750/month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
@@ -352,7 +352,7 @@ export default function SuperAdminBillingPage() {
             <p className="text-sm text-muted-foreground">active schools</p>
             <div className="mt-4 text-sm">
               <span className="font-medium">
-                GHS {subscriptions.filter(s => s.plan === "Enterprise" && s.status === "active").length * 500}
+                GHS {subscriptions.filter(s => s.plan === "Enterprise" && s.status === "active").length * 750}
               </span>
               <span className="text-muted-foreground"> /month</span>
             </div>

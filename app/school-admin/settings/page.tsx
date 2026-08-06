@@ -54,7 +54,7 @@ const schoolInfo = {
   phone: "+233 30 222 1234",
   website: "www.achimota.edu.gh",
   address: "Achimota, Accra, Greater Accra Region",
-  type: "Junior High School",
+  educationLevel: "Junior High School",
   established: "1927",
   logo: "/placeholder.svg",
 }
@@ -216,12 +216,12 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="type">School Type</Label>
+                  <Label htmlFor="educationLevel">Education Level</Label>
                   <Select
-                    value={school.type}
-                    onValueChange={(value) => setSchool({ ...school, type: value })}
+                    value={school.educationLevel}
+                    onValueChange={(value) => setSchool({ ...school, educationLevel: value })}
                   >
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="educationLevel">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

@@ -53,8 +53,8 @@ import {
 const classes = [
   {
     id: "1",
-    name: "JHS 1A",
-    form: "JHS 1",
+    name: "Form 1A",
+    form: "Form 1",
     students: 45,
     teacher: "Mr. Emmanuel Adjei",
     academicYear: "2024/2025",
@@ -63,8 +63,8 @@ const classes = [
   },
   {
     id: "2",
-    name: "JHS 1B",
-    form: "JHS 1",
+    name: "Form 1B",
+    form: "Form 1",
     students: 42,
     teacher: "Mrs. Abigail Mensah",
     academicYear: "2024/2025",
@@ -73,8 +73,8 @@ const classes = [
   },
   {
     id: "3",
-    name: "JHS 2A",
-    form: "JHS 2",
+    name: "Form 2A",
+    form: "Form 2",
     students: 40,
     teacher: "Mr. Patrick Owusu",
     academicYear: "2024/2025",
@@ -83,8 +83,8 @@ const classes = [
   },
   {
     id: "4",
-    name: "JHS 2B",
-    form: "JHS 2",
+    name: "Form 2B",
+    form: "Form 2",
     students: 38,
     teacher: "Ms. Grace Asante",
     academicYear: "2024/2025",
@@ -93,8 +93,8 @@ const classes = [
   },
   {
     id: "5",
-    name: "JHS 3A",
-    form: "JHS 3",
+    name: "Form 3A",
+    form: "Form 3",
     students: 44,
     teacher: "Mr. Samuel Boateng",
     academicYear: "2024/2025",
@@ -103,8 +103,8 @@ const classes = [
   },
   {
     id: "6",
-    name: "JHS 3B",
-    form: "JHS 3",
+    name: "Form 3B",
+    form: "Form 3",
     students: 41,
     teacher: "Mrs. Elizabeth Darko",
     academicYear: "2024/2025",
@@ -114,9 +114,9 @@ const classes = [
 ]
 
 const formSummary = [
-  { form: "JHS 1", classes: 2, totalStudents: 87, avgPerformance: 70 },
-  { form: "JHS 2", classes: 2, totalStudents: 78, avgPerformance: 72.5 },
-  { form: "JHS 3", classes: 2, totalStudents: 85, avgPerformance: 76 },
+  { form: "Form 1", classes: 2, totalStudents: 87, avgPerformance: 70 },
+  { form: "Form 2", classes: 2, totalStudents: 78, avgPerformance: 72.5 },
+  { form: "Form 3", classes: 2, totalStudents: 85, avgPerformance: 76 },
 ]
 
 export default function ClassesPage() {
@@ -168,7 +168,7 @@ export default function ClassesPage() {
                 <Label htmlFor="className">Class Name</Label>
                 <Input
                   id="className"
-                  placeholder="e.g., JHS 1C"
+                  placeholder="e.g., Form 1C"
                   value={newClass.name}
                   onChange={(e) => setNewClass({ ...newClass, name: e.target.value })}
                 />
@@ -183,9 +183,9 @@ export default function ClassesPage() {
                     <SelectValue placeholder="Select form" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="JHS 1">JHS 1</SelectItem>
-                    <SelectItem value="JHS 2">JHS 2</SelectItem>
-                    <SelectItem value="JHS 3">JHS 3</SelectItem>
+                    <SelectItem value="Form 1">Form 1</SelectItem>
+                    <SelectItem value="Form 2">Form 2</SelectItem>
+                    <SelectItem value="Form 3">Form 3</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -313,9 +313,9 @@ export default function ClassesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Forms</SelectItem>
-                  <SelectItem value="JHS 1">JHS 1</SelectItem>
-                  <SelectItem value="JHS 2">JHS 2</SelectItem>
-                  <SelectItem value="JHS 3">JHS 3</SelectItem>
+                  <SelectItem value="Form 1">Form 1</SelectItem>
+                  <SelectItem value="Form 2">Form 2</SelectItem>
+                  <SelectItem value="Form 3">Form 3</SelectItem>
                 </SelectContent>
               </Select>
             </div>
