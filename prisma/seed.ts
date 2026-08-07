@@ -10,6 +10,8 @@
  * Run with: npm run db:seed
  */
 
+import net from "node:net"
+import dns from "node:dns"
 import "dotenv/config"
 import bcrypt from "bcryptjs"
 import { neonConfig } from "@neondatabase/serverless"
@@ -20,6 +22,13 @@ import { PrismaClient, Prisma } from "../lib/generated/prisma/client"
 // Neon's serverless driver needs a WebSocket implementation outside
 // edge/browser/Node 22+ runtimes (Node 20 here has no native `WebSocket`).
 neonConfig.webSocketConstructor = ws
+
+// This dev environment has no real IPv6 route - Node's Happy-Eyeballs races
+// IPv4+IPv6 addresses concurrently, and the IPv6 ENETUNREACH failures were
+// observed to make IPv4 attempts time out too. Same fix as lib/prisma.ts -
+// see CLAUDE.md for the full diagnosis.
+net.setDefaultAutoSelectFamily(false)
+dns.setDefaultResultOrder("ipv4first")
 
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
@@ -614,26 +623,57 @@ async function seedExamAttempts(
   const englishAssessment = assessments.find((a) => a.subject === "English Language")
   if (!mathAssessment || !scienceAssessment || !englishAssessment) return
 
+  // correctFraction is applied to the assessment's *actual* attached
+  // questions - with only a handful of real seeded questions per assessment,
+  // exact round-number scores (e.g. "78%") aren't achievable, so this
+  // produces the closest honest approximation instead of a fabricated one.
+  // answers/score/totalMarks/grade are all derived from this, not hardcoded,
+  // so student/results and student/results/[id] have real, consistent,
+  // per-question data to read once wired to Neon.
   const defs = [
-    { student: "Kwame Asante", assessment: mathAssessment, score: 78, totalMarks: 100, grade: "B", submittedAt: "2026-03-10" },
-    { student: "Ama Serwaa", assessment: scienceAssessment, score: 85, totalMarks: 100, grade: "A", submittedAt: "2026-02-28" },
-    { student: "Kofi Mensah", assessment: englishAssessment, score: 72, totalMarks: 100, grade: "B", submittedAt: "2026-03-02" },
-    { student: "Abena Osei", assessment: mathAssessment, score: 68, totalMarks: 100, grade: "C", submittedAt: "2026-02-25" },
+    { student: "Kwame Asante", assessment: mathAssessment, correctFraction: 0.75, submittedAt: "2026-03-10" },
+    { student: "Ama Serwaa", assessment: scienceAssessment, correctFraction: 1, submittedAt: "2026-02-28" },
+    { student: "Kofi Mensah", assessment: englishAssessment, correctFraction: 1, submittedAt: "2026-03-02" },
+    { student: "Abena Osei", assessment: mathAssessment, correctFraction: 0.5, submittedAt: "2026-02-25" },
   ]
 
   for (const def of defs) {
+    const assessmentQuestions = await prisma.assessmentQuestion.findMany({
+      where: { assessmentId: def.assessment.id },
+      include: { question: true },
+      orderBy: { order: "asc" },
+    })
+    if (assessmentQuestions.length === 0) continue
+
+    const numCorrect = Math.round(assessmentQuestions.length * def.correctFraction)
+    const answers: Record<string, number> = {}
+    let score = 0
+    let totalMarks = 0
+    assessmentQuestions.forEach(({ question: q }, index) => {
+      totalMarks += q.marks
+      const options = q.options as string[]
+      if (index < numCorrect) {
+        answers[q.id] = q.correctAnswerIndex
+        score += q.marks
+      } else {
+        answers[q.id] = (q.correctAnswerIndex + 1) % options.length
+      }
+    })
+    const percentage = (score / totalMarks) * 100
+    const grade = percentage >= 80 ? "A" : percentage >= 70 ? "B" : percentage >= 60 ? "C" : percentage >= 50 ? "D" : "F"
+
     const submittedAt = new Date(def.submittedAt)
     await prisma.examAttempt.create({
       data: {
         studentId: students[def.student].id,
         assessmentId: def.assessment.id,
-        answers: {} as unknown as Prisma.InputJsonValue,
+        answers: answers as unknown as Prisma.InputJsonValue,
         flaggedQuestionIds: [] as unknown as Prisma.InputJsonValue,
         startedAt: submittedAt,
         submittedAt,
-        score: def.score,
-        totalMarks: def.totalMarks,
-        grade: def.grade,
+        score,
+        totalMarks,
+        grade,
         timeSpentSeconds: 3600,
       },
     })
