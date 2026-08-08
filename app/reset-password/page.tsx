@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { GraduationCap, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react"
+import { resetPassword } from "./actions"
 
 export default function ResetPasswordPage() {
   return (
@@ -25,6 +26,7 @@ function ResetPasswordForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
@@ -35,15 +37,20 @@ function ResetPasswordForm() {
     { label: "Contains a number", met: /\d/.test(password) },
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password !== confirmPassword) return
+    setError(null)
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await resetPassword(token ?? "", password)
       setSuccess(true)
       setTimeout(() => router.push("/login"), 2000)
-    }, 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset password.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -93,6 +100,11 @@ function ResetPasswordForm() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {error && (
+                    <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                      {error}
+                    </p>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="password">New Password</Label>
                     <div className="relative">

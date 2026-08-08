@@ -6,20 +6,29 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { GraduationCap, Mail, ArrowLeft, CheckCircle2 } from "lucide-react"
+import { GraduationCap, Mail, ArrowLeft, CheckCircle2, KeyRound } from "lucide-react"
+import { requestPasswordReset } from "./actions"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resetUrl, setResetUrl] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const result = await requestPasswordReset(email)
+      setResetUrl(result.resetUrl)
       setSubmitted(true)
-    }, 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to request password reset.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -52,6 +61,11 @@ export default function ForgotPasswordPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {error && (
+                    <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                      {error}
+                    </p>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
                     <Input
@@ -81,14 +95,25 @@ export default function ForgotPasswordPage() {
                 <div className="mx-auto h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
                   <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                 </div>
-                <CardTitle className="text-2xl">Check Your Email</CardTitle>
+                <CardTitle className="text-2xl">Reset Link Generated</CardTitle>
                 <CardDescription>
-                  We have sent a password reset link to <span className="font-medium text-foreground">{email}</span>
+                  A password reset link was generated for <span className="font-medium text-foreground">{email}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                  <p>Did not receive the email? Check your spam folder or try again with a different email address.</p>
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm">
+                  <p className="flex items-center gap-2 font-medium text-amber-700 dark:text-amber-400 mb-2">
+                    <KeyRound className="h-4 w-4" />
+                    No email service is set up yet
+                  </p>
+                  <p className="text-muted-foreground mb-2">
+                    Normally this link would be emailed to you. For now, use it directly:
+                  </p>
+                  {resetUrl && (
+                    <Link href={resetUrl} className="text-primary font-medium hover:underline break-all">
+                      {resetUrl}
+                    </Link>
+                  )}
                 </div>
                 <Button
                   variant="outline"

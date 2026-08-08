@@ -1,35 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import {
-  ArrowLeft,
-  ArrowRight,
-  School,
-  CheckCircle2,
-  AlertCircle,
-  Lock,
-  User,
-  Mail,
-} from "lucide-react"
+import { ArrowLeft, ArrowRight, School, CheckCircle2, AlertCircle, Lock, User, Mail } from "lucide-react"
+import { verifySchoolCode, registerJoinedStudent, type VerifiedSchool } from "./actions"
 
 export default function JoinSchoolPage() {
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [codeVerified, setCodeVerified] = useState(false)
   const [error, setError] = useState("")
-  const [schoolInfo, setSchoolInfo] = useState({
-    name: "",
-    class: "",
-    location: "",
-  })
+  const [school, setSchool] = useState<VerifiedSchool | null>(null)
   const [formData, setFormData] = useState({
     inviteCode: "",
     firstName: "",
@@ -40,41 +28,54 @@ export default function JoinSchoolPage() {
   })
 
   const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleVerifyCode = () => {
-    setLoading(true)
     setError("")
-    
-    // Simulate code verification
-    setTimeout(() => {
-      if (formData.inviteCode.toUpperCase() === "ACHIMOTA2024" || formData.inviteCode.length === 8) {
-        setCodeVerified(true)
-        setSchoolInfo({
-          name: "Achimota Senior High School",
-          class: "JHS 2A",
-          location: "Accra, Greater Accra",
-        })
+    startTransition(async () => {
+      try {
+        const verified = await verifySchoolCode(formData.inviteCode)
+        setSchool(verified)
         setStep(2)
-      } else {
-        setError("Invalid invite code. Please check with your school administrator.")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Invalid invite code.")
       }
-      setLoading(false)
-    }, 1500)
+    })
   }
 
   const handleSubmit = () => {
-    setLoading(true)
-    setTimeout(() => {
-      router.push("/student")
-    }, 2000)
+    setError("")
+    startTransition(async () => {
+      try {
+        const { email, password } = await registerJoinedStudent({
+          schoolCode: formData.inviteCode,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        })
+
+        const result = await signIn("credentials", { email, password, redirect: false })
+        if (result?.error) {
+          setError("Account created, but automatic sign-in failed. Please log in manually.")
+          router.push("/login")
+          return
+        }
+        router.push("/student")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to create account.")
+      }
+    })
   }
 
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <header className="p-4">
-        <Link href="/signup/student" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          href="/signup/student"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to student signup
         </Link>
@@ -91,35 +92,29 @@ export default function JoinSchoolPage() {
             </Link>
             <h1 className="text-2xl font-bold mb-2">Join Your School</h1>
             <p className="text-muted-foreground">
-              {step === 1 
-                ? "Enter the invite code provided by your school" 
-                : "Complete your account setup"
-              }
+              {step === 1 ? "Enter the school code provided by your school" : "Complete your account setup"}
             </p>
           </div>
 
-          {/* Step 1: Enter Code */}
           {step === 1 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <School className="h-5 w-5" />
-                  School Invite Code
+                  School Code
                 </CardTitle>
-                <CardDescription>
-                  Your school administrator should have provided you with an invite code
-                </CardDescription>
+                <CardDescription>Your school administrator should have given you your school&apos;s code</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="inviteCode">Invite Code</Label>
+                  <Label htmlFor="inviteCode">School Code</Label>
                   <Input
                     id="inviteCode"
-                    placeholder="e.g., ACHIMOTA2024"
+                    placeholder="e.g., ACH-001"
                     value={formData.inviteCode}
                     onChange={(e) => updateFormData("inviteCode", e.target.value.toUpperCase())}
                     className="text-center text-lg tracking-widest font-mono"
-                    maxLength={12}
+                    maxLength={20}
                   />
                 </div>
 
@@ -130,18 +125,14 @@ export default function JoinSchoolPage() {
                   </Alert>
                 )}
 
-                <Button 
-                  className="w-full" 
-                  onClick={handleVerifyCode}
-                  disabled={formData.inviteCode.length < 6 || loading}
-                >
-                  {loading ? "Verifying..." : "Verify Code"}
+                <Button className="w-full" onClick={handleVerifyCode} disabled={formData.inviteCode.length < 3 || isPending}>
+                  {isPending ? "Verifying..." : "Verify Code"}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
                 <div className="text-center pt-4 border-t">
                   <p className="text-sm text-muted-foreground">
-                    Don&apos;t have an invite code?{" "}
+                    Don&apos;t have a school code?{" "}
                     <Link href="/signup/independent" className="text-primary hover:underline">
                       Register as an independent student
                     </Link>
@@ -151,10 +142,8 @@ export default function JoinSchoolPage() {
             </Card>
           )}
 
-          {/* Step 2: Create Account */}
-          {step === 2 && (
+          {step === 2 && school && (
             <>
-              {/* School Info */}
               <Card className="mb-4 border-primary/20 bg-primary/5">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
@@ -162,25 +151,29 @@ export default function JoinSchoolPage() {
                       <CheckCircle2 className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">{schoolInfo.name}</p>
+                      <p className="font-medium">{school.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {schoolInfo.class} - {schoolInfo.location}
+                        {school.town}, {school.region}
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Account Form */}
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
                     Create Your Account
                   </CardTitle>
-                  <CardDescription>
-                    Fill in your details to complete registration
-                  </CardDescription>
+                  <CardDescription>Fill in your details to complete registration</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 grid-cols-2">
@@ -217,9 +210,7 @@ export default function JoinSchoolPage() {
                         onChange={(e) => updateFormData("email", e.target.value)}
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Use your personal email or one assigned by your school
-                    </p>
+                    <p className="text-xs text-muted-foreground">Use your personal email or one assigned by your school</p>
                   </div>
 
                   <div className="space-y-2">
@@ -249,29 +240,29 @@ export default function JoinSchoolPage() {
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setStep(1)
-                        setCodeVerified(false)
+                        setSchool(null)
                       }}
                     >
                       <ArrowLeft className="h-4 w-4 mr-2" />
                       Back
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-1"
                       onClick={handleSubmit}
                       disabled={
-                        !formData.firstName || 
-                        !formData.lastName || 
-                        !formData.email || 
+                        !formData.firstName ||
+                        !formData.lastName ||
+                        !formData.email ||
                         !formData.password ||
                         formData.password !== formData.confirmPassword ||
-                        loading
+                        isPending
                       }
                     >
-                      {loading ? "Creating Account..." : "Complete Registration"}
+                      {isPending ? "Creating Account..." : "Complete Registration"}
                     </Button>
                   </div>
                 </CardContent>

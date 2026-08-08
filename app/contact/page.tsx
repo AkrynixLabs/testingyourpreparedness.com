@@ -27,6 +27,7 @@ import {
   Send,
   CheckCircle2,
 } from "lucide-react"
+import { submitContactMessage } from "./actions"
 
 const faqs = [
   {
@@ -59,15 +60,21 @@ const initialContactForm = {
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState(initialContactForm)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await submitContactMessage(form)
       setSubmitted(true)
-    }, 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send message.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -142,6 +149,11 @@ export default function ContactPage() {
                 <CardContent>
                   {!submitted ? (
                     <form onSubmit={handleSubmit} className="space-y-4">
+                      {error && (
+                        <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                          {error}
+                        </p>
+                      )}
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>

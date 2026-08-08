@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, School, GraduationCap, ArrowRight } from "lucide-react"
+import { ArrowLeft, School, GraduationCap, ArrowRight, Presentation } from "lucide-react"
 
 export default function SignupPage() {
   return (
@@ -16,7 +16,7 @@ export default function SignupPage() {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-4xl">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xl">
@@ -28,7 +28,7 @@ export default function SignupPage() {
             <p className="text-muted-foreground">Choose how you want to get started</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <Link href="/signup/school">
                 <CardHeader>
@@ -74,6 +74,31 @@ export default function SignupPage() {
                     <li>Access practice tests</li>
                     <li>Track your progress</li>
                     <li>Get study recommendations</li>
+                  </ul>
+                </CardContent>
+              </Link>
+            </Card>
+
+            <Card className="border-border/50 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+              <Link href="/signup/tutor">
+                <CardHeader>
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
+                    <Presentation className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl flex items-center justify-between">
+                    Become a Tutor
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </CardTitle>
+                  <CardDescription>
+                    Create and sell your own courses to students
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>Publish courses instantly</li>
+                    <li>Set your own pricing</li>
+                    <li>Earn from every enrollment</li>
+                    <li>Track student engagement</li>
                   </ul>
                 </CardContent>
               </Link>

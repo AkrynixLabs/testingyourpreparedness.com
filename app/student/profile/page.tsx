@@ -1,410 +1,146 @@
-"use client"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
+import { StudentProfileView } from "./profile-view"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Textarea } from "@/components/ui/textarea"
-import { achievements } from "@/lib/demo-data"
-import {
-  Camera,
-  Save,
-  Trophy,
-  Target,
-  Flame,
-  Award,
-  BookOpen,
-  Clock,
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
-  School,
-  GraduationCap,
-  Edit2,
-  CheckCircle2,
-} from "lucide-react"
+export default async function StudentProfilePage() {
+  const session = await auth()
+  const student = await prisma.student.findUnique({
+    where: { userId: session!.user.id },
+    include: { user: true, class: true, school: true, guardian: true },
+  })
 
-const recentActivity = [
-  { type: "exam", title: "Mathematics Mock Exam", result: "92%", date: "2 hours ago", status: "passed" },
-  { type: "achievement", title: "Earned 'Study Streak' badge", date: "1 day ago" },
-  { type: "exam", title: "English Language Quiz", result: "88%", date: "2 days ago", status: "passed" },
-  { type: "material", title: "Completed Science Chapter 5", date: "3 days ago" },
-  { type: "exam", title: "Social Studies Practice", result: "76%", date: "4 days ago", status: "passed" },
-]
-
-const subjectProgress = [
-  { subject: "Mathematics", score: 85, exams: 12, rank: 3 },
-  { subject: "English Language", score: 78, exams: 10, rank: 8 },
-  { subject: "Integrated Science", score: 82, exams: 11, rank: 5 },
-  { subject: "Social Studies", score: 74, exams: 9, rank: 12 },
-  { subject: "ICT", score: 91, exams: 8, rank: 2 },
-]
-
-const initialProfileForm = {
-  firstName: "Kwame",
-  lastName: "Asante",
-  email: "kwame.asante@student.edu.gh",
-  phone: "+233 24 123 4567",
-  bio: "Passionate about learning and striving to be the best in Mathematics and ICT.",
-}
-
-export default function StudentProfilePage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [profileForm, setProfileForm] = useState(initialProfileForm)
-
-  const handleSave = () => {
-    setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
-      setIsEditing(false)
-    }, 1500)
+  if (!student) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
+        <p className="text-muted-foreground">No student profile found for this account.</p>
+      </div>
+    )
   }
 
-  const handleCancel = () => {
-    setProfileForm(initialProfileForm)
-    setIsEditing(false)
+  const [attempts, achievements, earned] = await Promise.all([
+    prisma.examAttempt.findMany({
+      where: { studentId: student.id, submittedAt: { not: null } },
+      include: { assessment: { include: { subject: true } } },
+      orderBy: { submittedAt: "desc" },
+    }),
+    prisma.achievement.findMany({ orderBy: { name: "asc" } }),
+    prisma.studentAchievement.findMany({ where: { studentId: student.id }, orderBy: { earnedAt: "desc" } }),
+  ])
+
+  const totalExams = attempts.length
+  const percentages = attempts.map((a) => ((a.score ?? 0) / (a.totalMarks || 1)) * 100)
+  const averageScore = totalExams > 0 ? Math.round(percentages.reduce((s, p) => s + p, 0) / totalExams) : null
+
+  const attemptDays = Array.from(new Set(attempts.map((a) => a.submittedAt!.toISOString().slice(0, 10)))).sort(
+    (a, b) => (a < b ? 1 : -1)
+  )
+  let currentStreak = 0
+  if (attemptDays.length > 0) {
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const diffFromToday = Math.round((today.getTime() - new Date(attemptDays[0]).getTime()) / (24 * 60 * 60 * 1000))
+    if (diffFromToday <= 1) {
+      currentStreak = 1
+      for (let i = 1; i < attemptDays.length; i++) {
+        const diff = Math.round(
+          (new Date(attemptDays[i - 1]).getTime() - new Date(attemptDays[i]).getTime()) / (24 * 60 * 60 * 1000)
+        )
+        if (diff === 1) currentStreak++
+        else break
+      }
+    }
   }
+
+  let classRank: { rank: number; totalStudents: number } | null = null
+  if (student.classId) {
+    const classmates = await prisma.student.findMany({
+      where: { classId: student.classId },
+      select: {
+        id: true,
+        examAttempts: {
+          where: { submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
+          select: { score: true, totalMarks: true },
+        },
+      },
+    })
+    const ranked = classmates
+      .map((s) => {
+        const scored = s.examAttempts
+        const avg = scored.length > 0 ? scored.reduce((sum, a) => sum + (a.score! / a.totalMarks!) * 100, 0) / scored.length : null
+        return { id: s.id, avg }
+      })
+      .filter((s): s is { id: string; avg: number } => s.avg !== null)
+      .sort((a, b) => b.avg - a.avg)
+    const idx = ranked.findIndex((s) => s.id === student.id)
+    if (idx !== -1) classRank = { rank: idx + 1, totalStudents: ranked.length }
+  }
+
+  // Subject performance + per-subject rank, computed against every other
+  // student who has taken an assessment in that same subject.
+  const bySubject = new Map<string, number[]>()
+  for (const a of attempts) {
+    const name = a.assessment.subject.name
+    const pct = ((a.score ?? 0) / (a.totalMarks || 1)) * 100
+    if (!bySubject.has(name)) bySubject.set(name, [])
+    bySubject.get(name)!.push(pct)
+  }
+  const subjectPerformance = Array.from(bySubject.entries())
+    .map(([subject, scores]) => ({
+      subject,
+      score: Math.round(scores.reduce((s, p) => s + p, 0) / scores.length),
+      exams: scores.length,
+    }))
+    .sort((a, b) => b.score - a.score)
+
+  const earnedIds = new Set(earned.map((e) => e.achievementId))
+  const earnedDates = new Map(earned.map((e) => [e.achievementId, e.earnedAt]))
+  const achievementRows = achievements.map((a) => ({
+    id: a.id,
+    name: a.name,
+    criteria: a.criteria,
+    earned: earnedIds.has(a.id),
+    earnedAt: earnedDates.get(a.id)?.toISOString() ?? null,
+  }))
+
+  // Recent activity: real submitted attempts + real earned achievements,
+  // merged and sorted by date - no fabricated "material completed" events,
+  // since nothing tracks per-student material progress in this schema.
+  const activity = [
+    ...attempts.slice(0, 5).map((a) => ({
+      type: "exam" as const,
+      title: a.assessment.title,
+      result: `${Math.round(((a.score ?? 0) / (a.totalMarks || 1)) * 100)}%`,
+      date: a.submittedAt!.toISOString(),
+    })),
+    ...earned.slice(0, 5).map((e) => ({
+      type: "achievement" as const,
+      title: achievements.find((a) => a.id === e.achievementId)?.name ?? "Achievement",
+      result: null,
+      date: e.earnedAt.toISOString(),
+    })),
+  ]
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .slice(0, 6)
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-          <p className="text-muted-foreground">View and manage your student profile</p>
-        </div>
-        {!isEditing ? (
-          <Button onClick={() => setIsEditing(true)}>
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Profile Card */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="relative">
-                  <Avatar className="h-32 w-32">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback className="text-3xl bg-primary/10 text-primary">KA</AvatarFallback>
-                  </Avatar>
-                  {isEditing && (
-                    <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 h-8 w-8 rounded-full">
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-bold">{profileForm.firstName} {profileForm.lastName}</h2>
-                      <Badge className="bg-emerald-500/10 text-emerald-600">Active</Badge>
-                    </div>
-                    <p className="text-muted-foreground">Student ID: STU-2024-00542</p>
-                  </div>
-                  
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <School className="h-4 w-4 text-muted-foreground" />
-                      <span>Achimota School</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                      <span>JHS 3A</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>Accra, Greater Accra</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Joined September 2023</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">Mathematics</Badge>
-                    <Badge variant="secondary">ICT</Badge>
-                    <Badge variant="secondary">Science</Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Stats Summary */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">24</p>
-                    <p className="text-xs text-muted-foreground">Exams Taken</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <Target className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">84%</p>
-                    <p className="text-xs text-muted-foreground">Avg Score</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Trophy className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">#5</p>
-                    <p className="text-xs text-muted-foreground">Class Rank</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                    <Flame className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">7</p>
-                    <p className="text-xs text-muted-foreground">Day Streak</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Personal Information (Editable) */}
-          {isEditing && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your personal details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={profileForm.firstName}
-                      onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={profileForm.lastName}
-                      onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileForm.email}
-                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Tell us a bit about yourself..."
-                    value={profileForm.bio}
-                    onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Subject Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Subject Performance</CardTitle>
-              <CardDescription>Your performance across all subjects</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {subjectProgress.map((subject) => (
-                <div key={subject.subject} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{subject.subject}</span>
-                      <Badge variant="outline" className="text-xs">Rank #{subject.rank}</Badge>
-                    </div>
-                    <span className="font-bold">{subject.score}%</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Progress value={subject.score} className="flex-1" />
-                    <span className="text-xs text-muted-foreground w-16">{subject.exams} exams</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Contact Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{profileForm.email}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{profileForm.phone}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Accra, Greater Accra</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Guardian Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Guardian</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="font-medium">Mr. Kofi Asante</p>
-                <p className="text-sm text-muted-foreground">Father</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">+233 20 987 6543</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">kofi.asante@email.com</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Achievements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Achievements</CardTitle>
-              <CardDescription>
-                {achievements.filter((a) => a.earned).length} of {achievements.length} badges earned
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.name}
-                  className={`flex items-center gap-3 p-2 rounded-lg ${
-                    achievement.earned ? "bg-primary/5" : "bg-muted/50 opacity-60"
-                  }`}
-                >
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    achievement.earned ? "bg-primary/10" : "bg-muted"
-                  }`}>
-                    <achievement.icon className={`h-5 w-5 ${achievement.earned ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{achievement.name}</p>
-                    {achievement.earned ? (
-                      <p className="text-xs text-muted-foreground">{achievement.date}</p>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Progress value={achievement.progress} className="h-1 flex-1" />
-                        <span className="text-xs text-muted-foreground">{achievement.progress}%</span>
-                      </div>
-                    )}
-                  </div>
-                  {achievement.earned && (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {recentActivity.map((activity, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.type === "exam" ? "bg-blue-500/10" :
-                    activity.type === "achievement" ? "bg-amber-500/10" :
-                    "bg-emerald-500/10"
-                  }`}>
-                    {activity.type === "exam" ? <BookOpen className="h-4 w-4 text-blue-500" /> :
-                     activity.type === "achievement" ? <Award className="h-4 w-4 text-amber-500" /> :
-                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{activity.title}</p>
-                    <div className="flex items-center gap-2">
-                      {activity.result && (
-                        <Badge variant="secondary" className="text-xs">{activity.result}</Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">{activity.date}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <StudentProfileView
+      user={{ name: student.user.name, email: student.user.email }}
+      studentStatus={student.status}
+      enrollmentType={student.enrollmentType}
+      schoolName={student.school?.name ?? null}
+      className={student.class?.displayName ?? null}
+      address={student.address}
+      createdAt={student.createdAt.toISOString()}
+      guardian={
+        student.guardian
+          ? { name: student.guardian.name, relation: student.guardian.relation, phone: student.guardian.phone, email: student.guardian.email }
+          : null
+      }
+      stats={{ examsTaken: totalExams, averageScore, classRank, currentStreak }}
+      subjectPerformance={subjectPerformance}
+      achievements={achievementRows}
+      activity={activity}
+    />
   )
 }
