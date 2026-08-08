@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import type { TutorStatus } from "@/lib/generated/prisma/client"
-import { flagCourse, unflagCourse, TUTOR_SUSPENSION_CASCADE_REASON } from "../courses/actions"
+import { flagCourse, unflagCourse } from "../courses/actions"
+import { TUTOR_SUSPENSION_CASCADE_REASON } from "../courses/constants"
 
 async function requireSuperAdmin() {
   const session = await auth()

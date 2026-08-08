@@ -12,14 +12,6 @@ async function requireSuperAdmin() {
   return session.user.id
 }
 
-// Marks a flagCourse call as part of the tutor-suspension cascade (see
-// app/super-admin/tutors/actions.ts's setTutorStatus) rather than a
-// moderator's own independent decision - lets reactivation later tell the
-// two apart via each course's most recent AuditLog entry, so un-suspending a
-// tutor only un-flags courses this cascade itself flagged, never a course a
-// moderator separately flagged for an unrelated reason.
-export const TUTOR_SUSPENSION_CASCADE_REASON = "Tutor account suspended"
-
 export async function flagCourse(courseId: string, reason: string) {
   const actorId = await requireSuperAdmin()
 
