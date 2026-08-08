@@ -1,283 +1,148 @@
-"use client"
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
+import { SchoolAdminDashboardView } from "./dashboard-view"
 
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { StatCard } from "@/components/stat-card"
-import { students, assessments } from "@/lib/demo-data"
-import {
-  Users,
-  ClipboardList,
-  TrendingUp,
-  Target,
-  ArrowRight,
-} from "lucide-react"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts"
+export default async function SchoolAdminDashboard() {
+  const session = await auth()
+  const schoolAdmin = await prisma.schoolAdmin.findUnique({
+    where: { userId: session!.user.id },
+    select: { schoolId: true },
+  })
+  if (!schoolAdmin) notFound()
 
-const classPerformance = [
-  { class: "Form 3A", avgScore: 78, students: 45 },
-  { class: "Form 3B", avgScore: 82, students: 42 },
-  { class: "Form 3C", avgScore: 71, students: 48 },
-  { class: "Form 2A", avgScore: 75, students: 44 },
-  { class: "Form 2B", avgScore: 69, students: 46 },
-]
+  const [school, students, assignments] = await Promise.all([
+    prisma.school.findUnique({ where: { id: schoolAdmin.schoolId } }),
+    prisma.student.findMany({
+      where: { schoolId: schoolAdmin.schoolId },
+      include: {
+        user: true,
+        class: true,
+        examAttempts: {
+          where: { submittedAt: { not: null } },
+          select: {
+            score: true,
+            totalMarks: true,
+            submittedAt: true,
+            answers: true,
+            assessment: {
+              select: {
+                subject: { select: { name: true } },
+                questions: {
+                  select: { question: { select: { id: true, correctAnswerIndex: true, topic: { select: { name: true } } } } },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.assessmentAssignment.findMany({
+      where: { schoolId: schoolAdmin.schoolId },
+      include: {
+        assessment: { include: { subject: true, _count: { select: { questions: true } } } },
+        examAttempts: { where: { submittedAt: { not: null } }, select: { score: true, totalMarks: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    }),
+  ])
 
-const monthlyProgress = [
-  { month: "Sep", score: 68 },
-  { month: "Oct", score: 71 },
-  { month: "Nov", score: 74 },
-  { month: "Dec", score: 72 },
-  { month: "Jan", score: 76 },
-  { month: "Feb", score: 78 },
-]
+  if (!school) notFound()
 
-const weakTopics = [
-  { topic: "Algebra", subject: "Mathematics", avgScore: 58 },
-  { topic: "Trigonometry", subject: "Mathematics", avgScore: 62 },
-  { topic: "Essay Writing", subject: "English", avgScore: 64 },
-  { topic: "Ecology", subject: "Science", avgScore: 66 },
-]
+  const pct = (score: number | null, totalMarks: number | null) => ((score ?? 0) / (totalMarks || 1)) * 100
 
-export default function SchoolAdminDashboard() {
+  const allAttempts = students.flatMap((s) => s.examAttempts)
+  const totalStudents = students.length
+  const activeAssessments = assignments.filter((a) => a.status === "active").length
+  const averageScore = allAttempts.length > 0 ? Math.round(allAttempts.reduce((sum, a) => sum + pct(a.score, a.totalMarks), 0) / allAttempts.length) : null
+  const studentsWithAttempts = students.filter((s) => s.examAttempts.length > 0).length
+  const completionRate = totalStudents > 0 ? Math.round((studentsWithAttempts / totalStudents) * 100) : null
+
+  const classMap = new Map<string, { className: string; total: number; count: number }>()
+  for (const s of students) {
+    const key = s.classId ?? "none"
+    const className = s.class?.displayName ?? "No class"
+    if (!classMap.has(key)) classMap.set(key, { className, total: 0, count: 0 })
+    const entry = classMap.get(key)!
+    for (const a of s.examAttempts) {
+      entry.total += pct(a.score, a.totalMarks)
+      entry.count++
+    }
+  }
+  const classPerformance = Array.from(classMap.values())
+    .filter((c) => c.count > 0)
+    .map((c) => ({ class: c.className, avgScore: Math.round(c.total / c.count) }))
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 6)
+
+  const monthly = new Map<string, { total: number; count: number }>()
+  for (const a of allAttempts) {
+    const key = a.submittedAt!.toISOString().slice(0, 7)
+    if (!monthly.has(key)) monthly.set(key, { total: 0, count: 0 })
+    const entry = monthly.get(key)!
+    entry.total += pct(a.score, a.totalMarks)
+    entry.count++
+  }
+  const monthlyProgress = Array.from(monthly.entries())
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .slice(-6)
+    .map(([key, { total, count }]) => ({
+      month: new Date(`${key}-01`).toLocaleDateString("en-US", { month: "short" }),
+      score: Math.round(total / count),
+    }))
+
+  const topStudents = students
+    .map((s) => {
+      const scores = s.examAttempts.map((a) => pct(a.score, a.totalMarks))
+      const avg = scores.length > 0 ? scores.reduce((sum, p) => sum + p, 0) / scores.length : null
+      return { id: s.id, name: s.user.name, className: s.class?.displayName ?? "No class", avgScore: avg, assessmentsTaken: scores.length }
+    })
+    .filter((s): s is typeof s & { avgScore: number } => s.avgScore !== null)
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 5)
+    .map((s) => ({ ...s, avgScore: Math.round(s.avgScore) }))
+
+  const topicMap = new Map<string, { correct: number; total: number; subjectName: string }>()
+  for (const s of students) {
+    for (const a of s.examAttempts) {
+      const answers = a.answers as Record<string, number>
+      for (const aq of a.assessment.questions) {
+        const key = aq.question.topic.name
+        if (!topicMap.has(key)) topicMap.set(key, { correct: 0, total: 0, subjectName: a.assessment.subject.name })
+        const entry = topicMap.get(key)!
+        entry.total++
+        if (answers[aq.question.id] === aq.question.correctAnswerIndex) entry.correct++
+      }
+    }
+  }
+  const weakTopics = Array.from(topicMap.entries())
+    .map(([topic, { correct, total, subjectName }]) => ({ topic, subject: subjectName, avgScore: Math.round((correct / total) * 100) }))
+    .sort((a, b) => a.avgScore - b.avgScore)
+    .slice(0, 4)
+
+  const recentAssessments = assignments.map((a) => {
+    const attempts = a.examAttempts.filter((e) => e.score !== null && e.totalMarks)
+    const avg = attempts.length > 0 ? Math.round(attempts.reduce((sum, e) => sum + pct(e.score, e.totalMarks), 0) / attempts.length) : null
+    return {
+      id: a.id,
+      title: a.assessment.title,
+      questionCount: a.assessment._count.questions,
+      duration: a.assessment.duration,
+      avgScore: avg,
+      attempts: attempts.length,
+    }
+  })
+
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">School Dashboard</h1>
-          <p className="text-muted-foreground">
-            Achimota School - Academic Term 2024
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/school-admin/students/add">Add Students</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/school-admin/assessments">Assign Assessment</Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Students"
-          value="1,240"
-          change={5}
-          changeLabel="this term"
-          icon={Users}
-        />
-        <StatCard
-          title="Active Assessments"
-          value="8"
-          icon={ClipboardList}
-        />
-        <StatCard
-          title="Average Score"
-          value="78%"
-          change={4}
-          changeLabel="from last term"
-          icon={TrendingUp}
-        />
-        <StatCard
-          title="Completion Rate"
-          value="92%"
-          icon={Target}
-        />
-      </div>
-
-      {/* Charts row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Class performance */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Performance by Class</CardTitle>
-            <CardDescription>Average scores across different classes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={classPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="class" stroke="var(--muted-foreground)" fontSize={12} />
-                  <YAxis domain={[0, 100]} stroke="var(--muted-foreground)" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar dataKey="avgScore" fill="oklch(0.55 0.15 170)" radius={[4, 4, 0, 0]} name="Avg Score" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Monthly progress */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">School Progress</CardTitle>
-            <CardDescription>Average score trend over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyProgress}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={12} />
-                  <YAxis domain={[60, 85]} stroke="var(--muted-foreground)" fontSize={12} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="score"
-                    stroke="oklch(0.55 0.15 170)"
-                    strokeWidth={2}
-                    dot={{ fill: "oklch(0.55 0.15 170)", strokeWidth: 2 }}
-                    name="Avg Score"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top students and weak topics */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Top performing students */}
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Top Students</CardTitle>
-              <CardDescription>Highest performing students this term</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/school-admin/students">
-                View all
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {students
-                .sort((a, b) => b.avgScore - a.avgScore)
-                .slice(0, 5)
-                .map((student, index) => (
-                  <div key={student.id} className="flex items-center gap-4">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{student.name}</p>
-                      <p className="text-sm text-muted-foreground">{student.class}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{student.avgScore}%</p>
-                      <p className="text-xs text-muted-foreground">{student.assessmentsTaken} tests</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Weak topics */}
-        <Card className="border-border/50">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Areas for Improvement</CardTitle>
-              <CardDescription>Topics with lowest average scores</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/school-admin/results">
-                View details
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {weakTopics.map((topic) => (
-                <div key={topic.topic} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{topic.topic}</p>
-                      <p className="text-sm text-muted-foreground">{topic.subject}</p>
-                    </div>
-                    <Badge variant="secondary" className="bg-red-100 text-red-700">
-                      {topic.avgScore}%
-                    </Badge>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted">
-                    <div
-                      className="h-2 rounded-full bg-red-500"
-                      style={{ width: `${topic.avgScore}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent assessments */}
-      <Card className="border-border/50">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">Recent Assessments</CardTitle>
-            <CardDescription>Latest assigned assessments</CardDescription>
-          </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/school-admin/assessments">
-              View all
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {assessments.slice(0, 4).map((assessment) => (
-              <div
-                key={assessment.id}
-                className="flex items-center justify-between py-3 border-b border-border last:border-0"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{assessment.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {assessment.questions} questions | {assessment.duration} mins
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">{assessment.avgScore > 0 ? `${assessment.avgScore}% avg` : "-"}</p>
-                  <p className="text-sm text-muted-foreground">{assessment.attempts} attempts</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SchoolAdminDashboardView
+      schoolName={school.name}
+      stats={{ totalStudents, activeAssessments, averageScore, completionRate }}
+      classPerformance={classPerformance}
+      monthlyProgress={monthlyProgress}
+      topStudents={topStudents}
+      weakTopics={weakTopics}
+      recentAssessments={recentAssessments}
+    />
   )
 }
