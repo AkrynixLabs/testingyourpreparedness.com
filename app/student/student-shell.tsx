@@ -1,6 +1,7 @@
 "use client"
 
 import { DashboardShell, NavGroup } from "@/components/dashboard-shell"
+import { formatCount } from "@/lib/utils"
 import {
   LayoutDashboard,
   ClipboardList,
@@ -13,45 +14,54 @@ import {
   PlaySquare,
 } from "lucide-react"
 
-const navigation: NavGroup[] = [
-  {
-    items: [
-      { title: "Dashboard", href: "/student", icon: LayoutDashboard },
-      { title: "Available Exams", href: "/student/exams", icon: ClipboardList },
-      { title: "My Results", href: "/student/results", icon: Award },
-      { title: "Progress", href: "/student/progress", icon: TrendingUp },
-      { title: "Study Materials", href: "/student/materials", icon: BookOpen },
-    ],
-  },
-  {
-    title: "Courses",
-    items: [
-      { title: "Browse Courses", href: "/student/courses", icon: GraduationCap },
-      { title: "My Courses", href: "/student/courses/my", icon: PlaySquare },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      { title: "Profile", href: "/student/profile", icon: User },
-      { title: "Settings", href: "/student/settings", icon: Settings },
-    ],
-  },
-]
+type StudentNavCounts = {
+  availableExams: number
+  myCourses: number
+}
+
+function buildNavigation(counts: StudentNavCounts): NavGroup[] {
+  return [
+    {
+      items: [
+        { title: "Dashboard", href: "/student", icon: LayoutDashboard },
+        { title: "Available Exams", href: "/student/exams", icon: ClipboardList, badge: formatCount(counts.availableExams) },
+        { title: "My Results", href: "/student/results", icon: Award },
+        { title: "Progress", href: "/student/progress", icon: TrendingUp },
+        { title: "Study Materials", href: "/student/materials", icon: BookOpen },
+      ],
+    },
+    {
+      title: "Courses",
+      items: [
+        { title: "Browse Courses", href: "/student/courses", icon: GraduationCap },
+        { title: "My Courses", href: "/student/courses/my", icon: PlaySquare, badge: formatCount(counts.myCourses) },
+      ],
+    },
+    {
+      title: "Account",
+      items: [
+        { title: "Profile", href: "/student/profile", icon: User },
+        { title: "Settings", href: "/student/settings", icon: Settings },
+      ],
+    },
+  ]
+}
 
 export function StudentShell({
   children,
   userName,
   userEmail,
+  counts,
 }: {
   children: React.ReactNode
   userName: string
   userEmail: string
+  counts: StudentNavCounts
 }) {
   return (
     <DashboardShell
       userRole="Student"
-      navigation={navigation}
+      navigation={buildNavigation(counts)}
       userName={userName}
       userEmail={userEmail}
       profileHref="/student/profile"
