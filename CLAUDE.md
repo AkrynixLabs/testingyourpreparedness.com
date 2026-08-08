@@ -93,13 +93,12 @@ Short summary — see [`docs/data-model.md`](./docs/data-model.md) for the full 
 
 - Source of truth: GitHub. This repo is v0-linked — v0 chat UI pushes commits directly to `main` and auto-deploys. Pull before starting work.
 - **Commit message style**: single-line Conventional Commits — `type: short imperative summary`, no body/footer, no `Co-Authored-By` trailer. Group unrelated changes into separate commits (one per wired page/fix/doc-update, not one per session).
-- [Add branch strategy once decided]
-- [Add PR/review conventions once decided]
+- **Branch strategy (decided 2026-08-08)**: everyone — v0 and Claude Code sessions alike — commits and pushes directly to `main`, no feature branches or PR review. Deliberately kept as-is rather than moving to a branch+PR flow, since v0's own auto-push-to-main behavior can't realistically be changed and a PR flow for only half the contributors wouldn't actually protect `main`. Relies on discipline instead: typecheck clean before every commit, small logical commits (not one giant dump), and this file's existing "confirm before destructive git operations" rule — not branch protection.
 
 ## Open Decisions (update as resolved)
 
 - [ ] Background job handling for bulk upload / async work (queued vs. synchronous)
-- [ ] Branching/PR workflow, given the v0 auto-push-to-main behavior
+- [x] Branching/PR workflow — resolved 2026-08-08: stays direct-to-`main` for everyone (v0 and Claude Code alike), see Repo/Workflow Conventions above.
 - [ ] Platform-wide config store beyond the marketplace fee (`PlatformSettings` could grow platform name/support email/timezone/feature toggles — currently only `platformFeePercent` exists)
 - [ ] Third-party API/webhook integration surface (no external integrations requested yet)
 - [x] PDF/Excel export for `super-admin/reports` — real, built 2026-08-08 (all 3 datasets, `xlsx` reused + `jspdf`/`jspdf-autotable` added). Still open: scheduled/recurring report generation, blocked on the Background Jobs decision above.
