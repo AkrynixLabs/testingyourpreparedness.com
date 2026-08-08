@@ -20,6 +20,7 @@ enum Role {
   content_admin
   school_admin
   student
+  tutor
 }
 
 model User {
@@ -32,9 +33,15 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // No email service exists yet (see CLAUDE.md) - forgot-password/reset-password
+  // display the generated link directly in the UI instead of emailing it.
+  resetToken          String?   @unique
+  resetTokenExpiresAt DateTime?
+
   schoolAdmin         SchoolAdmin?
   student             Student?
   contentAdminProfile ContentAdminProfile?
+  tutorProfile        TutorProfile?
 
   createdQuestions   Question[]   @relation("QuestionCreatedBy")
   reviewedQuestions  Question[]   @relation("QuestionReviewedBy")
@@ -238,6 +245,8 @@ model Student {
   studyGoals          StudyGoal[]
   bookmarkedMaterials StudentMaterialBookmark[]
   assignmentTargets   AssessmentAssignmentStudent[]
+  courseEnrollments   Enrollment[]
+  coursePurchases     CoursePurchase[]
 
   @@index([schoolId])
   @@index([classId])
@@ -461,6 +470,13 @@ model ExamAttempt {
   // once at submission - one function, not per-page, per data-model.md.
   grade              String?
   timeSpentSeconds   Int?
+  // Anti-cheat: incremented client-side each time the exam tab loses focus
+  // (visibilitychange/blur) during an in-progress attempt. Logging only -
+  // the exam is never interrupted or auto-submitted because of this.
+  tabSwitchCount     Int     @default(0)
+  // Set once tabSwitchCount crosses a threshold (see recordTabSwitch) so a
+  // reviewer can filter for it without recomputing the threshold themselves.
+  flaggedForReview   Boolean @default(false)
 
   @@index([studentId])
   @@index([assignmentId])
@@ -742,4 +758,165 @@ model AuditLog {
   timestamp   DateTime      @default(now())
 
   @@index([category, timestamp])
+}
+
+// ---------------------------------------------------------------------------
+// Public contact form (app/contact) - no viewer UI exists yet, this just
+// gives submissions somewhere real to land instead of vanishing into a
+// fake setTimeout. Revisit if/when a super-admin inbox page is built.
+// ---------------------------------------------------------------------------
+
+enum ContactMessageStatus {
+  new
+  read
+}
+
+model ContactMessage {
+  id        String               @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  role      String // free-text category from the form's own Select (student/parent/teacher/school-admin/other)
+  subject   String // free-text category from the form's own Select (general/technical/billing/partnership/feedback)
+  message   String
+  status    ContactMessageStatus @default(new)
+  createdAt DateTime             @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Course marketplace (Tutor/Course/Enrollment) - schema-only design pass,
+// decided 2026-08-07 with the user before any implementation. Deliberately
+// separate from the exam-prep track's Program/Subject/Assessment/Question -
+// Course is not an Assessment, Tutor is not Content Admin (self-service
+// onboarding + publish-first moderation vs. internal + pre-approval). Shares
+// only User (base identity) and Student. See CLAUDE.md's "course marketplace"
+// entry for the full rationale and the fork points decided along the way
+// (external video URLs not Blob storage, no LessonProgress yet, Paystack
+// Split Payments for tutor payout instead of a manual ledger).
+// No UI/actions exist yet - this is schema only, per the "design pass before
+// implementation starts" framing in CLAUDE.md's Roles & Access Model section.
+// ---------------------------------------------------------------------------
+
+enum TutorStatus {
+  active
+  suspended
+}
+
+model TutorProfile {
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio            String?
+  headline       String?
+  expertiseAreas Json // string[]
+  status         TutorStatus @default(active)
+  // Set once the tutor completes Paystack subaccount setup - payouts can't
+  // be split at charge time until this exists.
+  paystackSubaccountCode String?
+  createdAt      DateTime    @default(now())
+
+  courses Course[]
+}
+
+enum CourseStatus {
+  published // publish-first, no draft/pending gate unlike Assessment - trust model is deliberately different, see CLAUDE.md
+  flagged // a moderator flagged it post-publish; still visible pending review, not pulled automatically
+  removed
+}
+
+model Course {
+  id           String       @id @default(cuid())
+  tutorId      String
+  tutor        TutorProfile @relation(fields: [tutorId], references: [id])
+  title        String
+  description  String
+  category     String // free-text, not a FK - a separate taxonomy from Program/Subject, can be normalized later if browse/filter needs it
+  price        Int // GHS, tutor-set
+  status       CourseStatus @default(published)
+  thumbnailUrl String?
+  publishedAt  DateTime     @default(now())
+
+  modules     Module[]
+  enrollments Enrollment[]
+  purchases   CoursePurchase[]
+
+  @@index([tutorId])
+  @@index([status])
+}
+
+model Module {
+  id       String @id @default(cuid())
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int
+
+  lessons Lesson[]
+
+  @@index([courseId])
+}
+
+enum LessonType {
+  video
+  article
+}
+
+model Lesson {
+  id       String     @id @default(cuid())
+  moduleId String
+  module   Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int
+  type     LessonType
+  videoUrl String? // set when type = video - external host (YouTube/Vimeo/etc.), tutor pastes the link; no Vercel Blob video upload, see CLAUDE.md
+  content  String? // set when type = article - markdown
+
+  @@index([moduleId])
+}
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  enrolledAt DateTime @default(now())
+
+  @@unique([courseId, studentId])
+  @@index([studentId])
+}
+
+// A one-time a-la-carte purchase, deliberately NOT reusing Payment/Invoice -
+// those are subscription-cycle-shaped (Invoice.period, Subscription.renewalDate)
+// and a course purchase is a single split transaction, a different shape.
+model CoursePurchase {
+  id                String        @id @default(cuid())
+  courseId          String
+  course            Course        @relation(fields: [courseId], references: [id])
+  studentId         String
+  student           Student       @relation(fields: [studentId], references: [id])
+  amount            Int // total charged, GHS
+  platformFee       Int // platform's cut - Paystack Split Payments executes this at charge time, this is our own record of it
+  tutorPayout       Int // amount - platformFee
+  status            PaymentStatus // reuses the existing pending|completed|failed|refunded enum
+  paystackReference String?       @unique
+  createdAt         DateTime      @default(now())
+
+  @@index([studentId])
+  @@index([courseId])
+}
+
+// Single-row platform-wide config store, id fixed to "default" (singleton
+// pattern - no multi-tenant config needed, there's exactly one platform).
+// Started narrow (just the course-marketplace fee) rather than the broader
+// PlatformSettings/FeatureFlag entity floated and deliberately deferred
+// earlier (see CLAUDE.md) - add fields here as real config needs arise,
+// don't pre-build the rest speculatively.
+model PlatformSettings {
+  id                 String   @id @default("default")
+  // Percentage of a course price the platform keeps on a CoursePurchase -
+  // was a hardcoded PLATFORM_FEE_PERCENT constant in
+  // app/student/courses/actions.ts, now a real editable value.
+  platformFeePercent Int      @default(15)
+  updatedAt          DateTime @updatedAt
 }
