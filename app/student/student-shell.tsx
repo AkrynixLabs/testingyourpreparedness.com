@@ -9,6 +9,8 @@ import {
   BookOpen,
   Settings,
   User,
+  GraduationCap,
+  PlaySquare,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -19,6 +21,13 @@ const navigation: NavGroup[] = [
       { title: "My Results", href: "/student/results", icon: Award },
       { title: "Progress", href: "/student/progress", icon: TrendingUp },
       { title: "Study Materials", href: "/student/materials", icon: BookOpen },
+    ],
+  },
+  {
+    title: "Courses",
+    items: [
+      { title: "Browse Courses", href: "/student/courses", icon: GraduationCap },
+      { title: "My Courses", href: "/student/courses/my", icon: PlaySquare },
     ],
   },
   {

@@ -12,6 +12,7 @@ const ROLE_HOME: Record<string, string> = {
   content_admin: "/content-admin",
   school_admin: "/school-admin",
   student: "/student",
+  tutor: "/tutor",
 }
 
 const PROTECTED_PREFIXES = Object.entries(ROLE_HOME)
@@ -52,5 +53,6 @@ export const config = {
     "/content-admin/:path*",
     "/school-admin/:path*",
     "/student/:path*",
+    "/tutor/:path*",
   ],
 }

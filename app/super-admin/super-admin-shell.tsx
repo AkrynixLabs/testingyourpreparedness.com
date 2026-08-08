@@ -18,6 +18,8 @@ import {
   TrendingUp,
   Activity,
   Trophy,
+  Library,
+  UserCog,
 } from "lucide-react"
 
 const navigation: NavGroup[] = [
@@ -32,6 +34,7 @@ const navigation: NavGroup[] = [
       { title: "Schools", href: "/super-admin/schools", icon: School, badge: "127" },
       { title: "Students", href: "/super-admin/students", icon: GraduationCap, badge: "45.6K" },
       { title: "Content Admins", href: "/super-admin/content-admins", icon: Users },
+      { title: "Tutors", href: "/super-admin/tutors", icon: UserCog },
       { title: "Subjects & Topics", href: "/super-admin/subjects", icon: BookOpen },
     ],
   },
@@ -40,6 +43,7 @@ const navigation: NavGroup[] = [
     items: [
       { title: "Review Queue", href: "/super-admin/review-queue", icon: CheckSquare, badge: "24" },
       { title: "Question Bank", href: "/super-admin/question-bank", icon: FileQuestion, badge: "8.7K" },
+      { title: "Courses", href: "/super-admin/courses", icon: Library },
     ],
   },
   {
