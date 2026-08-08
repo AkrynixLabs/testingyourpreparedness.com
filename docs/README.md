@@ -6,6 +6,7 @@ This folder is the detailed reference layer behind `CLAUDE.md`. `CLAUDE.md` stay
 - **[data-model.md](./data-model.md)** — every entity implied by the frontend, its fields, and every enum/status value actually used, with conflicts flagged inline where two pages disagree.
 - **[inconsistencies.md](./inconsistencies.md)** — a prioritized punch list of real conflicts and dead/unwired UI found during the sweep. Each item needs a product decision or a cleanup pass before backend work locks in a schema.
 - **[page-inventory.md](./page-inventory.md)** — every route, grouped by role, with its purpose and the entities it touches. Use this to find "which pages will be affected if I change X."
+- **[build-log.md](./build-log.md)** — append-only archive of every page/feature "Decided/built" writeup: what was wired, why, and exactly how it was verified against the live DB. `CLAUDE.md` only keeps a current-state summary now; this is where the full history and gotchas live. Add new entries here, not to `CLAUDE.md`.
 
 ## Why this exists
 

@@ -126,10 +126,10 @@ Numbered for traceability. "MVP" = required for the exam-prep track backend to g
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-EXAM-1 | Student sees Available / Scheduled / Completed exam tabs, filterable by search and subject. | MVP |
-| FR-EXAM-2 | Exam-taking UI is timed with a question navigator (answered/current/flagged states), supports flagging, auto-submits on timeout, and confirms before manual submit. | MVP |
-| FR-EXAM-3 | Submission produces an `ExamAttempt`/result: score, rank, percentile, correct/incorrect breakdown, per-topic breakdown, letter grade (A ≥80, B ≥70, C ≥60, D ≥50, F <50 — computed server-side, not client-side). | MVP |
-| FR-EXAM-4 | Student can view full result detail (including per-question review with explanations) for any of their past attempts, addressed by ID. | MVP |
+| FR-EXAM-1 | Student sees Available / Scheduled / Completed exam tabs, filterable by search and subject. | **Done** — real, scoped per `Student.enrollmentType` (school-assignment vs. independent open-access). |
+| FR-EXAM-2 | Exam-taking UI is timed with a question navigator (answered/current/flagged states), supports flagging, auto-submits on timeout, and confirms before manual submit. | **Done** — eligibility re-verified server-side, countdown survives refresh, correct answers never sent to the client. |
+| FR-EXAM-3 | Submission produces an `ExamAttempt`/result: score, rank, percentile, correct/incorrect breakdown, per-topic breakdown, letter grade (A ≥80, B ≥70, C ≥60, D ≥50, F <50 — computed server-side, not client-side). | **Done** — grading happens entirely in a Server Action from `Question.correctAnswerIndex`; rank/percentile/topic-breakdown computed on the results pages. |
+| FR-EXAM-4 | Student can view full result detail (including per-question review with explanations) for any of their past attempts, addressed by ID. | **Done** — `student/results/[id]`, with a real ownership check. |
 | FR-EXAM-5 | An assigned assessment's rollout to a class/student is tracked independently of the assessment's own authoring status, via `AssessmentAssignment.status: active \| completed \| scheduled \| paused`. | MVP |
 | FR-EXAM-6 | *(Deferred, flagged)* Anti-cheat/session-integrity story — tab-switch detection, single-attempt enforcement — not yet designed; raise as a decision before building. | Future |
 
@@ -337,7 +337,25 @@ All schema/naming/pricing/status decisions from the original frontend sweep (Pro
 
 ## 12. Risks & Watch-Items
 
-- **Concurrent workstreams**: a separate session is actively building `prisma/schema.prisma`. Changes to this spec, `data-model.md`, or the schema itself should check current state before editing to avoid clobbering in-flight work (see `CLAUDE.md`'s "Notes for Claude Code").
+- **Concurrent workstreams**: the user deliberately runs multiple Claude Code sessions against this repo in parallel (decided 2026-08-07, see §13 for how work is partitioned). Changes to this spec, `data-model.md`, `CLAUDE.md`, or the schema should check current state before editing to avoid clobbering another session's in-flight work — see `CLAUDE.md`'s "Notes for Claude Code" for the specific coordination rules (shared-infra-file caution, the `npm run db:seed` danger, role-folder partitioning).
 - **Marketplace scope creep**: the course marketplace is a substantial second product. Resist building any part of it (Tutor role, Course entity, etc.) opportunistically alongside exam-prep-track backend work — it needs its own dedicated design pass.
 - **Content thinness**: only BECE has real content today. Program-scoped billing, and the "second program" trigger for it, both depend on WASSCE/Nursing/University/Digital-Skills content actually being authored — that's a content-production dependency, not just an engineering one.
 - **Anti-cheat gap**: no session-integrity story exists yet for timed exams; as the platform gains real stakes (paying schools, real grades), this becomes a credibility risk worth prioritizing before it's asked for.
+
+---
+
+## 13. Remaining Wiring Roadmap (as of 2026-08-07)
+
+**Done and verified against the live DB** (9 pieces): auth (all 4 roles), `super-admin/schools`, `school-admin/students`, `content-admin/questions`, `super-admin/review-queue`, `student/exams`, `student/results`, `student/results/[id]`, `student/exams/[id]/start`. This covers 2 of the 6 Key Workflows (§7) fully: content approval, and assessment taking.
+
+**~50 pages remain**, in three tiers by complexity — the tier, not just the count, is what should drive time expectations:
+
+| Tier | What | Count | Examples |
+|---|---|---|---|
+| Simple | Same read/update pattern already used 9 times | ~15-20 | Profile/settings pages, subjects list, question-bank browse, content-admins list |
+| Medium | Multi-entity, real business logic, no new infra | ~15-20 | Classes, add-student, leaderboard, school results analytics, assessment authoring + assign wizard, both signup flows, super-admin/students |
+| Large / new subsystem | Not "wire a page" — each is closer to its own mini-project | ~8-10 | Paystack billing (payment methods, webhooks, invoices — deserves its own planning pass given it touches money), bulk CSV/XLSX upload + validation, async report generation, real analytics aggregation, audit-log/live-activity event system |
+
+**Sequencing recommendation**: finish the school-journey creation flows next (question create → assessment create → assign wizard → add-student → school signup) — that's the path to a fully organic, zero-seed-data end-to-end test of the core loop, and it's the most-verified/best-understood part of the schema. Treat billing as its own separate planning conversation when picked up, not folded into general page-wiring.
+
+**Time estimate**: weeks, not days — roughly 4-6 weeks at the pace of the sessions so far, assuming multiple concurrent sessions per §12's partitioning. Billing alone could add 1-2 weeks on its own given the external-integration testing it needs (Paystack sandbox, webhook idempotency, real MoMo/card flows). A few items (background jobs, anti-cheat, report-generation architecture) are still open decisions, not just build work — see §11 — and need a design conversation before they can be estimated more precisely.
