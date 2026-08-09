@@ -25,8 +25,6 @@ export function PublicFooter() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/features" className="hover:text-foreground transition-colors">Features</Link></li>
               <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-              <li><Link href="/schools" className="hover:text-foreground transition-colors">For Schools</Link></li>
-              <li><Link href="/students" className="hover:text-foreground transition-colors">For Students</Link></li>
             </ul>
           </div>
 
@@ -36,7 +34,6 @@ export function PublicFooter() {
               <li><Link href="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
               <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
               <li><Link href="/help" className="hover:text-foreground transition-colors">Help Center</Link></li>
-              <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
             </ul>
           </div>
 
