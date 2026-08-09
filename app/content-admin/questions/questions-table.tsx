@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -227,9 +228,21 @@ export function QuestionsTable({
                     <Eye className="mr-2 h-4 w-4" />
                     Preview
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
+                  <DropdownMenuItem
+                    disabled={question.status !== "draft" && question.status !== "rejected"}
+                    asChild={question.status === "draft" || question.status === "rejected"}
+                  >
+                    {question.status === "draft" || question.status === "rejected" ? (
+                      <Link href={`/content-admin/questions/${question.id}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    ) : (
+                      <>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"

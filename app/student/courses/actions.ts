@@ -94,3 +94,35 @@ export async function initializeCoursePurchase(courseId: string) {
 
   return { authorizationUrl }
 }
+
+// Upsert, not a one-time submission - a student can revise their own
+// rating/comment later (no "lock it forever" precedent elsewhere in this
+// app). Gated on a real Enrollment existing, checked here rather than via a
+// schema-level FK - a review isn't tied to *which* purchase, just that the
+// student actually has access to the course.
+export async function submitCourseReview(input: { courseId: string; rating: number; comment: string }) {
+  const { student } = await requireStudent()
+
+  if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
+    throw new Error("Rating must be between 1 and 5.")
+  }
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { courseId_studentId: { courseId: input.courseId, studentId: student.id } },
+  })
+  if (!enrollment) throw new Error("You can only review a course you're enrolled in.")
+
+  await prisma.courseReview.upsert({
+    where: { courseId_studentId: { courseId: input.courseId, studentId: student.id } },
+    create: {
+      courseId: input.courseId,
+      studentId: student.id,
+      rating: input.rating,
+      comment: input.comment.trim() || null,
+    },
+    update: {
+      rating: input.rating,
+      comment: input.comment.trim() || null,
+    },
+  })
+}

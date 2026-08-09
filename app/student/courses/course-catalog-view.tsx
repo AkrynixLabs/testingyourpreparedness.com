@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Users, BookOpen, CheckCircle2 } from "lucide-react"
+import { Search, Users, BookOpen, CheckCircle2, Star } from "lucide-react"
 
 type CourseRow = {
   id: string
@@ -19,6 +19,8 @@ type CourseRow = {
   studentCount: number
   moduleCount: number
   isEnrolled: boolean
+  reviewCount: number
+  averageRating: number | null
 }
 
 export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
@@ -88,6 +90,15 @@ export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
                   <p className="text-xs text-muted-foreground">by {course.tutorName}</p>
+                  {course.averageRating !== null && (
+                    <div className="flex items-center gap-1 text-xs">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <span className="font-medium">{course.averageRating.toFixed(1)}</span>
+                      <span className="text-muted-foreground">
+                        ({course.reviewCount} review{course.reviewCount === 1 ? "" : "s"})
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" />

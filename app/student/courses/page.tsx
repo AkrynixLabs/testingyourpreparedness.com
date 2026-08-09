@@ -9,7 +9,11 @@ export default async function StudentCoursesPage() {
   const [courses, myEnrollments] = await Promise.all([
     prisma.course.findMany({
       where: { status: "published" },
-      include: { tutor: { include: { user: true } }, _count: { select: { enrollments: true, modules: true } } },
+      include: {
+        tutor: { include: { user: true } },
+        _count: { select: { enrollments: true, modules: true, reviews: true } },
+        reviews: { select: { rating: true } },
+      },
       orderBy: { publishedAt: "desc" },
     }),
     student
@@ -30,6 +34,8 @@ export default async function StudentCoursesPage() {
     studentCount: c._count.enrollments,
     moduleCount: c._count.modules,
     isEnrolled: enrolledIds.has(c.id),
+    reviewCount: c._count.reviews,
+    averageRating: c.reviews.length > 0 ? c.reviews.reduce((sum, r) => sum + r.rating, 0) / c.reviews.length : null,
   }))
 
   return (

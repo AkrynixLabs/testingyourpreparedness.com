@@ -15,11 +15,14 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       enrollments: { include: { student: { include: { user: true } } }, orderBy: { enrolledAt: "desc" } },
       purchases: { where: { status: "completed" } },
+      reviews: { select: { rating: true } },
     },
   })
   if (!course || course.tutorId !== tutor.id) notFound()
 
   const totalRevenue = course.purchases.reduce((sum, p) => sum + p.tutorPayout, 0)
+  const averageRating =
+    course.reviews.length > 0 ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length : null
 
   return (
     <CourseDetailView
@@ -41,6 +44,8 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
           enrolledAt: e.enrolledAt.toISOString(),
         })),
         totalRevenue,
+        averageRating,
+        reviewCount: course.reviews.length,
       }}
     />
   )

@@ -256,6 +256,7 @@ model Student {
   assignmentTargets   AssessmentAssignmentStudent[]
   courseEnrollments   Enrollment[]
   coursePurchases     CoursePurchase[]
+  courseReviews       CourseReview[]
 
   @@index([schoolId])
   @@index([classId])
@@ -825,17 +826,17 @@ enum TutorStatus {
 }
 
 model TutorProfile {
-  id             String      @id @default(cuid())
-  userId         String      @unique
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio            String?
-  headline       String?
-  expertiseAreas Json // string[]
-  status         TutorStatus @default(active)
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                    String?
+  headline               String?
+  expertiseAreas         Json // string[]
+  status                 TutorStatus @default(active)
   // Set once the tutor completes Paystack subaccount setup - payouts can't
   // be split at charge time until this exists.
   paystackSubaccountCode String?
-  createdAt      DateTime    @default(now())
+  createdAt              DateTime    @default(now())
 
   courses Course[]
 }
@@ -861,9 +862,33 @@ model Course {
   modules     Module[]
   enrollments Enrollment[]
   purchases   CoursePurchase[]
+  reviews     CourseReview[]
 
   @@index([tutorId])
   @@index([status])
+}
+
+// Added 2026-08-08 - a real gap for a Coursera/Udemy-style catalog, students
+// couldn't rate/review a course they'd taken. One review per student per
+// course (upsert-able, not a fixed one-time submission - letting a student
+// revise their own rating/comment is a nicer UX and matches no other "lock
+// it forever" precedent elsewhere in this app). Gated on a real Enrollment
+// existing, checked in the Server Action, not via a schema-level FK - a
+// review isn't inherently tied to *which* purchase/enrollment row, just
+// that one exists.
+model CourseReview {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, studentId])
+  @@index([courseId])
 }
 
 model Module {
