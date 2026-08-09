@@ -102,7 +102,16 @@ model Invitation {
   invitedById String
   invitedBy   User             @relation("InvitationInvitedBy", fields: [invitedById], references: [id])
   status      InvitationStatus @default(pending)
-  createdAt   DateTime         @default(now())
+  // Added 2026-08-08 so an invite can actually be redeemed via a real
+  // one-click link (app/invite/accept) - previously this was just a
+  // pending record with no way for the invited person to accept it, even
+  // though `accepted`/`expired` already existed on InvitationStatus.
+  // Assigned in the DAL (crypto.randomBytes, same pattern as
+  // User.resetToken), not a DB default - Prisma has no random-string default.
+  token       String           @unique
+  expiresAt   DateTime
+
+  createdAt DateTime @default(now())
 
   @@index([schoolId])
 }
@@ -262,14 +271,20 @@ enum GuardianRelation {
 // Single source of truth - resolves the guardian info duplicated across
 // student/profile, student/settings, and the school-admin add-student form.
 model Guardian {
-  id         String           @id @default(cuid())
-  studentId  String           @unique
-  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  name       String
-  phone      String
-  email      String?
-  relation   GuardianRelation
-  approvedAt DateTime? // gates independent-student signup checkout
+  id                     String           @id @default(cuid())
+  studentId              String           @unique
+  student                Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name                   String
+  phone                  String
+  email                  String?
+  relation               GuardianRelation
+  approvedAt             DateTime? // real approval timestamp, set by app/guardian/approve - NOT gating anything downstream yet (independent-student signup/checkout proceeds immediately regardless), same as before this flow existed
+  // Added 2026-08-08, same token/expiry pattern as Invitation - previously
+  // approvedAt was set immediately from the student's own self-attestation
+  // checkbox at signup, with no real out-of-band confirmation from the
+  // guardian at all. Nulled out once approved (can't be replayed).
+  approvalToken          String?          @unique
+  approvalTokenExpiresAt DateTime?
 }
 
 // ---------------------------------------------------------------------------
