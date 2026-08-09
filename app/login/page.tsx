@@ -34,7 +34,11 @@ export default function LoginPage() {
 
     if (!result || result.error) {
       setIsLoading(false)
-      setError("Invalid email or password.")
+      setError(
+        result?.code === "rate_limited"
+          ? "Too many login attempts. Please wait a few minutes and try again."
+          : "Invalid email or password."
+      )
       return
     }
 

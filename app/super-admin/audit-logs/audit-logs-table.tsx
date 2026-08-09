@@ -48,9 +48,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import type { AuditLog, AuditAction, AuditCategory, AuditStatus, User as PrismaUser } from "@/lib/generated/prisma/client"
+import type { AuditLog, AuditAction, AuditCategory, AuditStatus, Role } from "@/lib/generated/prisma/client"
 
-export type AuditLogRow = AuditLog & { actor: PrismaUser | null }
+export type AuditLogRow = AuditLog & { actor: { id: string; name: string; role: Role } | null }
 
 const categories: { value: AuditCategory | "all"; label: string }[] = [
   { value: "all", label: "All Categories" },

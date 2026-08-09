@@ -36,7 +36,7 @@ import { setTutorStatus } from "./actions"
 import type { TutorProfile, TutorStatus, User } from "@/lib/generated/prisma/client"
 
 type TutorRow = TutorProfile & {
-  user: User
+  user: Omit<User, "passwordHash">
   courseCount: number
   totalStudents: number
   totalEarnings: number

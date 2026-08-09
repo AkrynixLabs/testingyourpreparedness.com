@@ -1,9 +1,14 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { Card, CardContent } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
 import { AddSchoolDialog } from "./add-school-dialog"
 import { SchoolsTable } from "./schools-table"
 
 export default async function SchoolsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const schools = await prisma.school.findMany({
     orderBy: { name: "asc" },
     include: {

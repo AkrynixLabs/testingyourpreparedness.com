@@ -32,5 +32,12 @@ export default async function AssignAssessmentPage() {
     }),
   ])
 
-  return <AssignAssessmentWizard assessments={assessments} classes={classes} students={students} />
+  // Strip passwordHash off each student's nested user before crossing the
+  // RSC boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+  const safeStudents = students.map((s) => {
+    const { passwordHash: _pwHash, ...safeUser } = s.user
+    return { ...s, user: safeUser }
+  })
+
+  return <AssignAssessmentWizard assessments={assessments} classes={classes} students={safeStudents} />
 }

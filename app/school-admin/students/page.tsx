@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Download } from "lucide-react"
+import { Plus } from "lucide-react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StudentsTable } from "./students-table"
@@ -43,8 +43,12 @@ export default async function StudentsPage() {
             completed.reduce((acc, a) => acc + (a.score! / a.totalMarks!) * 100, 0) / completed.length
           )
         : null
+    // Strip passwordHash off the nested user before crossing the RSC
+    // boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+    const { passwordHash: _pwHash, ...safeUser } = student.user
     return {
       ...student,
+      user: safeUser,
       avgScore,
       assessmentsTaken: student.examAttempts.length,
       // Flattened for DataTable's searchKey, which only does shallow
@@ -72,10 +76,10 @@ export default async function StudentsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
+          {/* Export moved into students-table.tsx (a real handler, exports
+              the currently-filtered rows) - it can't have a real onClick
+              here since this is a Server Component. Found dead by a
+              dead-UI-elements audit 2026-08-08, see docs/build-log.md. */}
           <Button asChild>
             <Link href="/school-admin/students/add">
               <Plus className="mr-2 h-4 w-4" />

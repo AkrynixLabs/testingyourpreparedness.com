@@ -1,11 +1,28 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { RevenueView } from "./revenue-view"
 
 export default async function RevenuePage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const payments = await prisma.payment.findMany({
     where: { status: "completed" },
     include: {
-      invoice: { include: { subscription: { include: { plan: true, school: true, student: { include: { user: true } } } } } },
+      // student.user scoped with `select` - only .name is ever read
+      // (payerName below). Not an actual leak (recentTransactions already
+      // only derives a plain payerName string, never passes the raw user
+      // object to the client), but tightened for consistency with the fix
+      // applied to super-admin/payments's identical pattern, found by a
+      // security audit 2026-08-08 (see docs/build-log.md).
+      invoice: {
+        include: {
+          subscription: {
+            include: { plan: true, school: true, student: { include: { user: { select: { name: true } } } } },
+          },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   })

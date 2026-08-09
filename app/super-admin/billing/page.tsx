@@ -1,7 +1,12 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { BillingView } from "./billing-view"
 
 export default async function SuperAdminBillingPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const subscriptions = await prisma.subscription.findMany({
     where: { schoolId: { not: null } },
     include: { school: { include: { _count: { select: { students: true } } } }, plan: true },

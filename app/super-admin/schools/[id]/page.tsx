@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { SchoolDetailView } from "./school-detail-view"
 
 export default async function SchoolDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const { id } = await params
 
   const school = await prisma.school.findUnique({
@@ -117,11 +121,20 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       ? Math.round(overallScored.reduce((sum, a) => sum + (a.score! / a.totalMarks!) * 100, 0) / overallScored.length)
       : null
 
-  const primaryAdmin = school.admins.find((a) => a.isPrimary) ?? school.admins[0] ?? null
+  // Strip passwordHash off every admin's nested user before crossing the RSC
+  // boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+  // Must happen per-row, not just for "the one this page is about" (the same
+  // lesson already learned once for school-admin/settings's own admin list).
+  const safeAdmins = school.admins.map((a) => {
+    const { passwordHash: _pwHash, ...safeUser } = a.user
+    return { ...a, user: safeUser }
+  })
+  const safeSchool = { ...school, admins: safeAdmins }
+  const primaryAdmin = safeAdmins.find((a) => a.isPrimary) ?? safeAdmins[0] ?? null
 
   return (
     <SchoolDetailView
-      school={school}
+      school={safeSchool}
       primaryAdmin={primaryAdmin}
       students={studentRows}
       classes={classRows}

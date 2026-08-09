@@ -1,7 +1,12 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { SubjectsView } from "./subjects-view"
 
 export default async function SubjectsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [subjects, programs] = await Promise.all([
     prisma.subject.findMany({
       include: {

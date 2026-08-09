@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StatCard } from "@/components/stat-card"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,13 +7,20 @@ import { FileQuestion, BookOpen, Users, Archive } from "lucide-react"
 import { QuestionBankTable } from "./question-bank-table"
 
 export default async function QuestionBankPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
+  // createdBy/reviewedBy are scoped with `select`, not `include: true` - only
+  // .name is ever rendered, so there's no reason to pull the full User
+  // (including passwordHash) into this page's RSC payload. Found by a
+  // security audit 2026-08-08 (see docs/build-log.md).
   const questions = await prisma.question.findMany({
     where: { status: "approved" },
     include: {
       subject: true,
       topic: true,
-      createdBy: true,
-      reviewedBy: true,
+      createdBy: { select: { id: true, name: true } },
+      reviewedBy: { select: { id: true, name: true } },
       assessmentQuestions: {
         include: { assessment: { include: { _count: { select: { examAttempts: true } } } } },
       },

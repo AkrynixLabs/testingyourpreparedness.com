@@ -6,10 +6,15 @@ import { AssessmentsTable } from "./assessments-table"
 
 export default async function AssessmentsPage() {
   const [assessments, subjects] = await Promise.all([
+    // createdBy is scoped with `select`, not `include: true` - the spread
+    // below (`{...a, ...}`) would otherwise carry the full nested User
+    // (including passwordHash) into this page's RSC payload even though only
+    // createdByName is ever actually used. Found by a security audit
+    // 2026-08-08 (see docs/build-log.md).
     prisma.assessment.findMany({
       include: {
         subject: true,
-        createdBy: true,
+        createdBy: { select: { id: true, name: true } },
         _count: { select: { questions: true, assignments: true } },
         examAttempts: {
           where: { submittedAt: { not: null } },
