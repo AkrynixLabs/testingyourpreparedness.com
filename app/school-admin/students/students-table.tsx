@@ -6,17 +6,25 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/data-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Edit, Mail, Filter } from "lucide-react"
+import { Filter, Download } from "lucide-react"
 import type { Class, Student, User } from "@/lib/generated/prisma/client"
 
+// Same pattern as school-admin/leaderboard and .../results - copied, not
+// extracted into a shared helper, given only a handful of call sites (see
+// those files' own identical copies).
+function downloadCsv(filename: string, rows: (string | number)[][]) {
+  const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n")
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export type StudentRow = Student & {
-  user: User
+  user: Omit<User, "passwordHash">
   class: Class | null
   avgScore: number | null
   assessmentsTaken: number
@@ -43,6 +51,24 @@ export function StudentsTable({
       (performanceFilter === "low" && score !== null && score < 60)
     return matchesClass && matchesPerformance
   })
+
+  // Was a dead no-op button on the Server Component page (Button can't have
+  // an onClick there) - found by a dead-UI-elements audit 2026-08-08 (see
+  // docs/build-log.md). Exports whatever the active class/performance
+  // filters currently show, same "export what's on screen" convention as
+  // leaderboard/results' own real export buttons.
+  const handleExport = () => {
+    downloadCsv("students.csv", [
+      ["Name", "Email", "Class", "Avg. Score", "Tests Taken"],
+      ...filteredStudents.map((s) => [
+        s.user.name,
+        s.user.email,
+        s.class?.displayName ?? "Unassigned",
+        s.avgScore ?? "",
+        s.assessmentsTaken,
+      ]),
+    ])
+  }
 
   const columns = [
     {
@@ -126,6 +152,10 @@ export function StudentsTable({
                 <SelectItem value="low">Low (&lt;60%)</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" className="ml-auto" onClick={handleExport} disabled={filteredStudents.length === 0}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -139,34 +169,20 @@ export function StudentsTable({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* No actions dropdown - "View Profile" (no student-detail route
+              exists), "Edit" (no update-student action exists), and "Send
+              Message" (no messaging system exists anywhere in this app) were
+              all dead menu items with nowhere to go, found by a dead-UI-
+              elements audit 2026-08-08 (see docs/build-log.md). Dropped
+              rather than left as no-ops, same "don't keep UI with nowhere to
+              go" precedent already applied elsewhere (e.g.
+              super-admin/content-admins' dropped "View Profile"/"Send
+              Message" items). */}
           <DataTable
             data={filteredStudents}
             columns={columns}
             searchKey="name"
             searchPlaceholder="Search students..."
-            actions={() => (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Message
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
           />
         </CardContent>
       </Card>

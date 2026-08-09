@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Edit, Ban, CheckCircle } from "lucide-react"
+import { MoreHorizontal, Eye, Ban, CheckCircle } from "lucide-react"
 import { setSchoolStatus } from "./actions"
 import type { School, SchoolStatus } from "@/lib/generated/prisma/client"
 
@@ -40,10 +41,13 @@ export function SchoolsTable({ schools }: { schools: SchoolRow[] }) {
       key: "name",
       header: "School Name",
       render: (school: SchoolRow) => (
-        <div>
+        // Clickable through to the real detail page, same "act from either
+        // the list row or the dropdown" pattern already used on
+        // super-admin/courses and super-admin/tutors.
+        <Link href={`/super-admin/schools/${school.id}`} className="block hover:underline">
           <p className="font-medium">{school.name}</p>
           <p className="text-sm text-muted-foreground">{school.town}, {school.region}</p>
-        </div>
+        </Link>
       ),
     },
     {
@@ -100,13 +104,19 @@ export function SchoolsTable({ schools }: { schools: SchoolRow[] }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                {/* Was dead ("View Details" had no onClick, and the real
+                    super-admin/schools/[id] detail page - full students/
+                    classes/billing/activity view - was completely
+                    unreachable from anywhere in the UI). "Edit" dropped
+                    entirely rather than wired - no school-edit flow exists,
+                    same reasoning already documented for AddSchoolDialog
+                    being deliberately quick-add-only ("creating a School
+                    needs far more fields than a quick-add form can hold").
+                    Found by a dead-UI-elements audit 2026-08-08, see
+                    docs/build-log.md. */}
+                <DropdownMenuItem onClick={() => router.push(`/super-admin/schools/${school.id}`)}>
                   <Eye className="mr-2 h-4 w-4" />
                   View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
                 </DropdownMenuItem>
                 {school.status === "pending" && (
                   <DropdownMenuItem
