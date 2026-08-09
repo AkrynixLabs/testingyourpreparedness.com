@@ -80,8 +80,14 @@ export function ContentAdminDashboardView({
             {questionStatusData.length === 0 ? (
               <p className="text-sm text-muted-foreground py-12 text-center">You haven&apos;t created any questions yet.</p>
             ) : (
-              <div className="flex items-center gap-8">
-                <div className="h-[200px] w-[200px]">
+              // flex-col->sm:flex-row added - a fixed 200x200 chart next
+              // to a legend, side by side with no stacking fallback,
+              // unlike the equivalent chart+legend layout on
+              // super-admin/students (stacked, chart above legend).
+              // Found by a static mobile-audit pass 2026-08-08 (see
+              // docs/build-log.md).
+              <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+                <div className="h-[200px] w-[200px] shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={questionStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value">
@@ -95,7 +101,7 @@ export function ContentAdminDashboardView({
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-3">
+                <div className="w-full space-y-3">
                   {questionStatusData.map((item) => (
                     <div key={item.name} className="flex items-center gap-3">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
