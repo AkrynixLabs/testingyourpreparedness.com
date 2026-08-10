@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { getPlatformFeePercent } from "@/lib/platform-settings"
@@ -5,6 +6,8 @@ import { SettingsView } from "./settings-view"
 
 export default async function SuperAdminSettingsPage() {
   const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [user, platformFeePercent] = await Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: session!.user.id } }),
     getPlatformFeePercent(),

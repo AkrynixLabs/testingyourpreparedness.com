@@ -63,9 +63,9 @@ import type {
 } from "@/lib/generated/prisma/client"
 
 type CourseWithRelations = Course & {
-  tutor: TutorProfile & { user: User }
+  tutor: TutorProfile & { user: Omit<User, "passwordHash"> }
   modules: (Module & { lessons: Lesson[] })[]
-  enrollments: (Enrollment & { student: Student & { user: User } })[]
+  enrollments: (Enrollment & { student: Student & { user: Omit<User, "passwordHash"> } })[]
   purchases: CoursePurchase[]
 }
 

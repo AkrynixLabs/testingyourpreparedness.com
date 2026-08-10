@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { Clock, CheckCircle2, XCircle } from "lucide-react"
 import { StatCard } from "@/components/stat-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -7,6 +9,9 @@ import { QuestionsPanel } from "./questions-panel"
 import { AssessmentsPanel } from "./assessments-panel"
 
 export default async function ReviewQueuePage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const startOfToday = new Date()
   startOfToday.setHours(0, 0, 0, 0)
 

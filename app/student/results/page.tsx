@@ -28,22 +28,35 @@ const getGrade = (percentage: number) => {
 }
 
 // Rank isn't a stored field on ExamAttempt - computed here from every other
-// submitted attempt on the same Assessment, same as the [id] detail page.
-// Sequential per-attempt (not batched into one big query) since a student's
-// own result list is small; see CLAUDE.md's note on Neon free-tier
-// concurrency limits for why heavier fan-out is avoided elsewhere.
-async function getRank(assessmentId: string, attemptId: string) {
+// submitted attempt on the same Assessment(s). Was previously one query PER
+// attempt in a loop (a real N+1 - a student with 20 completed exams meant 20
+// sequential round trips just for rank) - found by an N+1 audit 2026-08-08
+// (see docs/build-log.md) and rewritten to one query covering every
+// assessmentId the student has ever attempted, ranked in memory per group.
+async function getRanks(entries: { assessmentId: string; attemptId: string }[]): Promise<Map<string, { rank: number; totalStudents: number }>> {
+  const assessmentIds = Array.from(new Set(entries.map((e) => e.assessmentId)))
   const allAttempts = await prisma.examAttempt.findMany({
-    where: { assessmentId, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
-    select: { id: true, score: true, totalMarks: true },
+    where: { assessmentId: { in: assessmentIds }, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
+    select: { id: true, assessmentId: true, score: true, totalMarks: true },
   })
-  const ranked = allAttempts
-    .map((a) => ({ id: a.id, pct: a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0 }))
-    .sort((a, b) => b.pct - a.pct)
-  return {
-    rank: ranked.findIndex((a) => a.id === attemptId) + 1,
-    totalStudents: ranked.length,
+
+  const byAssessment = new Map<string, { id: string; pct: number }[]>()
+  for (const a of allAttempts) {
+    const pct = a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0
+    const group = byAssessment.get(a.assessmentId) ?? []
+    group.push({ id: a.id, pct })
+    byAssessment.set(a.assessmentId, group)
   }
+  for (const group of byAssessment.values()) {
+    group.sort((a, b) => b.pct - a.pct)
+  }
+
+  const result = new Map<string, { rank: number; totalStudents: number }>()
+  for (const { assessmentId, attemptId } of entries) {
+    const ranked = byAssessment.get(assessmentId) ?? []
+    result.set(attemptId, { rank: ranked.findIndex((a) => a.id === attemptId) + 1, totalStudents: ranked.length })
+  }
+  return result
 }
 
 export default async function StudentResultsPage() {
@@ -68,6 +81,8 @@ export default async function StudentResultsPage() {
   // Compute trend (vs. the previous attempt in the same subject) walking
   // oldest-first, then reverse back to newest-first for display.
   const chronological = [...attempts].reverse()
+  const ranks = await getRanks(chronological.map((a) => ({ assessmentId: a.assessmentId, attemptId: a.id })))
+
   const previousPctBySubject: Record<string, number> = {}
   const results: {
     attemptId: string
@@ -91,7 +106,7 @@ export default async function StudentResultsPage() {
     const trend: "up" | "down" | null = prevPct === undefined ? null : percentage >= prevPct ? "up" : "down"
     previousPctBySubject[subjectName] = percentage
 
-    const { rank, totalStudents } = await getRank(attempt.assessmentId, attempt.id)
+    const { rank, totalStudents } = ranks.get(attempt.id) ?? { rank: 0, totalStudents: 0 }
 
     results.push({
       attemptId: attempt.id,

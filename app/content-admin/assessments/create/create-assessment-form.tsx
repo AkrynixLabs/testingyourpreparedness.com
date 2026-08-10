@@ -153,7 +153,12 @@ export function CreateAssessmentForm({
             {/* Question selection */}
             <Card className="border-border/50">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                {/* flex-col->sm:flex-row and flex-wrap added - a title +
+                    description block next to a fixed 250px search Input
+                    in a non-wrapping row overflows a narrow phone
+                    viewport with no fallback. Found by a static
+                    mobile-audit pass 2026-08-08 (see docs/build-log.md). */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="text-lg">Questions</CardTitle>
                     <CardDescription>
@@ -164,7 +169,7 @@ export function CreateAssessmentForm({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search questions..."
-                      className="pl-9 w-[250px]"
+                      className="pl-9 w-full sm:w-[250px]"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />

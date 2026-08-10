@@ -1,8 +1,13 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { Card, CardContent } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
 import { CoursesTable } from "./courses-table"
 
 export default async function CoursesPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const courses = await prisma.course.findMany({
     orderBy: { publishedAt: "desc" },
     include: {
@@ -15,6 +20,13 @@ export default async function CoursesPage() {
   const publishedCount = courses.filter((c) => c.status === "published").length
   const flaggedCount = courses.filter((c) => c.status === "flagged").length
   const removedCount = courses.filter((c) => c.status === "removed").length
+
+  // Strip passwordHash off each course's tutor.user before crossing the RSC
+  // boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+  const safeCourses = courses.map((c) => {
+    const { passwordHash: _pwHash, ...safeUser } = c.tutor.user
+    return { ...c, tutor: { ...c.tutor, user: safeUser } }
+  })
 
   return (
     <div className="space-y-6">
@@ -54,7 +66,7 @@ export default async function CoursesPage() {
         </Card>
       </div>
 
-      <CoursesTable courses={courses} />
+      <CoursesTable courses={safeCourses} />
     </div>
   )
 }

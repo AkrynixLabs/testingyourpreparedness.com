@@ -100,7 +100,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
           guardianName: formData.guardianName,
           guardianPhone: formData.guardianPhone,
           guardianEmail: formData.guardianEmail,
-          guardianApproved: formData.agreeTerms,
+          consentToContactGuardian: formData.agreeTerms,
         })
         studentId = result.studentId
         email = result.email
@@ -345,10 +345,11 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="guardianEmail">Guardian Email (Optional)</Label>
+                  <Label htmlFor="guardianEmail">Guardian Email</Label>
                   <Input
                     id="guardianEmail"
                     type="email"
+                    required
                     placeholder="guardian@example.com"
                     value={formData.guardianEmail}
                     onChange={(e) => updateFormData("guardianEmail", e.target.value)}
@@ -357,8 +358,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
 
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <p className="text-sm text-amber-700 dark:text-amber-400">
-                    Your guardian will receive updates about your progress and will be required to approve your
-                    subscription.
+                    We&apos;ll email your guardian a link to review and approve this registration.
                   </p>
                 </div>
               </CardContent>
@@ -452,7 +452,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
                     <Link href="/privacy" className="text-primary hover:underline">
                       Privacy Policy
                     </Link>
-                    . I confirm that my guardian has approved this registration.
+                    . I consent to my guardian being contacted by email to approve this registration.
                   </label>
                 </div>
               </CardContent>

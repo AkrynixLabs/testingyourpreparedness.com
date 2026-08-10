@@ -1,7 +1,12 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { SuperAdminDashboardView } from "./super-admin-dashboard-view"
 
 export default async function SuperAdminDashboard() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [totalSchools, totalStudents, assessmentsTaken] = await Promise.all([
     prisma.school.count(),
     prisma.student.count(),
@@ -74,7 +79,9 @@ export default async function SuperAdminDashboard() {
     .sort((a, b) => b.avgScore - a.avgScore)
 
   const recentActivity = await prisma.auditLog.findMany({
-    include: { actor: true },
+    // actor scoped with `select`, not `include: true` - only .name is
+    // rendered here. Found by a security audit 2026-08-08 (see docs/build-log.md).
+    include: { actor: { select: { id: true, name: true } } },
     orderBy: { timestamp: "desc" },
     take: 5,
   })

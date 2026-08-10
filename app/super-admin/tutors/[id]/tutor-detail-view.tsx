@@ -42,7 +42,7 @@ export function TutorDetailView({
   courses,
   stats,
 }: {
-  tutor: TutorProfile & { user: User }
+  tutor: TutorProfile & { user: Omit<User, "passwordHash"> }
   courses: CourseRow[]
   stats: { totalCourses: number; totalStudents: number; totalEarnings: number; totalRevenue: number }
 }) {

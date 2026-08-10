@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { LeaderboardView } from "./leaderboard-view"
 
@@ -6,6 +8,9 @@ function isPass(score: number, totalMarks: number) {
 }
 
 export default async function SuperAdminLeaderboardPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [schools, students, questions, subjects, independentCount] = await Promise.all([
     prisma.school.findMany({
       include: { students: { include: { examAttempts: true } } },

@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 export type RegisterTutorInput = {
   name: string
@@ -20,6 +21,8 @@ export type RegisterTutorInput = {
 // call after this resolves, same auto-sign-in pattern as
 // registerIndependentStudent/registerJoinedStudent.
 export async function registerTutor(input: RegisterTutorInput) {
+  await enforceRateLimit("signup")
+
   const name = input.name.trim()
   const email = input.email.trim().toLowerCase()
   const headline = input.headline.trim()

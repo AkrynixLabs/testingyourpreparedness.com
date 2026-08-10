@@ -102,7 +102,16 @@ model Invitation {
   invitedById String
   invitedBy   User             @relation("InvitationInvitedBy", fields: [invitedById], references: [id])
   status      InvitationStatus @default(pending)
-  createdAt   DateTime         @default(now())
+  // Added 2026-08-08 so an invite can actually be redeemed via a real
+  // one-click link (app/invite/accept) - previously this was just a
+  // pending record with no way for the invited person to accept it, even
+  // though `accepted`/`expired` already existed on InvitationStatus.
+  // Assigned in the DAL (crypto.randomBytes, same pattern as
+  // User.resetToken), not a DB default - Prisma has no random-string default.
+  token       String           @unique
+  expiresAt   DateTime
+
+  createdAt DateTime @default(now())
 
   @@index([schoolId])
 }
@@ -247,6 +256,7 @@ model Student {
   assignmentTargets   AssessmentAssignmentStudent[]
   courseEnrollments   Enrollment[]
   coursePurchases     CoursePurchase[]
+  courseReviews       CourseReview[]
 
   @@index([schoolId])
   @@index([classId])
@@ -262,14 +272,20 @@ enum GuardianRelation {
 // Single source of truth - resolves the guardian info duplicated across
 // student/profile, student/settings, and the school-admin add-student form.
 model Guardian {
-  id         String           @id @default(cuid())
-  studentId  String           @unique
-  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  name       String
-  phone      String
-  email      String?
-  relation   GuardianRelation
-  approvedAt DateTime? // gates independent-student signup checkout
+  id                     String           @id @default(cuid())
+  studentId              String           @unique
+  student                Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name                   String
+  phone                  String
+  email                  String?
+  relation               GuardianRelation
+  approvedAt             DateTime? // real approval timestamp, set by app/guardian/approve - NOT gating anything downstream yet (independent-student signup/checkout proceeds immediately regardless), same as before this flow existed
+  // Added 2026-08-08, same token/expiry pattern as Invitation - previously
+  // approvedAt was set immediately from the student's own self-attestation
+  // checkbox at signup, with no real out-of-band confirmation from the
+  // guardian at all. Nulled out once approved (can't be replayed).
+  approvalToken          String?          @unique
+  approvalTokenExpiresAt DateTime?
 }
 
 // ---------------------------------------------------------------------------
@@ -473,13 +489,20 @@ model ExamAttempt {
   // Anti-cheat: incremented client-side each time the exam tab loses focus
   // (visibilitychange/blur) during an in-progress attempt. Logging only -
   // the exam is never interrupted or auto-submitted because of this.
-  tabSwitchCount     Int     @default(0)
+  tabSwitchCount     Int       @default(0)
   // Set once tabSwitchCount crosses a threshold (see recordTabSwitch) so a
   // reviewer can filter for it without recomputing the threshold themselves.
-  flaggedForReview   Boolean @default(false)
+  flaggedForReview   Boolean   @default(false)
 
   @@index([studentId])
   @@index([assignmentId])
+  // assessmentId had no index at all despite being the exact field every
+  // rank/leaderboard/results computation filters on (student/results,
+  // student/page, student/results/[id], school-admin/results,
+  // super-admin/leaderboard) - found by an N+1/expensive-query audit
+  // 2026-08-08 (see docs/build-log.md), added alongside the N+1 fixes in
+  // student/results/page.tsx and student/page.tsx that benefit from it most.
+  @@index([assessmentId])
 }
 
 // ---------------------------------------------------------------------------
@@ -803,17 +826,17 @@ enum TutorStatus {
 }
 
 model TutorProfile {
-  id             String      @id @default(cuid())
-  userId         String      @unique
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio            String?
-  headline       String?
-  expertiseAreas Json // string[]
-  status         TutorStatus @default(active)
+  id                     String      @id @default(cuid())
+  userId                 String      @unique
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                    String?
+  headline               String?
+  expertiseAreas         Json // string[]
+  status                 TutorStatus @default(active)
   // Set once the tutor completes Paystack subaccount setup - payouts can't
   // be split at charge time until this exists.
   paystackSubaccountCode String?
-  createdAt      DateTime    @default(now())
+  createdAt              DateTime    @default(now())
 
   courses Course[]
 }
@@ -839,9 +862,33 @@ model Course {
   modules     Module[]
   enrollments Enrollment[]
   purchases   CoursePurchase[]
+  reviews     CourseReview[]
 
   @@index([tutorId])
   @@index([status])
+}
+
+// Added 2026-08-08 - a real gap for a Coursera/Udemy-style catalog, students
+// couldn't rate/review a course they'd taken. One review per student per
+// course (upsert-able, not a fixed one-time submission - letting a student
+// revise their own rating/comment is a nicer UX and matches no other "lock
+// it forever" precedent elsewhere in this app). Gated on a real Enrollment
+// existing, checked in the Server Action, not via a schema-level FK - a
+// review isn't inherently tied to *which* purchase/enrollment row, just
+// that one exists.
+model CourseReview {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, studentId])
+  @@index([courseId])
 }
 
 model Module {

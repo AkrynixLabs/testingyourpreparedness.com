@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { TutorDetailView } from "./tutor-detail-view"
 
 export default async function TutorDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const { id } = await params
 
   const tutor = await prisma.tutorProfile.findUnique({
@@ -39,9 +43,14 @@ export default async function TutorDetailPage({ params }: { params: Promise<{ id
   const totalEarnings = courseRows.reduce((sum, c) => sum + c.earnings, 0)
   const totalRevenue = courseRows.reduce((sum, c) => sum + c.revenue, 0)
 
+  // Strip passwordHash before crossing the RSC boundary - found by a
+  // security audit 2026-08-08 (see docs/build-log.md).
+  const { passwordHash: _pwHash, ...safeUser } = tutor.user
+  const safeTutor = { ...tutor, user: safeUser }
+
   return (
     <TutorDetailView
-      tutor={tutor}
+      tutor={safeTutor}
       courses={courseRows}
       stats={{ totalCourses, totalStudents, totalEarnings, totalRevenue }}
     />

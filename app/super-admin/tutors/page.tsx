@@ -1,9 +1,14 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StatCard } from "@/components/stat-card"
 import { Users, CheckCircle2, BookOpen, Wallet } from "lucide-react"
 import { TutorsView } from "./tutors-view"
 
 export default async function TutorsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const profiles = await prisma.tutorProfile.findMany({
     include: {
       user: true,
@@ -26,7 +31,10 @@ export default async function TutorsPage() {
       (sum, c) => sum + c.purchases.reduce((s, p) => s + p.tutorPayout, 0),
       0
     )
-    return { ...profile, courseCount, totalStudents, totalEarnings }
+    // Strip passwordHash off the nested user before crossing the RSC
+    // boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+    const { passwordHash: _pwHash, ...safeUser } = profile.user
+    return { ...profile, user: safeUser, courseCount, totalStudents, totalEarnings }
   })
 
   const totalTutors = tutors.length

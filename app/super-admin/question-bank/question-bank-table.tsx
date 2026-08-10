@@ -44,13 +44,13 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { setQuestionActive } from "./actions"
-import type { Question, Subject, Topic, User, Difficulty } from "@/lib/generated/prisma/client"
+import type { Question, Subject, Topic, Difficulty } from "@/lib/generated/prisma/client"
 
 export type QuestionRow = Question & {
   subject: Subject
   topic: Topic
-  createdBy: User
-  reviewedBy: User | null
+  createdBy: { id: string; name: string }
+  reviewedBy: { id: string; name: string } | null
   timesUsed: number
 }
 

@@ -39,7 +39,7 @@ import type { Assessment, Class, Student, Subject, User } from "@/lib/generated/
 
 type AssessmentWithRelations = Assessment & { subject: Subject; _count: { questions: number } }
 type ClassWithCount = Class & { _count: { students: number } }
-type StudentWithRelations = Student & { user: User; class: Class | null }
+type StudentWithRelations = Student & { user: Omit<User, "passwordHash">; class: Class | null }
 
 type Step = 1 | 2 | 3 | 4
 
@@ -654,8 +654,7 @@ export function AssignAssessmentWizard({
                       <div>
                         <Label>Send Email Notification</Label>
                         <p className="text-sm text-muted-foreground">
-                          Notify students via email when assessment is assigned. Email delivery isn&apos;t wired up
-                          yet - this is stored as a preference only.
+                          Emails affected students when the assessment is assigned.
                         </p>
                       </div>
                       <Switch checked={sendNotification} onCheckedChange={setSendNotification} />

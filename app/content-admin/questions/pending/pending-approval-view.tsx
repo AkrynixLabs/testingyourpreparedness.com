@@ -22,10 +22,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { StatCard } from "@/components/stat-card"
-import type { Question, Subject, Topic, User } from "@/lib/generated/prisma/client"
+import type { Question, Subject, Topic } from "@/lib/generated/prisma/client"
 
 type PendingQuestion = Question & { subject: Subject; topic: Topic }
-type ReviewedQuestion = Question & { subject: Subject; topic: Topic; reviewedBy: User | null }
+type ReviewedQuestion = Question & { subject: Subject; topic: Topic; reviewedBy: { id: string; name: string } | null }
 
 export function PendingApprovalView({
   pendingQuestions,
@@ -285,6 +285,13 @@ export function PendingApprovalView({
                               <Eye className="h-4 w-4 mr-1" />
                               View
                             </Button>
+                            {question.status === "rejected" && (
+                              <Button variant="outline" size="sm" asChild>
+                                <Link href={`/content-admin/questions/${question.id}/edit`}>
+                                  Revise & Resubmit
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

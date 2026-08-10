@@ -3,10 +3,19 @@
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 export type VerifiedSchool = { schoolId: string; name: string; town: string; region: string }
 
+// Rate-limited here (not just on registerJoinedStudent, which calls this)
+// since a bare school-code lookup is itself the real abuse surface -
+// School.code is a short, guessable string (see the earlier "join" build-log
+// entry: it's not a rotatable/revocable secret), so unrestricted lookups
+// would let an attacker brute-force valid codes. Both call paths share one
+// "signup" bucket per IP.
 export async function verifySchoolCode(code: string): Promise<VerifiedSchool> {
+  await enforceRateLimit("signup")
+
   const normalized = code.trim().toUpperCase()
   if (!normalized) throw new Error("Enter an invite code.")
 

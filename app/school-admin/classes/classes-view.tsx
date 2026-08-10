@@ -300,7 +300,11 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
               <CardTitle>All Classes</CardTitle>
               <CardDescription>View and manage individual classes</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            {/* flex-wrap added - a 200px Input + 130px Select in a
+                non-wrapping row overflows a narrow phone viewport with
+                no fallback. Found by a static mobile-audit pass
+                2026-08-08 (see docs/build-log.md). */}
+            <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input

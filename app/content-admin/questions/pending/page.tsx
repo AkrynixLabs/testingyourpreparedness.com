@@ -11,9 +11,11 @@ export default async function PendingApprovalPage() {
       include: { subject: true, topic: true },
       orderBy: { createdAt: "desc" },
     }),
+    // reviewedBy scoped with `select`, not `include: true` - found by a
+    // security audit 2026-08-08 (see docs/build-log.md).
     prisma.question.findMany({
       where: { createdById: session!.user.id, status: { in: ["approved", "rejected"] } },
-      include: { subject: true, topic: true, reviewedBy: true },
+      include: { subject: true, topic: true, reviewedBy: { select: { id: true, name: true } } },
       orderBy: { updatedAt: "desc" },
     }),
   ])

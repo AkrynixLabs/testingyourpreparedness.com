@@ -1,10 +1,12 @@
 "use server"
 
 import bcrypt from "bcryptjs"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Role, type BillingCycle, type OwnershipType } from "@/lib/generated/prisma/client"
 import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -30,6 +32,8 @@ export type RegisterSchoolInput = {
 // below + the Paystack webhook. School verification (this `pending` status)
 // and payment are two independent gates, not the same thing.
 export async function registerSchool(input: RegisterSchoolInput) {
+  await enforceRateLimit("signup")
+
   const schoolName = input.schoolName.trim()
   const region = input.region.trim()
   const district = input.district.trim()
@@ -112,9 +116,35 @@ export type InitializeCheckoutInput = {
 // (see app/api/webhooks/paystack/route.ts). Never trust a client-reported
 // "payment succeeded" - the webhook (or, as a fallback, server-side
 // verifyTransaction on the callback page) is the only source of truth.
+//
+// This action is legitimately called two ways - anonymously, right after
+// registerSchool succeeds in the signup wizard (no session exists yet, by
+// design - the new admin isn't auto-signed-in), and authenticated, from
+// school-admin/subscription's initiateUpgradeCheckout (which already
+// resolves schoolId from the caller's own session before calling this). A
+// security audit 2026-08-08 (see docs/build-log.md) found this action
+// itself never verified the caller owns input.schoolId - the upgrade path's
+// protection lived entirely in its caller, not here. Fixed with a check
+// that covers both real callers: if a session exists, it must be a
+// school_admin for exactly this school; if no session exists (the
+// legitimate anonymous case), the school must not already have a
+// Subscription - an anonymous caller has no business initiating checkout
+// for an already-subscribed school, which the real signup flow (brand new,
+// no subscription yet) never hits.
 export async function initializeSchoolCheckout(input: InitializeCheckoutInput) {
-  const school = await prisma.school.findUnique({ where: { id: input.schoolId } })
+  await enforceRateLimit("signup")
+
+  const session = await auth()
+  const school = await prisma.school.findUnique({ where: { id: input.schoolId }, include: { subscription: true } })
   if (!school) throw new Error("School not found.")
+
+  if (session?.user) {
+    if (session.user.role !== "school_admin") throw new Error("Not authorized")
+    const schoolAdmin = await prisma.schoolAdmin.findUnique({ where: { userId: session.user.id } })
+    if (!schoolAdmin || schoolAdmin.schoolId !== school.id) throw new Error("Not authorized")
+  } else if (school.subscription) {
+    throw new Error("Not authorized")
+  }
 
   const plan = await prisma.subscriptionPlan.findUnique({ where: { id: input.planId } })
   if (!plan || plan.audience !== "school") throw new Error("Invalid plan.")

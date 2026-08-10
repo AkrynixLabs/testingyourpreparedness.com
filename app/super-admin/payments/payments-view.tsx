@@ -48,13 +48,15 @@ import type {
   Subscription,
   School,
   Student,
-  User,
   SubscriptionPlan,
   PaymentStatus,
   PaymentMethodType,
 } from "@/lib/generated/prisma/client"
 
-type SubscriptionOwner = Subscription & { school: School | null; student: (Student & { user: User }) | null }
+type SubscriptionOwner = Subscription & {
+  school: School | null
+  student: (Student & { user: { id: string; name: string; email: string } }) | null
+}
 type PaymentRow = Payment & {
   invoice: (Invoice & { subscription: SubscriptionOwner & { plan: SubscriptionPlan } }) | null
 }

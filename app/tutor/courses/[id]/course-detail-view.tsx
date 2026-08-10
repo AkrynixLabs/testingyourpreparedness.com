@@ -16,7 +16,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Trash2, PlayCircle, FileText, Users, Wallet } from "lucide-react"
+import { Plus, Trash2, PlayCircle, FileText, Users, Wallet, Star } from "lucide-react"
 import { addModule } from "../actions"
 import type { LessonType } from "@/lib/generated/prisma/client"
 
@@ -35,6 +35,8 @@ type CourseDetail = {
   modules: { id: string; title: string; lessons: { id: string; title: string; type: string }[] }[]
   enrollments: { id: string; studentName: string; enrolledAt: string }[]
   totalRevenue: number
+  averageRating: number | null
+  reviewCount: number
 }
 
 export function CourseDetailView({ course }: { course: CourseDetail }) {
@@ -83,7 +85,7 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Students Enrolled</CardTitle>
@@ -100,6 +102,20 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">GHS {course.totalRevenue}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Average Rating</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {course.averageRating !== null ? course.averageRating.toFixed(1) : "-"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {course.reviewCount} review{course.reviewCount === 1 ? "" : "s"}
+            </p>
           </CardContent>
         </Card>
       </div>

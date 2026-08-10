@@ -1,9 +1,14 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StatCard } from "@/components/stat-card"
 import { Shield, CheckCircle2, FileQuestion } from "lucide-react"
 import { ContentAdminsView } from "./content-admins-view"
 
 export default async function ContentAdminsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [profiles, subjects, questionCounts] = await Promise.all([
     prisma.contentAdminProfile.findMany({
       include: { user: true, subjects: { include: { subject: true } } },
@@ -26,10 +31,16 @@ export default async function ContentAdminsPage() {
     countsByUser.set(row.createdById, entry)
   }
 
-  const admins = profiles.map((profile) => ({
-    ...profile,
-    counts: countsByUser.get(profile.userId) ?? { created: 0, approved: 0, pending: 0, rejected: 0 },
-  }))
+  // Strip passwordHash off each admin's nested user before crossing the RSC
+  // boundary - found by a security audit 2026-08-08 (see docs/build-log.md).
+  const admins = profiles.map((profile) => {
+    const { passwordHash: _pwHash, ...safeUser } = profile.user
+    return {
+      ...profile,
+      user: safeUser,
+      counts: countsByUser.get(profile.userId) ?? { created: 0, approved: 0, pending: 0, rejected: 0 },
+    }
+  })
 
   const totalAdmins = admins.length
   const activeAdmins = admins.filter((a) => a.status === "active").length

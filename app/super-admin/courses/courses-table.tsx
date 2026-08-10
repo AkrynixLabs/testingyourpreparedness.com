@@ -28,7 +28,7 @@ import { flagCourse, unflagCourse, removeCourse } from "./actions"
 import type { Course, TutorProfile, User } from "@/lib/generated/prisma/client"
 
 export type CourseRow = Course & {
-  tutor: TutorProfile & { user: User }
+  tutor: TutorProfile & { user: Omit<User, "passwordHash"> }
   _count: { enrollments: number }
 }
 

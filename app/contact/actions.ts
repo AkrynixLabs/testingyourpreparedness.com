@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 export type ContactFormInput = {
   firstName: string
@@ -12,6 +13,8 @@ export type ContactFormInput = {
 }
 
 export async function submitContactMessage(input: ContactFormInput) {
+  await enforceRateLimit("contact")
+
   const firstName = input.firstName.trim()
   const lastName = input.lastName.trim()
   const email = input.email.trim().toLowerCase()

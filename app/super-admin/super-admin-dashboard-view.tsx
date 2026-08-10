@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/stat-card"
 import { School, Users, BookOpen, CreditCard, BarChart3, ArrowRight } from "lucide-react"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
-import type { AuditLog, User } from "@/lib/generated/prisma/client"
+import type { AuditLog } from "@/lib/generated/prisma/client"
 
-type AuditLogRow = AuditLog & { actor: User | null }
+type AuditLogRow = AuditLog & { actor: { id: string; name: string } | null }
 
 export function SuperAdminDashboardView({
   stats,

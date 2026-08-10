@@ -1,11 +1,18 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StatCard } from "@/components/stat-card"
 import { Shield, CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
 import { AuditLogsTable } from "./audit-logs-table"
 
 export default async function AuditLogsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
+  // actor scoped with `select`, not `include: true` - only .name/.role are
+  // rendered. Found by a security audit 2026-08-08 (see docs/build-log.md).
   const logs = await prisma.auditLog.findMany({
-    include: { actor: true },
+    include: { actor: { select: { id: true, name: true, role: true } } },
     orderBy: { timestamp: "desc" },
     take: 500,
   })

@@ -1,7 +1,12 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { PlansView } from "./plans-view"
 
 export default async function SubscriptionPlansPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [plans, recentSubscriptions] = await Promise.all([
     prisma.subscriptionPlan.findMany({
       where: { audience: "school" },

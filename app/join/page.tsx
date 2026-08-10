@@ -176,7 +176,16 @@ export default function JoinSchoolPage() {
                   <CardDescription>Fill in your details to complete registration</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 grid-cols-2">
+                  {/* Was unconditional grid-cols-2 - the only form-field
+                      grid in the whole app without a responsive prefix,
+                      forcing First/Last Name side-by-side even on a narrow
+                      phone screen. Every sibling signup wizard uses
+                      sm:grid-cols-2 (single column below that breakpoint) -
+                      found by a static mobile-audit pass 2026-08-08 (see
+                      docs/build-log.md; this couldn't be visually confirmed,
+                      no browser tooling available, but it's a clear outlier
+                      against every other identical pattern in this codebase). */}
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
                       <Input

@@ -14,6 +14,7 @@ export default async function StudentCourseDetailPage({ params }: { params: Prom
       tutor: { include: { user: true } },
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       _count: { select: { enrollments: true } },
+      reviews: { include: { student: { include: { user: true } } }, orderBy: { createdAt: "desc" } },
     },
   })
   // A flagged course is still viewable (moderation review, not a takedown);
@@ -24,6 +25,10 @@ export default async function StudentCourseDetailPage({ params }: { params: Prom
   const enrollment = student
     ? await prisma.enrollment.findUnique({ where: { courseId_studentId: { courseId: course.id, studentId: student.id } } })
     : null
+
+  const myReview = student ? course.reviews.find((r) => r.studentId === student.id) : undefined
+  const averageRating =
+    course.reviews.length > 0 ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length : null
 
   return (
     <CourseDetailPurchaseView
@@ -43,6 +48,16 @@ export default async function StudentCourseDetailPage({ params }: { params: Prom
           lessons: m.lessons.map((l) => ({ id: l.id, title: l.title, type: l.type })),
         })),
         isEnrolled: !!enrollment,
+        averageRating,
+        reviews: course.reviews.map((r) => ({
+          id: r.id,
+          studentName: r.student.user.name,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: r.createdAt.toISOString(),
+          isMine: r.studentId === student?.id,
+        })),
+        myReview: myReview ? { rating: myReview.rating, comment: myReview.comment ?? "" } : null,
       }}
     />
   )

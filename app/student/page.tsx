@@ -2,15 +2,35 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StudentDashboardView } from "./student-dashboard-view"
 
-async function getRank(assessmentId: string, attemptId: string) {
+// Rewritten from a per-attempt query loop to one batched query - same N+1
+// fix and reasoning as student/results/page.tsx's own getRanks, found by an
+// N+1 audit 2026-08-08 (see docs/build-log.md). Kept as a local copy rather
+// than a shared import, same "two routes independently deployable" call
+// already made for this duplicated logic before the fix.
+async function getRanks(entries: { assessmentId: string; attemptId: string }[]): Promise<Map<string, { rank: number; totalStudents: number }>> {
+  const assessmentIds = Array.from(new Set(entries.map((e) => e.assessmentId)))
   const allAttempts = await prisma.examAttempt.findMany({
-    where: { assessmentId, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
-    select: { id: true, score: true, totalMarks: true },
+    where: { assessmentId: { in: assessmentIds }, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
+    select: { id: true, assessmentId: true, score: true, totalMarks: true },
   })
-  const ranked = allAttempts
-    .map((a) => ({ id: a.id, pct: a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0 }))
-    .sort((a, b) => b.pct - a.pct)
-  return { rank: ranked.findIndex((a) => a.id === attemptId) + 1, totalStudents: ranked.length }
+
+  const byAssessment = new Map<string, { id: string; pct: number }[]>()
+  for (const a of allAttempts) {
+    const pct = a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0
+    const group = byAssessment.get(a.assessmentId) ?? []
+    group.push({ id: a.id, pct })
+    byAssessment.set(a.assessmentId, group)
+  }
+  for (const group of byAssessment.values()) {
+    group.sort((a, b) => b.pct - a.pct)
+  }
+
+  const result = new Map<string, { rank: number; totalStudents: number }>()
+  for (const { assessmentId, attemptId } of entries) {
+    const ranked = byAssessment.get(assessmentId) ?? []
+    result.set(attemptId, { rank: ranked.findIndex((a) => a.id === attemptId) + 1, totalStudents: ranked.length })
+  }
+  return result
 }
 
 export default async function StudentDashboard() {
@@ -187,9 +207,10 @@ export default async function StudentDashboard() {
   }
 
   const recentAttempts = attempts.slice(0, 3)
+  const recentRanks = await getRanks(recentAttempts.map((a) => ({ assessmentId: a.assessmentId, attemptId: a.id })))
   const recentResults = []
   for (const attempt of recentAttempts) {
-    const { rank, totalStudents } = await getRank(attempt.assessmentId, attempt.id)
+    const { rank, totalStudents } = recentRanks.get(attempt.id) ?? { rank: 0, totalStudents: 0 }
     recentResults.push({
       attemptId: attempt.id,
       title: attempt.assessment.title,

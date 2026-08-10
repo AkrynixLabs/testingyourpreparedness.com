@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { AnalyticsView } from "./analytics-view"
 
@@ -8,6 +10,9 @@ function toMondayFirst(jsDay: number) {
 }
 
 export default async function AnalyticsPage() {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") notFound()
+
   const [
     totalStudents,
     activeSchools,

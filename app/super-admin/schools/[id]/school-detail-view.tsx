@@ -59,7 +59,7 @@ import type {
 } from "@/lib/generated/prisma/client"
 
 type SchoolWithRelations = School & {
-  admins: (SchoolAdmin & { user: User })[]
+  admins: (SchoolAdmin & { user: Omit<User, "passwordHash"> })[]
   subscription: (Subscription & { plan: SubscriptionPlan }) | null
 }
 
@@ -74,7 +74,7 @@ export function SchoolDetailView({
   stats,
 }: {
   school: SchoolWithRelations
-  primaryAdmin: (SchoolAdmin & { user: User }) | null
+  primaryAdmin: (SchoolAdmin & { user: Omit<User, "passwordHash"> }) | null
   students: {
     id: string
     name: string
@@ -335,7 +335,11 @@ export function SchoolDetailView({
 
         <TabsContent value="students" className="space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
+            {/* flex-wrap added - a 250px Input + 150px Select in a
+                non-wrapping row overflows a narrow phone viewport with
+                no fallback. Found by a static mobile-audit pass
+                2026-08-08 (see docs/build-log.md). */}
+            <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
