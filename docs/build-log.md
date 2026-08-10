@@ -788,6 +788,13 @@ Fixed sites, by pattern:
 - All sends go through the existing `sendEmailBestEffort` (never blocks the underlying action on a down/unconfigured provider) and the existing `lib/email/templates.ts` template set, extended with the 4 new templates named above.
 - Verified: typecheck clean full-repo.
 
+**Decided/built 2026-08-08 — real Sentry error-monitoring wiring, closing the "Error monitoring (Sentry) is built" line `PROGRESS.md` had already been carrying**:
+- `instrumentation.ts`'s `register()` imports `sentry.server.config.ts`/`sentry.edge.config.ts` per runtime (this Next.js version's current instrumentation convention — confirmed against `node_modules/next/dist/docs`, not assumed); `instrumentation-client.ts` handles the browser side. All three gate `Sentry.init()` on `NEXT_PUBLIC_SENTRY_DSN` being set — unconfigured, the SDK is never initialized and every capture call is a no-op, the same "safe to ship without real keys" shape as `lib/payments/paystack.ts`/`lib/email/resend.ts`/`lib/rate-limit.ts`.
+- `next.config.mjs` wraps the config in `withSentryConfig` for source-map upload on build, already pointed at a real org/project (`akrynix-labs`/`javascript-nextjs`) rather than left as placeholder env-var references — the upload step itself still needs a real `SENTRY_AUTH_TOKEN`, confirmed to degrade gracefully (skips the upload, doesn't fail the build) without one via a real `next build` run.
+- `app/global-error.tsx` added — App Router's own top-level error boundary, wired to `Sentry.captureException` so unhandled render errors actually get reported once a DSN exists, not just server-side/request errors.
+- `app/sentry-example-page`/`app/api/sentry-example-api` — the Sentry setup wizard's own self-contained test page/route for confirming a real DSN receives events. Left in as a genuinely useful one-time verification tool for whoever adds the real key; harmless either way since it inherits the same no-op-without-a-DSN behavior as everything else here.
+- Verified: typecheck clean full-repo.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
