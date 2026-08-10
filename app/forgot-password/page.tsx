@@ -104,10 +104,11 @@ export default function ForgotPasswordPage() {
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm">
                   <p className="flex items-center gap-2 font-medium text-amber-700 dark:text-amber-400 mb-2">
                     <KeyRound className="h-4 w-4" />
-                    No email service is set up yet
+                    Check your email, or use the link below
                   </p>
                   <p className="text-muted-foreground mb-2">
-                    Normally this link would be emailed to you. For now, use it directly:
+                    We've also tried to email this link to you. If it doesn't arrive (e.g. no live email provider is
+                    configured in this environment), you can use it directly:
                   </p>
                   {resetUrl && (
                     <Link href={resetUrl} className="text-primary font-medium hover:underline break-all">

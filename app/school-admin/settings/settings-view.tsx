@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Building2, Mail, Phone, Globe, MapPin, Bell, Shield, Users, Key, Save, X } from "lucide-react"
-import { updateSchoolProfile, inviteAdmin, cancelInvitation, removeAdmin, updatePassword } from "./actions"
+import { updateSchoolProfile, inviteAdmin, cancelInvitation, resendInvitation, removeAdmin, updatePassword } from "./actions"
 import type { EducationLevel, Invitation, School, SchoolAdmin, User } from "@/lib/generated/prisma/client"
 
 type SafeUser = Omit<User, "passwordHash">
@@ -105,6 +105,23 @@ export function SettingsView({
     startTransition(async () => {
       await cancelInvitation(id)
       router.refresh()
+    })
+  }
+
+  const [resendInviteError, setResendInviteError] = useState<string | null>(null)
+  const [resendingInviteId, setResendingInviteId] = useState<string | null>(null)
+
+  const handleResendInvite = (id: string) => {
+    setResendInviteError(null)
+    setResendingInviteId(id)
+    startTransition(async () => {
+      try {
+        await resendInvitation(id)
+      } catch (err) {
+        setResendInviteError(err instanceof Error ? err.message : "Failed to resend invitation.")
+      } finally {
+        setResendingInviteId(null)
+      }
     })
   }
 
@@ -288,8 +305,8 @@ export function SettingsView({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Invite Administrator</AlertDialogTitle>
                       <AlertDialogDescription>
-                        There&apos;s no email delivery set up yet, so the invitation is recorded but no email is
-                        actually sent - share the sign-up link with them directly for now.
+                        We&apos;ll email them a one-click link to accept and create their account. It expires in 7
+                        days.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="py-4">
@@ -362,12 +379,25 @@ export function SettingsView({
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {resendInviteError && (
+                    <p className="text-sm text-destructive">{resendInviteError}</p>
+                  )}
                   {invitations.map((inv) => (
                     <div key={inv.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <span className="text-sm">{inv.email}</span>
-                      <Button variant="ghost" size="sm" onClick={() => handleCancelInvite(inv.id)} disabled={isPending}>
-                        Cancel
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendInvite(inv.id)}
+                          disabled={isPending}
+                        >
+                          {resendingInviteId === inv.id ? "Resending..." : "Resend"}
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleCancelInvite(inv.id)} disabled={isPending}>
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -24,7 +24,7 @@ import {
   X,
   KeyRound,
 } from "lucide-react"
-import { createStudent, bulkCreateStudents, type BulkStudentResult } from "./actions"
+import { createStudent, bulkCreateStudents, resendStudentCredentials, type BulkStudentResult } from "./actions"
 import { normalizeHeader, validateStudentRow, type ParsedStudentRow, type ValidatedStudentRow } from "./validation"
 import type { Class, Gender, GuardianRelation } from "@/lib/generated/prisma/client"
 
@@ -72,10 +72,17 @@ export function AddStudentForm({ classes }: { classes: Class[] }) {
   )
 }
 
+type AddedStudent = { studentId: string; name: string; email: string; tempPassword: string }
+
 function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () => void }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [credentials, setCredentials] = useState<{ email: string; tempPassword: string } | null>(null)
+  // A running list, not a single overwritten value - "Add Another" lets one
+  // session create several students in a row, and each one's credentials
+  // (and a way to resend them) should stay visible, not get replaced by the
+  // next add.
+  const [addedStudents, setAddedStudents] = useState<AddedStudent[]>([])
+  const [resendingId, setResendingId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -115,7 +122,6 @@ function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () =>
 
   const handleSubmit = (andAddAnother: boolean) => {
     setError(null)
-    setCredentials(null)
     const name = `${formData.firstName} ${formData.lastName}`.trim()
 
     startTransition(async () => {
@@ -133,7 +139,10 @@ function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () =>
           guardianEmail: formData.guardianEmail,
           guardianRelation: formData.guardianRelation,
         })
-        setCredentials({ email: formData.email.trim().toLowerCase(), tempPassword: result.tempPassword })
+        setAddedStudents((prev) => [
+          ...prev,
+          { studentId: result.studentId, name, email: formData.email.trim().toLowerCase(), tempPassword: result.tempPassword },
+        ])
         resetForm()
         if (!andAddAnother) {
           onDone()
@@ -151,15 +160,67 @@ function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () =>
           {error}
         </p>
       )}
-      {credentials && (
-        <Alert>
-          <KeyRound className="h-4 w-4" />
-          <AlertTitle>Student added</AlertTitle>
-          <AlertDescription>
-            There&apos;s no email delivery set up yet, so share these sign-in details with the student directly:{" "}
-            <strong>{credentials.email}</strong> / <strong>{credentials.tempPassword}</strong>
-          </AlertDescription>
-        </Alert>
+      {addedStudents.length > 0 && (
+        <Card className="border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <KeyRound className="h-4 w-4" />
+              Students added this session
+            </CardTitle>
+            <CardDescription>
+              We&apos;ve emailed each student their sign-in details. Delivery can&apos;t be confirmed - resend if
+              one didn&apos;t arrive (this issues a new temporary password, replacing the one shown here).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Temp Password</TableHead>
+                  <TableHead className="w-[140px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {addedStudents.map((s) => (
+                  <TableRow key={s.studentId}>
+                    <TableCell>{s.name}</TableCell>
+                    <TableCell>{s.email}</TableCell>
+                    <TableCell className="font-mono">{s.tempPassword}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={resendingId === s.studentId}
+                        onClick={() => {
+                          setError(null)
+                          setResendingId(s.studentId)
+                          startTransition(async () => {
+                            try {
+                              const result = await resendStudentCredentials(s.studentId)
+                              setAddedStudents((prev) =>
+                                prev.map((row) =>
+                                  row.studentId === s.studentId ? { ...row, tempPassword: result.tempPassword } : row
+                                )
+                              )
+                            } catch (err) {
+                              setError(err instanceof Error ? err.message : "Failed to resend email.")
+                            } finally {
+                              setResendingId(null)
+                            }
+                          })
+                        }}
+                      >
+                        {resendingId === s.studentId ? "Resending..." : "Resend Email"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
