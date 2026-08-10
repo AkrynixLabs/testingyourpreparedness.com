@@ -38,6 +38,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-10
 
+- **Work has started on a mobile app** (Flutter, iOS + Android) — a new track alongside the web platform, not a replacement. First slice covers the core student loop: log in, see your assigned exams, view past results. Taking an exam on the phone itself isn't wired up yet. New backend API routes were added for the app to talk to, and everything's been verified working end-to-end against the real database and a real Flutter toolchain (not just "should work" — actually run and checked).
 - **`/terms` and `/privacy` now have real, product-accurate drafted content**, replacing the "nothing written yet" placeholders — closes the last of the four launch-blockers listed above except the actual lawyer review. Covers what data is really collected (checked against the real database structure, not guessed), how payments/payouts actually work, the guardian-approval flow for student accounts, and references Ghana's own Data Protection Act rather than generic boilerplate. Both pages still carry a visible "draft, pending legal review" notice — this is a strong first draft for a lawyer to check, not finalized legal text.
 
 ### 2026-08-08

@@ -1,7 +1,7 @@
-/// Mirrors lib/student/exams.ts's AvailableExam, ScheduledExam, and
-/// CompletedExam types (returned by GET /api/mobile/exams) - kept as three
-/// distinct model classes, same as the server side, rather than one
-/// union-ish type with a bunch of nullable fields.
+// Mirrors lib/student/exams.ts's AvailableExam, ScheduledExam, and
+// CompletedExam types (returned by GET /api/mobile/exams) - kept as three
+// distinct model classes, same as the server side, rather than one
+// union-ish type with a bunch of nullable fields.
 
 class AvailableExam {
   final String assessmentId;

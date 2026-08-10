@@ -10,38 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Clock, FileQuestion, Play, Lock, Calendar, Filter } from "lucide-react"
 import type { Difficulty } from "@/lib/generated/prisma/client"
-
-export type AvailableExam = {
-  assessmentId: string
-  title: string
-  subjectName: string
-  duration: number
-  questionCount: number
-  difficulty: Difficulty | null
-  deadline: Date | null
-  attempts: number
-  maxAttempts: number | null
-}
-
-export type ScheduledExam = {
-  assignmentId: string
-  title: string
-  subjectName: string
-  duration: number
-  questionCount: number
-  difficulty: Difficulty | null
-  startDate: Date
-}
-
-export type CompletedExam = {
-  attemptId: string
-  title: string
-  subjectName: string
-  score: number
-  totalMarks: number
-  submittedAt: Date
-  timeSpentSeconds: number | null
-}
+import type { AvailableExam, ScheduledExam, CompletedExam } from "@/lib/student/exams"
+export type { AvailableExam, ScheduledExam, CompletedExam } from "@/lib/student/exams"
 
 const getDifficultyColor = (difficulty: Difficulty | null) => {
   switch (difficulty) {
