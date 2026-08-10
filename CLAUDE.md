@@ -119,6 +119,8 @@ Short summary — see [`docs/data-model.md`](./docs/data-model.md) for the full 
 
 **Background jobs** — Not yet decided; bulk upload stays synchronous client-side-parse (≤5MB, per current UI copy).
 
+**Mobile** — Decided/started 2026-08-10: a Flutter app (iOS + Android), living in `/mobile` inside this same repo (not a separate repo), talking to new REST routes under `app/api/mobile/**` in this same Next.js app (no separate backend service). **v1 scope is student-only**: login → see assigned exams → take a timed exam → results/leaderboard — not the course marketplace, not other roles, until this loop proves out. `app/api/mobile/auth/login` (student-only, 403s any other role), `app/api/mobile/exams` (available/scheduled/completed, reuses `lib/student/exams.ts`'s existing eligibility logic rather than a second copy), and `app/api/mobile/me` exist; exam-attempt start/submit endpoints do not yet. The Flutter client scaffold (`lib/main.dart`, `screens/`, `services/api_client.dart` + `token_storage.dart` using `flutter_secure_storage` for the bearer token, `models/`, a `theme/app_theme.dart` converted from the web app's real `app/globals.css` OKLCH tokens rather than a separately-invented palette) covers login + the 3-tab exams list; exam-taking itself is stubbed pending the attempt endpoints. See `docs/build-log.md`'s 2026-08-10 entry.
+
 ## Architectural Principles
 
 1. **The frontend is the source of truth for product behavior.** Don't redesign flows/statuses/permissions while building the backend — match what's built in `app/**`. Raise anything that seems wrong as a question, don't silently change it.
