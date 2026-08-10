@@ -5,15 +5,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { Reveal } from "@/components/reveal"
+import { AnimatedStat } from "@/components/animated-stat"
+import { CustomCursor } from "@/components/custom-cursor"
+import { HeroImageSlider } from "@/components/hero-image-slider"
+import { ExamDemoDashboard } from "@/components/exam-demo-dashboard"
 import {
   BookOpen,
-  BarChart3,
   Users,
   GraduationCap,
-  CheckCircle2,
   ArrowRight,
   School,
-  Brain,
   Target,
   TrendingUp,
   Stethoscope,
@@ -22,7 +23,6 @@ import {
   Clock,
   ClipboardCheck,
   Award,
-  Star,
 } from "lucide-react"
 
 const colorClasses = {
@@ -41,6 +41,9 @@ const programs: {
   icon: typeof GraduationCap
   color: ChartColor
   featured?: boolean
+  tag?: string
+  image?: string
+  imageAlt?: string
 }[] = [
   {
     name: "BECE",
@@ -48,25 +51,33 @@ const programs: {
     icon: GraduationCap,
     color: "chart-1",
     featured: true,
+    tag: "Flagship track",
+    image: "/images/homepage/zach-wear-wjCYyd_KppE.jpg",
+    imageAlt: "A classroom of students seated at their desks during an exam",
   },
   {
     name: "WASSCE",
     description: "Senior High School exit exam prep for the West African syllabus.",
     icon: BookOpen,
     color: "chart-2",
-    featured: true,
+    image: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg",
+    imageAlt: "A group of students smiling together outside their classroom",
   },
   {
     name: "Nursing Exams",
     description: "Entrance and licensing exam prep for aspiring nurses.",
     icon: Stethoscope,
     color: "chart-3",
+    image: "/images/homepage/annie-spratt-OIuCXxx08yg.jpg",
+    imageAlt: "Students seated attentively in a classroom",
   },
   {
     name: "University Entrance",
     description: "Practice tests for tertiary admission exams.",
     icon: Landmark,
     color: "chart-4",
+    image: "/images/homepage/dom-fou-YRMWVcdyhmI-unsplash.jpg",
+    imageAlt: "A university lecture hall filled with students",
   },
   {
     name: "Digital Skills",
@@ -83,87 +94,85 @@ const stats = [
   { icon: ClipboardCheck, value: "284K+", label: "Assessments Taken" },
 ]
 
-const features: {
-  icon: typeof BookOpen
+const heroSliderImages = [
+  { src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg", alt: "A classroom of students seated at their desks during an exam" },
+  { src: "/images/homepage/annie-spratt-OIuCXxx08yg.jpg", alt: "Students seated attentively in a classroom" },
+  { src: "/images/homepage/emmanuel-ikwuegbu-VC6MGt9ZoBA.jpg", alt: "A student reading through her workbook during a lesson" },
+  { src: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg", alt: "A student in class alongside classmates writing in their notebooks" },
+  { src: "/images/homepage/storyzangu-hub-2JFGBQhdHu0.jpg", alt: "A student concentrating while writing in her notebook during class" },
+  { src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg", alt: "A group of students smiling together outside their classroom" },
+  { src: "/images/homepage/bill-wegener-hs98_9hzTcU.jpg", alt: "A student smiling and making a peace sign in class" },
+]
+
+const classroomPhotos = [
+  {
+    src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg",
+    alt: "A classroom of students seated at their desks during an exam",
+    className: "lg:row-span-2",
+  },
+  {
+    src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg",
+    alt: "A group of students smiling together outside their classroom",
+  },
+  {
+    src: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg",
+    alt: "A student in class alongside classmates writing in their notebooks",
+  },
+]
+
+const steps: {
+  number: string
+  icon: typeof Target
   color: ChartColor
   title: string
   description: string
+  image: string
+  imageAlt: string
 }[] = [
   {
-    icon: BookOpen,
-    color: "chart-1",
-    title: "Comprehensive Question Bank",
-    description:
-      "Access thousands of exam-standard questions across BECE, WASSCE, nursing, university entrance, and digital skills, organized by topic and difficulty level.",
-  },
-  {
-    icon: BarChart3,
-    color: "chart-2",
-    title: "Detailed Analytics",
-    description: "Track performance with insightful reports, identify weak areas, and monitor improvement over time.",
-  },
-  {
-    icon: Brain,
-    color: "chart-3",
-    title: "Smart Recommendations",
-    description: "Get personalized study suggestions based on your performance to focus on what matters most.",
-  },
-  {
+    number: "01",
     icon: Target,
-    color: "chart-4",
-    title: "Timed Practice Exams",
-    description: "Experience real exam conditions with timed assessments that prepare you for the real thing.",
-  },
-  {
-    icon: Users,
-    color: "chart-5",
-    title: "School Management",
-    description: "Easily manage students, classes, and assessments with our intuitive school administration tools.",
-  },
-  {
-    icon: TrendingUp,
     color: "chart-1",
-    title: "Progress Tracking",
-    description: "Monitor progress over time with visual charts, leaderboards, and comprehensive performance reports.",
-  },
-]
-
-const steps = [
-  {
-    icon: Target,
     title: "Choose Your Track",
     description: "Pick BECE, WASSCE, nursing, university entrance, or digital skills — or study more than one at once.",
+    image: "/images/homepage/emmanuel-ikwuegbu-VC6MGt9ZoBA.jpg",
+    imageAlt: "A student reading through her workbook during a lesson",
   },
   {
+    number: "02",
     icon: Clock,
+    color: "chart-4",
     title: "Practice Under Real Conditions",
     description: "Take timed, topic-based assessments built from a vetted, examiner-reviewed question bank.",
+    image: "/images/homepage/storyzangu-hub-2JFGBQhdHu0.jpg",
+    imageAlt: "A student concentrating while writing in her notebook during class",
   },
   {
+    number: "03",
     icon: TrendingUp,
+    color: "chart-2",
     title: "Track & Improve",
     description: "See exactly where you're strong and weak, then get pointed at what to study next.",
+    image: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg",
+    imageAlt: "A student in class alongside classmates writing in their notebooks",
   },
 ]
 
-const mockQuestion = {
-  subject: "Mathematics",
-  text: "Simplify: 3x + 2y - x + 4y",
-  options: ["2x + 6y", "4x + 6y", "2x + 2y", "4x + 2y"],
-  correctAnswer: 0,
-}
-
 export default function LandingPage() {
+  const [heroProgram, ...otherPrograms] = programs
+
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <PublicHeader />
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-20 md:py-28">
-          <div className="absolute inset-0 bg-scantron" />
+        <section className="relative isolate overflow-hidden pt-4 pb-24 md:pt-6 md:pb-32">
+          <HeroImageSlider images={heroSliderImages} maxOpacity={0.9} />
+          <div className="absolute inset-0 bg-background/20" />
           <div className="absolute inset-0 bg-grain" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background via-background/70 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/15 to-transparent" />
           <div
             aria-hidden
             className="animate-glow-pulse absolute left-1/2 top-0 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/20 blur-[120px]"
@@ -175,131 +184,38 @@ export default function LandingPage() {
           />
 
           <div className="container mx-auto px-4 relative">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left: copy */}
-              <div className="text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-6">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
-                  Trusted by 127+ schools across Ghana
-                </div>
-                <h1 className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-balance">
-                  From BECE to University, Prepare with{" "}
-                  <span className="text-primary">Confidence</span>
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0 text-pretty">
-                  TYP is Ghana&apos;s all-in-one exam prep and digital skills platform — covering BECE, WASSCE, nursing, and university entrance exams, plus job-ready digital skills training, through practice tests, detailed analytics, and personalized learning paths.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                  <Button size="lg" asChild className="text-base px-8">
-                    <Link href="/signup">
-                      Start Free Trial
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button size="lg" variant="outline" asChild className="text-base px-8">
-                    <Link href="/pricing">View Pricing</Link>
-                  </Button>
-                </div>
-
-                {/* Program pills */}
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mt-10">
-                  {programs.map((program) => (
-                    <span
-                      key={program.name}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/60 backdrop-blur text-sm font-medium text-foreground/80"
-                    >
-                      <program.icon className="h-3.5 w-3.5 text-primary" />
-                      {program.name}
-                    </span>
-                  ))}
-                </div>
+            {/* Centered copy */}
+            <div className="text-center max-w-3xl mx-auto">
+              <div className="inline-flex items-center gap-2 text-muted-foreground text-xs font-semibold tracking-[0.15em] uppercase mb-4">
+                <span className="h-px w-6 bg-border" />
+                Trusted by 127+ schools across Ghana
+                <span className="h-px w-6 bg-border" />
               </div>
-
-              {/* Right: product mock */}
-              <div className="relative hidden lg:block">
-                <Card className="border-border shadow-xl shadow-black/10">
-                  <CardContent className="p-6 space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold px-2 py-1 rounded-md bg-secondary text-secondary-foreground">
-                          {mockQuestion.subject}
-                        </span>
-                        <span className="text-xs text-muted-foreground">Question 3 of 40</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 rounded-lg bg-primary/10 text-primary px-2.5 py-1 text-sm font-mono font-bold">
-                        <Clock className="h-3.5 w-3.5" />
-                        18:42
-                      </div>
-                    </div>
-
-                    <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                      <div className="h-full w-[68%] rounded-full bg-primary" />
-                    </div>
-
-                    <p className="text-lg font-semibold leading-relaxed">{mockQuestion.text}</p>
-
-                    <div className="space-y-2">
-                      {mockQuestion.options.map((option, i) => {
-                        const isCorrect = i === mockQuestion.correctAnswer
-                        return (
-                          <div
-                            key={option}
-                            className={`flex items-center gap-3 rounded-lg border p-3 text-sm ${
-                              isCorrect ? "border-primary bg-primary/10" : "border-border"
-                            }`}
-                          >
-                            <span
-                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-                                isCorrect ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30"
-                              }`}
-                            >
-                              {String.fromCharCode(65 + i)}
-                            </span>
-                            <span className="flex-1">{option}</span>
-                            {isCorrect && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Floating score chip */}
-                <Card className="animate-float absolute -top-6 -right-6 border-border shadow-lg shadow-black/10">
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className="h-9 w-9 rounded-lg bg-emerald/15 flex items-center justify-center">
-                      <TrendingUp className="h-4 w-4 text-emerald" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold leading-none">+12%</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">This term</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Floating students chip */}
-                <Card className="animate-float-delayed absolute -bottom-6 -left-6 border-border shadow-lg shadow-black/10">
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
-                      <Users className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold leading-none">2,450</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">practicing now</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Floating "distinction" stamp */}
-                <div className="animate-float absolute top-1/2 -left-14 -translate-y-1/2 hidden xl:flex h-24 w-24 rotate-[-12deg] flex-col items-center justify-center gap-0.5 rounded-full border-2 border-dashed border-primary/50 bg-card/80 backdrop-blur shadow-lg shadow-black/10">
-                  <Star className="h-4 w-4 text-primary fill-primary" />
-                  <span className="text-[10px] font-bold tracking-wider text-primary">DISTINCTION</span>
-                  <Star className="h-4 w-4 text-primary fill-primary" />
-                </div>
+              <h1 className="font-display text-4xl md:text-6xl font-semibold tracking-tight mb-4 text-balance drop-shadow-[0_2px_16px_rgba(0,0,0,0.25)]">
+                From BECE to University, Prepare with{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  Confidence
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-foreground/90 mb-6 max-w-xl mx-auto text-pretty drop-shadow-[0_1px_10px_rgba(0,0,0,0.2)]">
+                TYP is Ghana&apos;s all-in-one exam prep and digital skills platform — covering BECE, WASSCE, nursing, and university entrance exams, plus job-ready digital skills training, through practice tests, detailed analytics, and personalized learning paths.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button size="lg" asChild className="group text-base px-8">
+                  <Link href="/signup" data-cursor="small">
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild className="text-base px-8">
+                  <Link href="/pricing" data-cursor="small">View Pricing</Link>
+                </Button>
               </div>
+            </div>
+
+            {/* Full-width demo dashboard */}
+            <div className="mt-6 md:mt-8" data-cursor="big">
+              <ExamDemoDashboard />
             </div>
           </div>
         </section>
@@ -313,7 +229,9 @@ export default function LandingPage() {
                   <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
                     <stat.icon className="h-4 w-4 text-primary" />
                   </div>
-                  <p className="text-2xl md:text-3xl font-semibold">{stat.value}</p>
+                  <p className="text-2xl md:text-3xl font-semibold tabular-nums">
+                    <AnimatedStat value={stat.value} />
+                  </p>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
@@ -322,31 +240,56 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-4">
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="container mx-auto px-4 relative">
             <Reveal className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">How TYP Works</h2>
+              <span className="text-sm font-semibold tracking-wide uppercase text-primary">The Process</span>
+              <h2 className="text-3xl md:text-4xl font-semibold mt-2 mb-4">How TYP Works</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Three steps between you and exam-day confidence.
               </p>
             </Reveal>
 
-            <div className="relative grid gap-10 md:grid-cols-3">
-              <div
-                aria-hidden
-                className="hidden md:block absolute top-7 left-[16.66%] right-[16.66%] h-px bg-border"
-              />
+            <div className="grid gap-6 md:grid-cols-3 md:items-stretch">
               {steps.map((step, i) => (
-                <Reveal key={step.title} delay={i * 120} className="relative text-center">
-                  <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/20">
-                    {i + 1}
-                  </div>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <step.icon className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-semibold">{step.title}</h3>
-                  </div>
-                  <p className="text-muted-foreground max-w-xs mx-auto text-pretty">{step.description}</p>
-                </Reveal>
+                <div key={step.title} className="flex items-stretch gap-6">
+                  <Reveal delay={i * 120} className="flex-1">
+                    <Card
+                      data-cursor="big"
+                      className="group relative flex h-full min-h-[26rem] flex-col justify-end overflow-hidden border-border p-0 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                      <img
+                        src={step.image}
+                        alt={step.imageAlt}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
+                      <div className="absolute inset-0 bg-grain opacity-30" />
+                      <span
+                        className="font-display pointer-events-none absolute -top-3 right-2 text-7xl font-semibold text-white opacity-[0.15]"
+                      >
+                        {step.number}
+                      </span>
+                      <CardContent className="relative p-7">
+                        <div
+                          className={`h-12 w-12 rounded-xl flex items-center justify-center mb-5 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 ${colorClasses[step.color].bg}`}
+                        >
+                          <step.icon className={`h-6 w-6 ${colorClasses[step.color].text}`} />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2 text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.4)]">{step.title}</h3>
+                        <p className="text-white/85 text-pretty">{step.description}</p>
+                      </CardContent>
+                    </Card>
+                  </Reveal>
+
+                  {/* Flow connector between steps (desktop only) */}
+                  {i < steps.length - 1 && (
+                    <div aria-hidden className="hidden md:flex items-center">
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -357,132 +300,129 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-scantron opacity-70" />
           <div className="container mx-auto px-4 relative">
             <Reveal className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Every Stage, One Platform</h2>
+              <span className="text-sm font-semibold tracking-wide uppercase text-primary">Programs</span>
+              <h2 className="text-3xl md:text-4xl font-semibold mt-2 mb-4">Every Stage, One Platform</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Whether you&apos;re sitting your BECE this year or building the digital skills employers look for, TYP has a track built for you.
               </p>
             </Reveal>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-              {programs.map((program, i) => (
-                <Reveal
-                  key={program.name}
-                  delay={i * 80}
-                  className={program.featured ? "lg:col-span-3" : "lg:col-span-2"}
-                >
-                  <Card
-                    className={`h-full border-border shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all ${colorClasses[program.color].ring}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${colorClasses[program.color].bg}`}>
-                        <program.icon className={`h-6 w-6 ${colorClasses[program.color].text}`} />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-1.5">{program.name}</h3>
-                      <p className="text-sm text-muted-foreground text-pretty">{program.description}</p>
-                    </CardContent>
-                  </Card>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-4">
-            <Reveal className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Everything you need to pass, whatever you&apos;re preparing for</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                One platform, five exam and skills tracks — the same rigorous tools power every one of them.
-              </p>
-            </Reveal>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, i) => (
-                <Reveal key={feature.title} delay={(i % 3) * 100}>
-                  <Card className="h-full border-border shadow-sm hover:shadow-lg hover:border-primary/40 transition-all">
-                    <CardContent className="p-6">
-                      <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${colorClasses[feature.color].bg}`}>
-                        <feature.icon className={`h-6 w-6 ${colorClasses[feature.color].text}`} />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                      <p className="text-muted-foreground">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* For Schools & Students Section */}
-        <section className="py-20 md:py-28 bg-muted/40 border-y border-border">
-          <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-              {/* For Schools */}
+            <div className="space-y-4">
+              {/* Flagship program */}
               <Reveal>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                    <School className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-semibold">For Schools</h3>
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  Empower your institution with tools to monitor and improve student performance at scale.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Centralized student management",
-                    "Class-wise performance tracking",
-                    "Custom assessment assignments",
-                    "Detailed school-wide analytics",
-                    "Subscription management",
-                  ].map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
+                <Card
+                  data-cursor="big"
+                  className="group relative flex h-full min-h-[20rem] flex-col justify-end overflow-hidden border-border p-0 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg md:min-h-[22rem]"
+                >
+                  <img
+                    src={heroProgram.image}
+                    alt={heroProgram.imageAlt ?? ""}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-grain opacity-30" />
+                  <CardContent className="relative max-w-xl p-8 md:p-10">
+                    {heroProgram.tag && (
+                      <span className="mb-4 inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/25 backdrop-blur-sm">
+                        {heroProgram.tag}
+                      </span>
+                    )}
+                    <div
+                      className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 ${colorClasses[heroProgram.color].bg}`}
                     >
-                      <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                      <span className="text-sm font-medium">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild>
-                  <Link href="/signup/school">Register Your School</Link>
-                </Button>
+                      <heroProgram.icon className={`h-6 w-6 ${colorClasses[heroProgram.color].text}`} />
+                    </div>
+                    <h3 className="mb-2 text-2xl font-semibold text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.4)] md:text-3xl">
+                      {heroProgram.name}
+                    </h3>
+                    <p className="text-pretty text-white/85">{heroProgram.description}</p>
+                  </CardContent>
+                </Card>
               </Reveal>
 
-              {/* For Students */}
-              <Reveal delay={120}>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                    <GraduationCap className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-semibold">For Students</h3>
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  Take control of your learning with personalized practice and feedback.
+              {/* Remaining tracks */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {otherPrograms.map((program, i) => (
+                  <Reveal key={program.name} delay={(i + 1) * 80}>
+                    {program.image ? (
+                      <Card
+                        data-cursor="big"
+                        className="group relative flex h-full min-h-[14rem] flex-col justify-end overflow-hidden border-border p-0 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                      >
+                        <img
+                          src={program.image}
+                          alt={program.imageAlt ?? ""}
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
+                        <CardContent className="relative p-5">
+                          <div
+                            className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 ${colorClasses[program.color].bg}`}
+                          >
+                            <program.icon className={`h-5 w-5 ${colorClasses[program.color].text}`} />
+                          </div>
+                          <h3 className="mb-1 font-semibold text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.4)]">{program.name}</h3>
+                          <p className="text-xs text-white/80 text-pretty">{program.description}</p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card
+                        data-cursor="big"
+                        className={`group relative flex h-full min-h-[14rem] flex-col justify-end overflow-hidden border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${colorClasses[program.color].bg}`}
+                      >
+                        <program.icon
+                          aria-hidden
+                          strokeWidth={0.75}
+                          className={`pointer-events-none absolute -right-4 -bottom-4 h-28 w-28 opacity-[0.14] transition-transform duration-300 group-hover:scale-110 ${colorClasses[program.color].text}`}
+                        />
+                        <CardContent className="relative p-5">
+                          <div
+                            className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-card transition-transform duration-300 group-hover:scale-110`}
+                          >
+                            <program.icon className={`h-5 w-5 ${colorClasses[program.color].text}`} />
+                          </div>
+                          <h3 className="mb-1 font-semibold">{program.name}</h3>
+                          <p className="text-xs text-muted-foreground text-pretty">{program.description}</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Classroom Photography Section */}
+        <section className="py-20 md:py-28">
+          <div className="container mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <Reveal>
+                <span className="text-sm font-semibold tracking-wide uppercase text-primary">In The Classroom</span>
+                <h2 className="text-3xl md:text-4xl font-semibold mt-2 mb-4">Built for how Ghanaian classrooms actually work</h2>
+                <p className="text-lg text-muted-foreground text-pretty">
+                  Every feature on TYP is designed around the reality of the classroom, not a boardroom — timed papers, shared textbooks, and a teacher who needs results at a glance.
                 </p>
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Unlimited practice tests",
-                    "Instant feedback & explanations",
-                    "Performance trend analysis",
-                    "Weak topic identification",
-                    "Study recommendations",
-                  ].map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
-                    >
-                      <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                      <span className="text-sm font-medium">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild>
-                  <Link href="/signup/student">Start Learning Free</Link>
-                </Button>
+              </Reveal>
+
+              <Reveal delay={120} className="grid grid-cols-2 gap-4 lg:auto-rows-[9.5rem]">
+                {classroomPhotos.map((photo) => (
+                  <div
+                    key={photo.src}
+                    data-cursor="big"
+                    className={`group relative overflow-hidden rounded-2xl border border-border shadow-sm ${photo.className ?? ""}`}
+                  >
+                    <img
+                      src={photo.src}
+                      alt={photo.alt}
+                      loading="lazy"
+                      className="h-full w-full min-h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                ))}
               </Reveal>
             </div>
           </div>
@@ -490,6 +430,13 @@ export default function LandingPage() {
 
         {/* CTA Section */}
         <section className="relative overflow-hidden py-20 md:py-28 bg-primary text-primary-foreground">
+          <img
+            src="/images/homepage/bill-wegener-hs98_9hzTcU.jpg"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover opacity-[0.15] mix-blend-luminosity"
+          />
+          <div className="absolute inset-0 bg-primary/85" />
           <div className="absolute inset-0 bg-scantron opacity-20" />
           <div className="absolute inset-0 bg-grain opacity-40" />
           <Award
@@ -504,14 +451,14 @@ export default function LandingPage() {
                 Join thousands of students and schools already using TYP to achieve better results — from BECE to university entrance and beyond.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" variant="secondary" asChild className="text-base px-8">
-                  <Link href="/signup">
+                <Button size="lg" variant="secondary" asChild className="group text-base px-8">
+                  <Link href="/signup" data-cursor="small">
                     Get Started Today
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="text-base px-8 bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link href="/contact">Contact Sales</Link>
+                  <Link href="/contact" data-cursor="small">Contact Sales</Link>
                 </Button>
               </div>
             </Reveal>

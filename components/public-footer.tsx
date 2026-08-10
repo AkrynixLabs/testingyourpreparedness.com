@@ -6,11 +6,8 @@ export function PublicFooter() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">
-                T
-              </div>
-              <span className="font-bold text-xl tracking-tight">TYP</span>
+            <Link href="/" className="flex items-center mb-4">
+              <img src="/logo.png" alt="TYP - Testing Your Preparedness" className="h-11 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
               Testing Your Preparedness — Ghana&apos;s all-in-one platform for BECE, WASSCE, nursing, university entrance exam prep, and digital skills.

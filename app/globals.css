@@ -87,6 +87,7 @@
 @theme inline {
   --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
+  --font-display: 'Space Grotesk', 'Space Grotesk Fallback', system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -200,6 +201,14 @@
   transform: translateY(0);
 }
 
+/* Custom trailing cursor (ring + dot, see components/custom-cursor.tsx) hides
+   the native cursor across the marketing site only while active - never
+   applied to the authenticated dashboards. */
+.marketing.custom-cursor-active,
+.marketing.custom-cursor-active * {
+  cursor: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marketing .animate-float,
   .marketing .animate-float-delayed,
@@ -210,5 +219,9 @@
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+  .marketing.custom-cursor-active,
+  .marketing.custom-cursor-active * {
+    cursor: auto !important;
   }
 }
