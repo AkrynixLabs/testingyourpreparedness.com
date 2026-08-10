@@ -18,6 +18,7 @@ export function PublicHeader() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
           {[
+            { href: "/", label: "Home" },
             { href: "/features", label: "Features" },
             { href: "/pricing", label: "Pricing" },
             { href: "/about", label: "About" },
@@ -57,6 +58,9 @@ export function PublicHeader() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container mx-auto flex flex-col gap-4 px-4 py-4">
+            <Link href="/" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+              Home
+            </Link>
             <Link href="/features" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
               Features
             </Link>
