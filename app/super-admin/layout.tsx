@@ -29,6 +29,7 @@ export default async function SuperAdminLayout({
     prisma.invoice.count({ where: { status: "overdue" } }),
     prisma.examAttempt.count({ where: { submittedAt: null } }),
   ])
+  const newMessages = await prisma.contactMessage.count({ where: { status: "new" } })
 
   return (
     <SuperAdminShell
@@ -44,6 +45,7 @@ export default async function SuperAdminLayout({
         courses: totalCourses,
         overdueInvoices,
         examsInProgress,
+        newMessages,
       }}
     >
       {children}

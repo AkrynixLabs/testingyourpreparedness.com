@@ -21,6 +21,7 @@ import {
   Trophy,
   Library,
   UserCog,
+  Mail,
 } from "lucide-react"
 
 type SuperAdminNavCounts = {
@@ -33,6 +34,7 @@ type SuperAdminNavCounts = {
   courses: number
   overdueInvoices: number
   examsInProgress: number
+  newMessages: number
 }
 
 function buildNavigation(counts: SuperAdminNavCounts): NavGroup[] {
@@ -84,6 +86,9 @@ function buildNavigation(counts: SuperAdminNavCounts): NavGroup[] {
     },
     {
       items: [
+        // Badge is unread ("new") messages, not total - matches the same
+        // "actionable queue" badge philosophy as Review Queue/Payments above.
+        { title: "Messages", href: "/super-admin/messages", icon: Mail, badge: formatCount(counts.newMessages) },
         { title: "Settings", href: "/super-admin/settings", icon: Settings },
       ],
     },
