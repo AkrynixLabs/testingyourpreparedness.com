@@ -3,11 +3,13 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft, ArrowRight, GraduationCap, School, UserPlus } from "lucide-react"
 
 export default function StudentSignupPage() {
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <header className="p-4">
         <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />

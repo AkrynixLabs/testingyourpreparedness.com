@@ -4,6 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
+import { CustomCursor } from "@/components/custom-cursor"
+import { Reveal } from "@/components/reveal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,30 +24,56 @@ import {
   MapPin,
   MessageSquare,
   Clock,
-  HelpCircle,
-  BookOpen,
   Send,
   CheckCircle2,
+  ArrowRight,
 } from "lucide-react"
 import { submitContactMessage } from "./actions"
 
-const faqs = [
+const colorClasses = {
+  "chart-1": { bg: "bg-chart-1/15", text: "text-chart-1" },
+  "chart-2": { bg: "bg-chart-2/15", text: "text-chart-2" },
+  "chart-3": { bg: "bg-chart-3/15", text: "text-chart-3" },
+} as const
+
+const OFFICE_ADDRESS = "14 Independence Ave, Accra, Ghana"
+const OFFICE_MAP_EMBED_SRC = `https://www.google.com/maps?q=${encodeURIComponent(OFFICE_ADDRESS)}&output=embed`
+const OFFICE_MAP_DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE_ADDRESS)}`
+
+const contactOptions = [
   {
-    question: "How do I register my school?",
-    answer: "Click on 'Get Started' and select 'School Registration'. Fill in your school details and choose a subscription plan."
+    icon: Mail,
+    color: "chart-1",
+    title: "Email Us",
+    description: "For general inquiries",
+    value: "support@typ.edu.gh",
+    href: "mailto:support@typ.edu.gh",
+    external: false,
   },
   {
-    question: "Can students register independently?",
-    answer: "Yes! Students can sign up without a school affiliation. They will need guardian approval and can choose from individual subscription plans."
+    icon: Phone,
+    color: "chart-2",
+    title: "Call Us",
+    description: "Mon-Fri, 8am-6pm GMT",
+    value: "+233 30 240 1234",
+    href: "tel:+233302401234",
+    external: false,
   },
   {
-    question: "What subjects are covered?",
-    answer: "We cover all 8 BECE subjects: Mathematics, English, Integrated Science, Social Studies, ICT, French, RME, and Ghanaian Languages."
+    icon: MapPin,
+    color: "chart-3",
+    title: "Visit Us",
+    description: "Our office location",
+    value: "14 Independence Ave, Accra",
+    href: OFFICE_MAP_DIRECTIONS_URL,
+    external: true,
   },
-  {
-    question: "How do I reset my password?",
-    answer: "Click 'Forgot Password' on the login page, enter your email, and follow the reset instructions sent to your inbox."
-  },
+] as const
+
+const trustPoints = [
+  { icon: Clock, label: "24-hour response time" },
+  { icon: CheckCircle2, label: "Real support team, not bots" },
+  { icon: Mail, label: "Multiple ways to reach us" },
 ]
 
 const initialContactForm = {
@@ -79,217 +107,275 @@ export default function ContactPage() {
 
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <PublicHeader />
-      
+
       <main className="flex-1">
         {/* Hero */}
-        <section className="py-16 bg-gradient-to-b from-primary/5 to-background">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl font-bold mb-4 text-balance">How Can We Help?</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-              Have questions or need support? We are here to help you succeed in your BECE preparation journey.
+        <section className="relative isolate overflow-hidden pt-14 pb-16 md:pt-20 md:pb-20 border-b border-border">
+          <div className="absolute inset-0 bg-grain" />
+          <div
+            aria-hidden
+            className="animate-glow-pulse absolute left-1/2 top-0 -z-10 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/20 blur-[120px]"
+          />
+          <MessageSquare
+            aria-hidden
+            className="pointer-events-none absolute -right-16 top-6 h-72 w-72 text-primary/[0.05] hidden lg:block"
+            strokeWidth={0.5}
+          />
+
+          <div className="container mx-auto px-4 relative text-center max-w-2xl">
+            <div className="inline-flex items-center gap-2 text-muted-foreground text-xs font-semibold tracking-[0.15em] uppercase mb-4">
+              <span className="h-px w-6 bg-border" />
+              We reply within 24 hours
+              <span className="h-px w-6 bg-border" />
+            </div>
+            <h1 className="font-sans text-2xl md:text-4xl font-semibold tracking-tight mb-4 text-balance">
+              Let&apos;s talk about your{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                exam prep journey
+              </span>
+            </h1>
+            <p className="font-sans text-base md:text-lg text-foreground/80 max-w-xl mx-auto text-balance mb-8">
+              Questions about a subscription, a school partnership, or just need a hand getting started? Our team is
+              a message away.
             </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button size="lg" asChild className="group text-base px-8">
+                <a href="#contact-form" data-cursor="small">
+                  Send a Message
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" asChild className="text-base px-8">
+                <a href="tel:+233302401234" data-cursor="small">Call Us Now</a>
+              </Button>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
+              {trustPoints.map((point) => (
+                <div key={point.label} className="flex items-center gap-2">
+                  <point.icon className="h-4 w-4 text-primary" />
+                  {point.label}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Contact Options */}
-        <section className="py-12">
+        <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
-            <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto mb-16">
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Mail className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Email Us</h3>
-                  <p className="text-sm text-muted-foreground mb-3">For general inquiries</p>
-                  <a href="mailto:support@typ.edu.gh" className="text-primary hover:underline">
-                    support@typ.edu.gh
-                  </a>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Phone className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Call Us</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Mon-Fri, 8am-6pm GMT</p>
-                  <a href="tel:+233302401234" className="text-primary hover:underline">
-                    +233 30 240 1234
-                  </a>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center">
-                <CardContent className="pt-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <MapPin className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Visit Us</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Our office location</p>
-                  <p className="text-sm">14 Independence Ave, Accra</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2 max-w-6xl mx-auto">
-              {/* Contact Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-primary" />
-                    Send Us a Message
-                  </CardTitle>
-                  <CardDescription>
-                    Fill out the form below and we will get back to you within 24 hours.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {!submitted ? (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      {error && (
-                        <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                          {error}
-                        </p>
-                      )}
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName">First Name</Label>
-                          <Input
-                            id="firstName"
-                            placeholder="Your first name"
-                            value={form.firstName}
-                            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName">Last Name</Label>
-                          <Input
-                            id="lastName"
-                            placeholder="Your last name"
-                            value={form.lastName}
-                            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                            required
-                          />
-                        </div>
+            <div className="grid gap-4 md:grid-cols-3 max-w-4xl mx-auto">
+              {contactOptions.map((option, i) => (
+                <Reveal key={option.title} delay={i * 80}>
+                  <Card
+                    data-cursor="big"
+                    className="h-full border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    <CardContent className="p-5">
+                      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${colorClasses[option.color].bg}`}>
+                        <option.icon className={`h-5 w-5 ${colorClasses[option.color].text}`} />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="you@example.com"
-                          value={form.email}
-                          onChange={(e) => setForm({ ...form, email: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="role">I am a...</Label>
-                        <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="parent">Parent/Guardian</SelectItem>
-                            <SelectItem value="teacher">Teacher</SelectItem>
-                            <SelectItem value="school-admin">School Administrator</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="subject">Subject</Label>
-                        <Select value={form.subject} onValueChange={(value) => setForm({ ...form, subject: value })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="What is this about?" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="general">General Inquiry</SelectItem>
-                            <SelectItem value="technical">Technical Support</SelectItem>
-                            <SelectItem value="billing">Billing Question</SelectItem>
-                            <SelectItem value="partnership">Partnership Opportunity</SelectItem>
-                            <SelectItem value="feedback">Feedback</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="message">Message</Label>
-                        <Textarea
-                          id="message"
-                          placeholder="How can we help you?"
-                          rows={5}
-                          value={form.message}
-                          onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? (
-                          "Sending..."
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4 mr-2" />
-                            Send Message
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">Message Sent!</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Thank you for reaching out. We will get back to you within 24 hours.
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setForm(initialContactForm)
-                          setSubmitted(false)
-                        }}
+                      <h3 className="font-sans text-base font-semibold mb-1.5">{option.title}</h3>
+                      <p className="font-sans text-sm text-muted-foreground mb-2">{option.description}</p>
+                      <a
+                        href={option.href}
+                        target={option.external ? "_blank" : undefined}
+                        rel={option.external ? "noopener noreferrer" : undefined}
+                        className="text-sm text-primary font-medium hover:underline inline-flex items-center gap-1"
                       >
-                        Send Another Message
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        {option.value}
+                      </a>
+                    </CardContent>
+                  </Card>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              {/* FAQ & Support Hours */}
-              <div className="space-y-6">
-                <Card>
+        {/* Contact Form + Map/Support */}
+        <section id="contact-form" className="relative overflow-hidden py-12 md:py-16 bg-muted/40 border-y border-border scroll-mt-20">
+          <div className="absolute inset-0 bg-scantron opacity-70" />
+          <div className="container mx-auto px-4 relative">
+            <Reveal className="text-center mb-8">
+              <span className="text-sm font-semibold tracking-wide uppercase text-primary">Get In Touch</span>
+              <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mt-2 mb-3">Send us a message</h2>
+              <p className="font-sans text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
+                Fill out the form and a real person on our team will get back to you within 24 hours.
+              </p>
+            </Reveal>
+
+            <div className="grid gap-6 lg:grid-cols-5 max-w-6xl mx-auto lg:items-start">
+              {/* Contact Form */}
+              <Reveal delay={80} className="lg:col-span-3">
+                <Card className="border-border shadow-sm">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HelpCircle className="h-5 w-5 text-primary" />
-                      Frequently Asked Questions
+                    <CardTitle className="font-sans text-base flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      Send Us a Message
                     </CardTitle>
+                    <CardDescription className="text-sm">
+                      Fill out the form below and we will get back to you within 24 hours.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {faqs.map((faq, idx) => (
-                      <div key={idx} className="pb-4 border-b last:border-0 last:pb-0">
-                        <h4 className="font-medium mb-1">{faq.question}</h4>
-                        <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                  <CardContent>
+                    {!submitted ? (
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && (
+                          <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                            {error}
+                          </p>
+                        )}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName">First Name</Label>
+                            <Input
+                              id="firstName"
+                              placeholder="Your first name"
+                              value={form.firstName}
+                              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName">Last Name</Label>
+                            <Input
+                              id="lastName"
+                              placeholder="Your last name"
+                              value={form.lastName}
+                              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="role">I am a...</Label>
+                            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="student">Student</SelectItem>
+                                <SelectItem value="parent">Parent/Guardian</SelectItem>
+                                <SelectItem value="teacher">Teacher</SelectItem>
+                                <SelectItem value="school-admin">School Administrator</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="subject">Subject</Label>
+                            <Select value={form.subject} onValueChange={(value) => setForm({ ...form, subject: value })}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="What is this about?" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="general">General Inquiry</SelectItem>
+                                <SelectItem value="technical">Technical Support</SelectItem>
+                                <SelectItem value="billing">Billing Question</SelectItem>
+                                <SelectItem value="partnership">Partnership Opportunity</SelectItem>
+                                <SelectItem value="feedback">Feedback</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="message">Message</Label>
+                          <Textarea
+                            id="message"
+                            placeholder="How can we help you?"
+                            rows={5}
+                            value={form.message}
+                            onChange={(e) => setForm({ ...form, message: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <Button type="submit" size="lg" className="w-full text-base" disabled={loading}>
+                          {loading ? (
+                            "Sending..."
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4 mr-2" />
+                              Send Message
+                            </>
+                          )}
+                        </Button>
+                      </form>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Message Sent!</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Thank you for reaching out. We will get back to you within 24 hours.
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setForm(initialContactForm)
+                            setSubmitted(false)
+                          }}
+                        >
+                          Send Another Message
+                        </Button>
                       </div>
-                    ))}
-                    <Link href="/help">
-                      <Button variant="outline" className="w-full">
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        View All FAQs
-                      </Button>
-                    </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              </Reveal>
+
+              {/* Map + Support Hours */}
+              <Reveal delay={160} className="lg:col-span-2 flex flex-col gap-6">
+                <Card className="overflow-hidden border-border shadow-sm p-0">
+                  <div className="relative h-48 w-full">
+                    <iframe
+                      title="TYP office location"
+                      src={OFFICE_MAP_EMBED_SRC}
+                      className="absolute inset-0 h-full w-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-chart-3/15">
+                        <MapPin className="h-5 w-5 text-chart-3" />
+                      </div>
+                      <div>
+                        <h3 className="font-sans text-sm font-semibold mb-0.5">Our Office</h3>
+                        <p className="text-sm text-muted-foreground">{OFFICE_ADDRESS}</p>
+                        <a
+                          href={OFFICE_MAP_DIRECTIONS_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          Get directions
+                          <ArrowRight className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-border shadow-sm">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="font-sans text-base flex items-center gap-2">
                       <Clock className="h-5 w-5 text-primary" />
                       Support Hours
                     </CardTitle>
@@ -314,8 +400,39 @@ export default function ContactPage() {
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </Reveal>
             </div>
+          </div>
+        </section>
+
+        {/* Call CTA */}
+        <section className="relative overflow-hidden py-16 md:py-24 bg-primary text-primary-foreground">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="container mx-auto px-4 text-center relative">
+            <Reveal>
+              <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mb-3">
+                Prefer to talk to a real person?
+              </h2>
+              <p className="font-sans text-base md:text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
+                Give us a call and we&apos;ll walk you through everything TYP offers.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button size="lg" asChild className="group text-base px-8 bg-background text-foreground hover:bg-background/90">
+                  <a href="tel:+233302401234" data-cursor="small">
+                    <Phone className="mr-2 h-4 w-4" />
+                    +233 30 240 1234
+                  </a>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="text-base px-8 border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                >
+                  <Link href="/help" data-cursor="small">Visit Help Center</Link>
+                </Button>
+              </div>
+            </Reveal>
           </div>
         </section>
       </main>

@@ -1,10 +1,12 @@
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
+import { CustomCursor } from "@/components/custom-cursor"
 import { LegalPlaceholderNotice } from "@/components/legal-placeholder-notice"
 
 export default function TermsPage() {
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <PublicHeader />
 
       <main className="flex-1">

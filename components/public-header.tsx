@@ -19,9 +19,8 @@ export function PublicHeader() {
         <nav className="hidden md:flex items-center gap-8">
           {[
             { href: "/", label: "Home" },
-            { href: "/features", label: "Features" },
-            { href: "/pricing", label: "Pricing" },
-            { href: "/about", label: "About" },
+            { href: "/#features", label: "Features" },
+            { href: "/#pricing", label: "Pricing" },
             { href: "/contact", label: "Contact" },
           ].map((link) => (
             <Link
@@ -61,14 +60,11 @@ export function PublicHeader() {
             <Link href="/" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
               Home
             </Link>
-            <Link href="/features" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/#features" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
               Features
             </Link>
-            <Link href="/pricing" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/#pricing" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
               Pricing
-            </Link>
-            <Link href="/about" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-              About
             </Link>
             <Link href="/contact" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
               Contact

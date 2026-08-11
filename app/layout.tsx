@@ -19,23 +19,13 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'TYP - Testing Your Preparedness | Exam Prep for BECE, WASSCE, Nursing & University',
+  title: 'TYP - Testing Your Preparedness',
   description: 'Ghana\'s all-in-one exam prep and digital skills platform — BECE, WASSCE, nursing, university entrance, and job-ready digital skills, with practice tests, analytics, and personalized learning.',
   generator: 'v0.app',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/icon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: '/apple-icon.png',
   },
