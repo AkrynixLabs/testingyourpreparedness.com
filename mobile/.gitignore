@@ -13,9 +13,14 @@ android/local.properties
 android/app/debug
 android/app/profile
 android/app/release
+android/**/GeneratedPluginRegistrant.java
 
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/flutter_export_environment.sh
 ios/Pods/
 ios/.symlinks/
 ios/Runner.xcworkspace/xcshareddata/
+ios/Runner/GeneratedPluginRegistrant.*

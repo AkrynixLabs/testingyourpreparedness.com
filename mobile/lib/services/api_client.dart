@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/exam.dart';
+import '../models/exam_attempt.dart';
+import '../models/result_detail.dart';
 import '../models/user.dart';
 import 'token_storage.dart';
 
@@ -66,6 +68,65 @@ class ApiClient {
       throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not load profile.');
     }
     return StudentProfile.fromJson(body);
+  }
+
+  Future<ExamStart> startExam(String assessmentId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/mobile/exams/$assessmentId/start'),
+      headers: await _authHeaders(),
+    );
+
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, body['error'] as String? ?? 'This exam isn\'t available right now.');
+    }
+    return ExamStart.fromJson(body);
+  }
+
+  /// Fire-and-forget by design (matches the server's own contract - always
+  /// 200s, never blocks the exam) - callers should not await this inline in
+  /// a way that stalls the UI, and should swallow any transport error since
+  /// there's nothing meaningful to show the student mid-exam for it.
+  Future<void> recordTabSwitch(String attemptId) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/api/mobile/attempts/$attemptId/tab-switch'),
+        headers: await _authHeaders(),
+      );
+    } catch (_) {
+      // Silent by design - see doc comment above.
+    }
+  }
+
+  Future<String> submitAttempt({
+    required String attemptId,
+    required Map<String, int> answers,
+    required List<String> flaggedQuestionIds,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/mobile/attempts/$attemptId/submit'),
+      headers: await _authHeaders(),
+      body: jsonEncode({'answers': answers, 'flaggedQuestionIds': flaggedQuestionIds}),
+    );
+
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not submit your exam.');
+    }
+    return body['attemptId'] as String;
+  }
+
+  Future<ResultDetail> getResult(String attemptId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/mobile/results/$attemptId'),
+      headers: await _authHeaders(),
+    );
+
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not load your result.');
+    }
+    return ResultDetail.fromJson(body);
   }
 
   Future<void> logout() => TokenStorage.instance.clearToken();

@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import 'exam_taking_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
+import 'results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppUser user;
@@ -188,12 +190,9 @@ class _AvailableList extends StatelessWidget {
               ),
             ),
             trailing: exam.difficulty != null ? _DifficultyChip(difficulty: exam.difficulty!) : null,
-            // Exam-taking flow isn't wired yet - the backend session's
-            // attempt-start/submit endpoints don't exist yet. Tapping just
-            // shows that, rather than a silently-dead button.
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Taking exams from the app is coming soon.')),
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ExamTakingScreen(assessmentId: exam.assessmentId)),
               );
             },
           ),
@@ -289,6 +288,11 @@ class _CompletedList extends StatelessWidget {
                 Text('${exam.score}/${exam.totalMarks}', style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ResultsScreen(attemptId: exam.attemptId)),
+              );
+            },
           ),
         );
       },
