@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../widgets/async_state_views.dart';
 import 'exam_taking_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
@@ -80,13 +81,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         future: _examsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingView();
           }
           if (snapshot.hasError) {
-            return _ErrorState(
-              message: snapshot.error is ApiException
-                  ? (snapshot.error as ApiException).message
-                  : 'Could not load your exams. Pull down to try again.',
+            return ErrorView(
+              message: errorMessageFor(snapshot.error!, fallback: 'Could not load your exams. Pull down to try again.'),
               onRetry: _refresh,
             );
           }
@@ -109,50 +108,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 }
 
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final Future<void> Function() onRetry;
-  const _ErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 40, color: Theme.of(context).colorScheme.error),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            OutlinedButton(onPressed: () => onRetry(), child: const Text('Try again')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final String message;
-  const _EmptyState({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-        ),
-      ),
-    );
-  }
-}
-
 class _AvailableList extends StatelessWidget {
   final List<AvailableExam> items;
   const _AvailableList({required this.items});
@@ -160,7 +115,7 @@ class _AvailableList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const _EmptyState(message: 'No exams available to take right now.');
+      return const EmptyView(message: 'No exams available to take right now.');
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -209,7 +164,7 @@ class _ScheduledList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const _EmptyState(message: 'Nothing scheduled yet.');
+      return const EmptyView(message: 'Nothing scheduled yet.');
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -247,7 +202,7 @@ class _CompletedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const _EmptyState(message: 'No completed exams yet.');
+      return const EmptyView(message: 'No completed exams yet.');
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),

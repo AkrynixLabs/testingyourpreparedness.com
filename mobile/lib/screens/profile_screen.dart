@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../widgets/async_state_views.dart';
 
 /// Basic profile display off GET /api/mobile/me - not required for v1, but
 /// cheap to include since the endpoint already exists.
@@ -13,12 +14,16 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late final Future<StudentProfile> _profileFuture;
+  late Future<StudentProfile> _profileFuture;
 
   @override
   void initState() {
     super.initState();
     _profileFuture = ApiClient.instance.getProfile();
+  }
+
+  void _retry() {
+    setState(() => _profileFuture = ApiClient.instance.getProfile());
   }
 
   @override
@@ -29,13 +34,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingView();
           }
           if (snapshot.hasError) {
-            final message = snapshot.error is ApiException
-                ? (snapshot.error as ApiException).message
-                : 'Could not load your profile.';
-            return Center(child: Text(message));
+            return ErrorView(
+              message: errorMessageFor(snapshot.error!, fallback: 'Could not load your profile.'),
+              onRetry: _retry,
+            );
           }
 
           final profile = snapshot.data!;

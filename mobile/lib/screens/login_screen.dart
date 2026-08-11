@@ -4,7 +4,12 @@ import '../services/api_client.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// Set when ApiClient's app-wide 401 handler bounced here from another
+  /// screen (a stale/expired/revoked token on some later call, not a bad
+  /// password) - shows a distinct, less alarming banner than a normal login
+  /// failure so it doesn't read like the user did something wrong.
+  final bool sessionExpired;
+  const LoginScreen({super.key, this.sessionExpired = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -17,6 +22,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _loading = false;
   String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    // `widget` isn't safely readable in a field initializer (it's assigned
+    // by the framework after construction, before initState) - set here
+    // instead.
+    if (widget.sessionExpired) {
+      _errorText = 'Your session expired. Please log in again.';
+    }
+  }
 
   @override
   void dispose() {

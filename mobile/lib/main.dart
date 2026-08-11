@@ -4,8 +4,10 @@ import 'models/user.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/api_client.dart';
+import 'services/navigation_service.dart';
 import 'services/token_storage.dart';
 import 'theme/app_theme.dart';
+import 'widgets/async_state_views.dart';
 
 void main() {
   runApp(const TypApp());
@@ -21,6 +23,9 @@ class TypApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      // Lets ApiClient redirect to LoginScreen on a 401 from anywhere (see
+      // services/navigation_service.dart) without a BuildContext of its own.
+      navigatorKey: rootNavigatorKey,
       home: const AuthGate(),
     );
   }
@@ -76,6 +81,6 @@ class _AuthGateState extends State<AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return const Scaffold(body: LoadingView());
   }
 }

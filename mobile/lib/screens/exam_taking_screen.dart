@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/exam_attempt.dart';
 import '../services/api_client.dart';
+import '../widgets/async_state_views.dart';
 import 'results_screen.dart';
 
 /// Started from HomeScreen's "Available" tab. Mirrors the web app's
@@ -154,34 +155,22 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
           future: _startFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const LoadingView();
             }
             if (snapshot.hasError) {
-              final message =
-                  snapshot.error is ApiException ? (snapshot.error as ApiException).message : 'Could not start this exam.';
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.error_outline, size: 40, color: Theme.of(context).colorScheme.error),
-                      const SizedBox(height: 12),
-                      Text(message, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Go back'),
-                      ),
-                    ],
-                  ),
-                ),
+              // "Go back" rather than a true retry - a start failure here is
+              // typically a real eligibility answer (window closed, attempts
+              // used up), not a transient fetch to blindly retry.
+              return ErrorView(
+                message: errorMessageFor(snapshot.error!, fallback: 'Could not start this exam.'),
+                onRetry: () => Navigator.of(context).pop(),
+                retryLabel: 'Go back',
               );
             }
             if (_exam == null || _exam!.timedOut) {
               // Already redirecting to ResultsScreen (see _start()) -
               // nothing useful to render here.
-              return const Center(child: CircularProgressIndicator());
+              return const LoadingView();
             }
 
             final exam = _exam!;

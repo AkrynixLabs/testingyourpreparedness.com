@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../models/result_detail.dart';
 import '../services/api_client.dart';
+import '../widgets/async_state_views.dart';
 
 /// Reached either after a real submit or directly when
 /// POST /api/mobile/exams/{id}/start reports `timedOut: true` for an
@@ -19,12 +20,16 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
-  late final Future<ResultDetail> _resultFuture;
+  late Future<ResultDetail> _resultFuture;
 
   @override
   void initState() {
     super.initState();
     _resultFuture = ApiClient.instance.getResult(widget.attemptId);
+  }
+
+  void _retry() {
+    setState(() => _resultFuture = ApiClient.instance.getResult(widget.attemptId));
   }
 
   @override
@@ -44,12 +49,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
         future: _resultFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingView();
           }
           if (snapshot.hasError) {
-            final message =
-                snapshot.error is ApiException ? (snapshot.error as ApiException).message : 'Could not load your result.';
-            return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(message)));
+            return ErrorView(
+              message: errorMessageFor(snapshot.error!, fallback: 'Could not load your result.'),
+              onRetry: _retry,
+            );
           }
 
           final result = snapshot.data!;
