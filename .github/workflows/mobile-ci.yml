@@ -1,0 +1,33 @@
+name: Mobile CI
+
+# Only runs against mobile/ changes - this repo's web app has no CI of its
+# own yet (relies on Vercel's own build step + this project's own typecheck-
+# before-commit discipline, per CLAUDE.md's Repo/Workflow Conventions), so
+# this is scoped narrowly rather than becoming a general-purpose CI file.
+on:
+  push:
+    branches: [main]
+    paths: ["mobile/**"]
+  pull_request:
+    paths: ["mobile/**"]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to the exact stable version this project was built/verified
+      # against (see docs/build-log.md's 2026-08-10 mobile entries) rather
+      # than "stable" floating, so CI doesn't drift out from under local dev.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: "stable"
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
