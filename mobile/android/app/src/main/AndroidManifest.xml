@@ -1,8 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Real, pre-existing gap found while adding the course-purchase webview
+         (2026-08-10): every API call this app has ever made needs this on a
+         real device, not just the new webview - flutter analyze/test never
+         caught it since neither exercises Android's actual permission model. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="TYP"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

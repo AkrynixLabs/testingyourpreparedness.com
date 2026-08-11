@@ -26,6 +26,16 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<!-- iOS blocks cleartext HTTP under ATS by default (loopback/localhost
+		     is exempt automatically, but a LAN IP for physical-device testing
+		     against local dev - see mobile/README.md - is not). Scoped to local
+		     network requests only, not a blanket NSAllowsArbitraryLoads - a real
+		     deployed backend will be https and won't need this at all. -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsLocalNetworking</key>
+			<true/>
+		</dict>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>

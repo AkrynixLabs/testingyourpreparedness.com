@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/course.dart';
 import '../models/exam.dart';
 import '../models/exam_attempt.dart';
 import '../models/result_detail.dart';
@@ -117,6 +118,59 @@ class ApiClient {
   Future<ResultDetail> getResult(String attemptId) async {
     final body = await _authorizedRequest('GET', '/api/mobile/results/$attemptId', fallback: 'Could not load your result.');
     return ResultDetail.fromJson(body);
+  }
+
+  Future<List<CourseCatalogRow>> getCourses() async {
+    final body = await _authorizedRequest('GET', '/api/mobile/courses', fallback: 'Could not load courses.');
+    return (body['courses'] as List<dynamic>).map((e) => CourseCatalogRow.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<MyCourseRow>> getMyCourses() async {
+    final body = await _authorizedRequest('GET', '/api/mobile/courses/my', fallback: 'Could not load your courses.');
+    return (body['courses'] as List<dynamic>).map((e) => MyCourseRow.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<CourseDetail> getCourseDetail(String courseId) async {
+    final body = await _authorizedRequest('GET', '/api/mobile/courses/$courseId', fallback: 'Could not load this course.');
+    return CourseDetail.fromJson(body);
+  }
+
+  /// Returns `alreadyEnrolled` so a redundant tap (e.g. a double-submit)
+  /// doesn't need to be treated as an error by the caller.
+  Future<bool> enrollInFreeCourse(String courseId) async {
+    final body = await _authorizedRequest(
+      'POST',
+      '/api/mobile/courses/$courseId/enroll',
+      fallback: 'Could not enroll in this course.',
+    );
+    return body['alreadyEnrolled'] as bool;
+  }
+
+  Future<CoursePurchaseInit> initializeCoursePurchase(String courseId) async {
+    final body = await _authorizedRequest(
+      'POST',
+      '/api/mobile/courses/$courseId/purchase',
+      fallback: 'Could not start checkout.',
+    );
+    return CoursePurchaseInit.fromJson(body);
+  }
+
+  Future<String> verifyCoursePurchase(String reference) async {
+    final body = await _authorizedRequest(
+      'GET',
+      '/api/mobile/courses/purchase/verify?reference=${Uri.encodeQueryComponent(reference)}',
+      fallback: 'Could not confirm your payment.',
+    );
+    return body['status'] as String;
+  }
+
+  Future<LearnCourse> getLearnContent(String courseId) async {
+    final body = await _authorizedRequest(
+      'GET',
+      '/api/mobile/courses/$courseId/learn',
+      fallback: 'Could not load this course\'s lessons.',
+    );
+    return LearnCourse.fromJson(body);
   }
 
   Future<void> logout() => TokenStorage.instance.clearToken();

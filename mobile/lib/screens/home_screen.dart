@@ -5,11 +5,17 @@ import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../widgets/async_state_views.dart';
+import 'course_catalog_screen.dart';
 import 'exam_taking_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
 
+/// Top-level shell once logged in - a bottom nav between the exam-prep loop
+/// (v1's original scope) and the course marketplace (added 2026-08-10).
+/// Each destination keeps its own full Scaffold/AppBar (via IndexedStack)
+/// rather than trying to merge two different AppBar shapes (exams needs a
+/// bottom TabBar, courses needs a search/filter row) into one shared one.
 class HomeScreen extends StatefulWidget {
   final AppUser user;
   const HomeScreen({super.key, required this.user});
@@ -18,7 +24,40 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _index,
+        children: [
+          _ExamsTab(user: widget.user),
+          const CourseCatalogScreen(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (i) => setState(() => _index = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.quiz_outlined), selectedIcon: Icon(Icons.quiz), label: 'Exams'),
+          NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Courses'),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExamsTab extends StatefulWidget {
+  final AppUser user;
+  const _ExamsTab({required this.user});
+
+  @override
+  State<_ExamsTab> createState() => _ExamsTabState();
+}
+
+class _ExamsTabState extends State<_ExamsTab> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late Future<StudentExams> _examsFuture;
 

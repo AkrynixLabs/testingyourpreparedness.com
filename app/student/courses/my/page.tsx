@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getMyCourses } from "@/lib/student/courses"
 import { MyCoursesView } from "./my-courses-view"
 
 export default async function MyCoursesPage() {
@@ -8,28 +9,8 @@ export default async function MyCoursesPage() {
   const student = await prisma.student.findUnique({ where: { userId: session!.user.id } })
   if (!student) notFound()
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: { studentId: student.id },
-    include: {
-      course: {
-        include: {
-          tutor: { include: { user: true } },
-          modules: { include: { lessons: true } },
-        },
-      },
-    },
-    orderBy: { enrolledAt: "desc" },
-  })
-
-  const rows = enrollments.map((e) => ({
-    courseId: e.course.id,
-    title: e.course.title,
-    category: e.course.category,
-    tutorName: e.course.tutor.user.name,
-    enrolledAt: e.enrolledAt.toISOString(),
-    lessonCount: e.course.modules.reduce((sum, m) => sum + m.lessons.length, 0),
-    courseRemoved: e.course.status === "removed",
-  }))
+  const enrollments = await getMyCourses(student.id)
+  const rows = enrollments.map((e) => ({ ...e, enrolledAt: e.enrolledAt.toISOString() }))
 
   return (
     <div className="space-y-6">

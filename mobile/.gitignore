@@ -6,8 +6,12 @@
 .pub/
 build/
 *.iml
-*.lock
 .idea/
+
+# No blanket `*.lock` rule here - a real mistake found 2026-08-10 while
+# adding webview_flutter/url_launcher: it was quietly ignoring pubspec.lock
+# too, which an *application* (not a published package) should commit for
+# reproducible builds, per Flutter's own convention.
 
 android/.gradle/
 android/local.properties
