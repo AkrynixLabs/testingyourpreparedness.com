@@ -2,28 +2,23 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, AlertTriangle, Clock } from "lucide-react"
-import { verifyTransaction } from "@/lib/payments/paystack"
+import { verifyCoursePurchaseForStudent } from "@/lib/student/courses"
 
 // Same pattern as every other checkout callback in this app - synchronous,
 // best-effort confirmation for the user's own UX only. The webhook
 // (handleCoursePurchaseSuccess in app/api/webhooks/paystack/route.ts) is the
-// actual source of truth that creates the Enrollment.
+// actual source of truth that creates the Enrollment. The mobile app reuses
+// this exact URL as its own Paystack callbackUrl too (see
+// app/api/mobile/courses/[id]/purchase/route.ts) - its webview intercepts
+// navigation here before this page ever renders, so this page only actually
+// renders for a real web browser.
 export default async function CourseCheckoutCallbackPage({
   searchParams,
 }: {
   searchParams: Promise<{ reference?: string }>
 }) {
   const { reference } = await searchParams
-
-  let outcome: "success" | "pending" | "failed" | "unverifiable" = "unverifiable"
-  if (reference) {
-    try {
-      const result = await verifyTransaction(reference)
-      outcome = result.status === "success" ? "success" : "failed"
-    } catch {
-      outcome = "unverifiable"
-    }
-  }
+  const outcome = reference ? await verifyCoursePurchaseForStudent(reference) : "unverifiable"
 
   return (
     <div className="flex items-center justify-center min-h-[60vh]">

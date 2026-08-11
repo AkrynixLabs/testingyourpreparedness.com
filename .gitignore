@@ -27,3 +27,6 @@ node_modules/
 .claude/skills/
 .windsurf/skills/
 skills-lock.json
+
+# Sentry Config File
+.env.sentry-build-plugin

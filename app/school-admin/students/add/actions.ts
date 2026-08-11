@@ -7,12 +7,16 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Role, type Gender, type GuardianRelation } from "@/lib/generated/prisma/client"
 import { validateStudentRow, type ClassOption, type ParsedStudentRow } from "./validation"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { newAccountTempPasswordEmail } from "@/lib/email/templates"
 
-// No email service is wired up yet (see CLAUDE.md), so there's no way to
-// send the student a "set your password" link. A random temporary password
-// is generated and returned once so the school admin can hand it to the
-// student directly - the same tradeoff made anywhere account creation
-// happens without email delivery.
+// A random temporary password is generated and returned once so the school
+// admin can hand it to the student directly - kept as the reliable fallback
+// even now that the single-add path also emails it (delivery can't be
+// confirmed). Bulk CSV import deliberately does NOT send email per-row -
+// see docs/build-log.md's email-service entry: sending dozens of emails
+// synchronously in one request isn't good practice and depends on the
+// separate background-jobs work.
 function generateTempPassword() {
   return crypto.randomBytes(6).toString("base64url")
 }
@@ -85,14 +89,59 @@ export async function createStudent(input: CreateStudentInput) {
     },
   })
 
+  const { subject, html } = newAccountTempPasswordEmail({ name, email, tempPassword, roleLabel: "Student" })
+  await sendEmailBestEffort({ to: email, subject, html })
+
   revalidatePath("/school-admin/students")
   return { studentId: student.id, tempPassword }
+}
+
+// Same tradeoff as super-admin/content-admins' resendContentAdminCredentials
+// - only the bcrypt hash was ever persisted, never the temp password's
+// plaintext, so there's no original value to resend. A fresh temp password
+// is generated and the hash overwritten; the old one stops working. Scoped
+// to single-add students only, per the task's own scoping (bulk-imported
+// students were never emailed in the first place, so there's nothing to
+// resend for them - resending would be the first email they ever get, a
+// different feature than "retry a failed delivery").
+export async function resendStudentCredentials(studentId: string) {
+  const session = await auth()
+  if (session?.user?.role !== "school_admin") {
+    throw new Error("Not authorized")
+  }
+  const schoolId = await resolveSchoolId(session.user.id)
+
+  const student = await prisma.student.findUnique({ where: { id: studentId }, include: { user: true } })
+  if (!student || student.schoolId !== schoolId) {
+    throw new Error("Not authorized")
+  }
+
+  const tempPassword = generateTempPassword()
+  const passwordHash = await bcrypt.hash(tempPassword, 10)
+  await prisma.user.update({ where: { id: student.userId }, data: { passwordHash } })
+
+  const { subject, html } = newAccountTempPasswordEmail({
+    name: student.user.name,
+    email: student.user.email,
+    tempPassword,
+    roleLabel: "Student",
+  })
+  await sendEmailBestEffort({ to: student.user.email, subject, html })
+
+  return { email: student.user.email, tempPassword }
 }
 
 export type BulkStudentResult = {
   created: { name: string; email: string; tempPassword: string }[]
   skipped: { row: number; issues: string[] }[]
 }
+
+// Decided 2026-08-08 (background-jobs decision, see docs/build-log.md): bulk
+// import stays synchronous, not queued, for the same reasoning as
+// content-admin/questions/upload's identical cap. Set lower than that one's
+// 300 - each row here does a bcrypt hash (real CPU-bound cost, ~50-100ms)
+// plus 2+ DB round trips, vs. questions' single DB write per row.
+const MAX_BULK_ROWS = 200
 
 export async function bulkCreateStudents(
   rows: { row: number; parsed: ParsedStudentRow }[],
@@ -102,6 +151,13 @@ export async function bulkCreateStudents(
   if (session?.user?.role !== "school_admin") {
     throw new Error("Not authorized")
   }
+
+  if (rows.length > MAX_BULK_ROWS) {
+    throw new Error(
+      `This file has ${rows.length} rows - bulk imports are processed synchronously and are capped at ${MAX_BULK_ROWS} rows to avoid timing out partway through. Split the file into smaller batches.`
+    )
+  }
+
   const schoolId = await resolveSchoolId(session.user.id)
 
   const classRows = await prisma.class.findMany({ where: { schoolId } })

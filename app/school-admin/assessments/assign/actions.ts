@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { assignmentNotificationEmail } from "@/lib/email/templates"
 
 export type AssignAssessmentInput = {
   assessmentId: string
@@ -84,6 +86,33 @@ export async function createAssessmentAssignment(input: AssignAssessmentInput) {
       students: { create: studentIds.map((studentId) => ({ studentId })) },
     },
   })
+
+  // sendNotification was a real stored boolean with nothing behind it until
+  // now - resolve the actual set of affected students (direct targets plus
+  // everyone in a targeted class) and email each one best-effort. Sent
+  // sequentially, not batched - assignments target a bounded set of
+  // students (one school's classes), nowhere near bulk-import's scale, so
+  // this doesn't need the same "defer until background jobs exist" call.
+  if (input.sendNotification) {
+    const targetStudents = await prisma.student.findMany({
+      where: {
+        OR: [
+          { id: { in: studentIds } },
+          ...(classIds.length > 0 ? [{ classId: { in: classIds } }] : []),
+        ],
+      },
+      include: { user: true },
+    })
+    for (const s of targetStudents) {
+      const { subject, html } = assignmentNotificationEmail({
+        studentName: s.user.name,
+        assessmentTitle: assessment.title,
+        startDate,
+        endDate,
+      })
+      await sendEmailBestEffort({ to: s.user.email, subject, html })
+    }
+  }
 
   revalidatePath("/school-admin/assessments")
   return { assignmentId: assignment.id }

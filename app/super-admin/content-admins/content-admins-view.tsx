@@ -51,11 +51,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { createContentAdmin, setContentAdminStatus, deleteContentAdmin } from "./actions"
+import { createContentAdmin, setContentAdminStatus, deleteContentAdmin, resendContentAdminCredentials } from "./actions"
 import type { ContentAdminProfile, ContentAdminSubject, ContentAdminStatus, Subject, User } from "@/lib/generated/prisma/client"
 
 type AdminRow = ContentAdminProfile & {
-  user: User
+  user: Omit<User, "passwordHash">
   subjects: (ContentAdminSubject & { subject: Subject })[]
   counts: { created: number; approved: number; pending: number; rejected: number }
 }
@@ -74,6 +74,9 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
   const [addEmail, setAddEmail] = useState("")
   const [addSubjectIds, setAddSubjectIds] = useState<string[]>([])
   const [credentials, setCredentials] = useState<{ email: string; tempPassword: string } | null>(null)
+
+  const [resendTarget, setResendTarget] = useState<AdminRow | null>(null)
+  const [resendCredentials, setResendCredentials] = useState<{ email: string; tempPassword: string } | null>(null)
 
   const filteredAdmins = admins.filter((admin) => {
     const matchesSearch =
@@ -119,6 +122,26 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
     })
   }
 
+  const handleResend = () => {
+    if (!resendTarget) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await resendContentAdminCredentials(resendTarget.id)
+        setResendCredentials(result)
+        router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to resend credentials")
+        setResendTarget(null)
+      }
+    })
+  }
+
+  const closeResendDialog = () => {
+    setResendTarget(null)
+    setResendCredentials(null)
+  }
+
   const handleRemove = (profileId: string) => {
     setError(null)
     startTransition(async () => {
@@ -151,7 +174,8 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
             <DialogHeader>
               <DialogTitle>Add Content Administrator</DialogTitle>
               <DialogDescription>
-                No email delivery is set up yet - you'll get a one-time temporary password to hand to them directly.
+                We'll email their temporary password, and you'll also get a one-time copy here to hand to them
+                directly in case delivery doesn't go through.
               </DialogDescription>
             </DialogHeader>
 
@@ -222,6 +246,43 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
           </DialogContent>
         </Dialog>
       </div>
+
+      <Dialog open={!!resendTarget} onOpenChange={(open) => !open && closeResendDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resend Email</DialogTitle>
+            <DialogDescription>
+              Delivery can't be confirmed, so resending issues a <strong>new</strong> temporary password for{" "}
+              {resendTarget?.user.name} - their old temporary password will stop working once this completes.
+            </DialogDescription>
+          </DialogHeader>
+          {resendCredentials ? (
+            <div className="space-y-4 py-2">
+              <Alert>
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertTitle>New credentials issued</AlertTitle>
+                <AlertDescription>
+                  Share these with {resendTarget?.user.name} in case delivery doesn't go through: <br />
+                  <strong>{resendCredentials.email}</strong> / <strong>{resendCredentials.tempPassword}</strong>
+                </AlertDescription>
+              </Alert>
+              <DialogFooter>
+                <Button onClick={closeResendDialog}>Done</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setResendTarget(null)} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button onClick={handleResend} disabled={isPending}>
+                <Mail className="mr-2 h-4 w-4" />
+                {isPending ? "Resending..." : "Resend Email"}
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="pb-3">
@@ -356,6 +417,11 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setResendTarget(admin)}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Resend Email
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {admin.status === "active" ? (
                             <DropdownMenuItem className="text-amber-600" onClick={() => handleSetStatus(admin.id, "inactive")}>

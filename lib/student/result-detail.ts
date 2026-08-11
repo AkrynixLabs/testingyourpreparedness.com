@@ -1,0 +1,137 @@
+import { prisma } from "@/lib/prisma"
+
+// Extracted from app/student/results/[id]/page.tsx (unchanged logic) so
+// app/api/mobile/results/[attemptId] returns the exact same score/grade/
+// rank/topic-breakdown/question-review computation the web result page
+// does, rather than a second copy.
+
+function getGrade(percentage: number) {
+  if (percentage >= 80) return "A"
+  if (percentage >= 70) return "B"
+  if (percentage >= 60) return "C"
+  if (percentage >= 50) return "D"
+  return "F"
+}
+
+export type ResultDetail = {
+  attemptId: string
+  title: string
+  subjectName: string
+  submittedAt: Date
+  percentage: number
+  grade: string
+  correctAnswers: number
+  incorrectAnswers: number
+  timeSpentSeconds: number | null
+  rank: number
+  totalStudents: number
+  percentile: number
+  classAverage: number
+  highestScore: number
+  lowestScore: number
+  topicBreakdown: { topic: string; correct: number; total: number; percentage: number }[]
+  questions: {
+    id: string
+    text: string
+    topic: string
+    yourAnswer: string
+    correctAnswer: string
+    isCorrect: boolean
+    explanation: string | null
+  }[]
+}
+
+// Ownership must be checked by the caller (never trust a route param alone)
+// - this returns null for "not found", the caller decides 404 vs. throw.
+export async function getResultDetail(attemptId: string, studentId: string): Promise<ResultDetail | null> {
+  const attempt = await prisma.examAttempt.findUnique({
+    where: { id: attemptId },
+    include: {
+      assessment: {
+        include: {
+          subject: true,
+          questions: {
+            include: { question: { include: { topic: true } } },
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
+  })
+
+  if (!attempt || attempt.studentId !== studentId || !attempt.submittedAt) {
+    return null
+  }
+
+  const score = attempt.score ?? 0
+  const totalMarks = attempt.totalMarks ?? 0
+  const percentage = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0
+  const grade = attempt.grade ?? getGrade(percentage)
+  const answers = (attempt.answers ?? {}) as Record<string, number>
+
+  const questionRows = attempt.assessment.questions.map(({ question: q }) => {
+    const options = q.options as string[]
+    const selectedIndex = answers[q.id]
+    const isCorrect = selectedIndex !== undefined && selectedIndex === q.correctAnswerIndex
+    return {
+      id: q.id,
+      text: q.text,
+      topic: q.topic.name,
+      yourAnswer: selectedIndex !== undefined ? options[selectedIndex] : "No answer",
+      correctAnswer: options[q.correctAnswerIndex],
+      isCorrect,
+      explanation: q.explanation,
+    }
+  })
+
+  const correctAnswers = questionRows.filter((q) => q.isCorrect).length
+  const incorrectAnswers = questionRows.length - correctAnswers
+
+  const topicMap = new Map<string, { correct: number; total: number }>()
+  for (const q of questionRows) {
+    const entry = topicMap.get(q.topic) ?? { correct: 0, total: 0 }
+    entry.total += 1
+    if (q.isCorrect) entry.correct += 1
+    topicMap.set(q.topic, entry)
+  }
+  const topicBreakdown = Array.from(topicMap.entries()).map(([topic, { correct, total }]) => ({
+    topic,
+    correct,
+    total,
+    percentage: total > 0 ? (correct / total) * 100 : 0,
+  }))
+
+  const allAttempts = await prisma.examAttempt.findMany({
+    where: { assessmentId: attempt.assessmentId, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
+    select: { id: true, score: true, totalMarks: true },
+  })
+  const ranked = allAttempts
+    .map((a) => ({ id: a.id, pct: a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0 }))
+    .sort((a, b) => b.pct - a.pct)
+  const rank = ranked.findIndex((a) => a.id === attempt.id) + 1
+  const totalStudents = ranked.length
+  const percentile = totalStudents > 1 ? Math.round(((totalStudents - rank) / (totalStudents - 1)) * 100) : 100
+  const classAverage = totalStudents > 0 ? Math.round(ranked.reduce((acc, a) => acc + a.pct, 0) / totalStudents) : 0
+  const highestScore = totalStudents > 0 ? Math.round(ranked[0].pct) : 0
+  const lowestScore = totalStudents > 0 ? Math.round(ranked[ranked.length - 1].pct) : 0
+
+  return {
+    attemptId: attempt.id,
+    title: attempt.assessment.title,
+    subjectName: attempt.assessment.subject.name,
+    submittedAt: attempt.submittedAt,
+    percentage,
+    grade,
+    correctAnswers,
+    incorrectAnswers,
+    timeSpentSeconds: attempt.timeSpentSeconds,
+    rank,
+    totalStudents,
+    percentile,
+    classAverage,
+    highestScore,
+    lowestScore,
+    topicBreakdown,
+    questions: questionRows,
+  }
+}

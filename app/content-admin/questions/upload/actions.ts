@@ -12,6 +12,17 @@ export type BulkUploadResult = {
   errors: { row: number; issues: string[] }[]
 }
 
+// Decided 2026-08-08 (background-jobs decision, see docs/build-log.md): bulk
+// upload stays synchronous, not queued - real usage at this platform's
+// current scale (a content admin importing a question set, a school
+// importing a few classes) is comfortably under this cap, and a real queue
+// (persisted job status, a worker, a new vendor) isn't justified yet. This
+// cap exists so a file that WOULD exceed a safe synchronous processing
+// window fails fast with a clear message instead of silently timing out
+// partway through (leaving an ambiguous partial import). Revisit the
+// decision, not just the number, if real usage needs routinely exceeds this.
+const MAX_BULK_ROWS = 300
+
 export async function bulkCreateQuestions(
   rows: { row: number; parsed: ParsedRow }[],
   defaultSubjectId: string | null
@@ -19,6 +30,12 @@ export async function bulkCreateQuestions(
   const session = await auth()
   if (session?.user?.role !== "content_admin") {
     throw new Error("Not authorized")
+  }
+
+  if (rows.length > MAX_BULK_ROWS) {
+    throw new Error(
+      `This file has ${rows.length} rows - bulk imports are processed synchronously and are capped at ${MAX_BULK_ROWS} rows to avoid timing out partway through. Split the file into smaller batches.`
+    )
   }
 
   const subjects = await prisma.subject.findMany({

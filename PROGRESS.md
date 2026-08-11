@@ -17,7 +17,7 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 | **Content** | The real gap. Only BECE has content, and it's seed/test-scale — nowhere near what a real product needs. WASSCE/Nursing/University Entrance/Digital Skills have **no content at all**. This is not engineering work and can't be sped up by more code. |
 | **QA** | One manual walkthrough round done (found 2 real bugs — fake nav-badge numbers, a Next.js compile error), currently with a second person for further QA. Not complete. |
 | **Production readiness** | Never deployed live. No confirmed real domain, no backup story discussed. Rate limiting on public routes is built (fails open until real Upstash keys exist). Error monitoring (Sentry) is built (fails safely with no DSN). A real security audit found and fixed a serious password-hash leak (see log below) — the kind of thing worth running again periodically as the app keeps growing. |
-| **Legal** | `/terms` and `/privacy` exist now (were a real 404 before) but are clearly-labeled placeholders, not real legal content. |
+| **Legal** | `/terms` and `/privacy` now carry real, product-accurate drafted content — still a first draft pending a lawyer's review, not finalized legal text. |
 
 **On timeline**: not estimable responsibly without a defined launch scope (e.g. "BECE only, one pilot school" vs. full multi-program public launch) and without knowing content-authoring throughput. Ask if you want to work through a scenario together once scope is picked.
 
@@ -28,7 +28,7 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 1. **Real Paystack + Resend + Upstash keys, and a first real deployment.** Highest-leverage single action left — unlocks a genuinely real end-to-end test instead of "verified downstream of."
 2. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
 3. **QA sign-off**, currently in progress with a second reviewer.
-4. **Legal page content** confirmed real before real users sign up.
+4. **Legal page content reviewed by a lawyer.** Real draft text now exists (product-accurate, covers what's actually collected/how payments work/Ghana's Data Protection Act) — still needs actual legal review before real users sign up on the strength of it.
 
 ---
 
@@ -36,8 +36,16 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
+### 2026-08-10
+
+- **Work has started on a mobile app** (Flutter, iOS + Android) — a new track alongside the web platform, not a replacement. First slice covers the core student loop: log in, see your assigned exams, view past results. Taking an exam on the phone itself isn't wired up yet. New backend API routes were added for the app to talk to, and everything's been verified working end-to-end against the real database and a real Flutter toolchain (not just "should work" — actually run and checked).
+- **`/terms` and `/privacy` now have real, product-accurate drafted content**, replacing the "nothing written yet" placeholders — closes the last of the four launch-blockers listed above except the actual lawyer review. Covers what data is really collected (checked against the real database structure, not guessed), how payments/payouts actually work, the guardian-approval flow for student accounts, and references Ghana's own Data Protection Act rather than generic boilerplate. Both pages still carry a visible "draft, pending legal review" notice — this is a strong first draft for a lawyer to check, not finalized legal text.
+
 ### 2026-08-08
 
+- **A real contact-message inbox now exists** (`super-admin/messages`) — form submissions were being saved all along but nobody could actually see them until now. **A weekly report email is also wired up** (Vercel Cron, Monday mornings) — sends every super admin the same 3 reports the Reports page already shows, as Excel and PDF attachments. Still needs a real deployment + Resend key to actually fire.
+- **Error monitoring (Sentry) is now actually committed and pointed at a real project** (`akrynix-labs`/`javascript-nextjs`) — still needs a real DSN/auth token to receive anything, but the wiring itself (including a top-level error boundary) is done.
+- **Real emails now go out for password resets, school-admin invites, and new student/content-admin accounts, plus assessment-assignment notifications** — previously these all just displayed a link/temp password in the app with no actual email sent. Invites and temp passwords can now be resent from the same screens too. Bulk student/question imports also got a hard file-size cap so an oversized file fails fast with a clear error instead of hanging.
 - **⚠️ Security audit found and fixed a real, serious bug: password hashes were leaking to the browser.** A dedicated audit pass across the whole app found that 14 admin-facing pages were sending real users' encrypted password hashes down to the page (visible via "View Source") — anyone with super-admin or school-admin access could have seen them, just by loading a normal page. This has been fixed on every affected page and verified against the live database. Also fixed: two checkout-related actions that didn't check who was calling them (lower risk — not exploitable for actual payment fraud, but tightened anyway). This is exactly the kind of thing worth periodically re-checking as the app keeps growing — nothing here was caught by any of the day-to-day feature work, only by a dedicated audit looking at the whole app at once.
 - **The one lower-priority item the audit found (most super-admin pages relying on the site-wide access gate instead of double-checking the visitor's role themselves) is now closed too** — every `super-admin/**` page checks the visitor's role directly.
 - **`/terms` and `/privacy` now exist** — they were linked from both signup forms but the pages themselves didn't exist at all (a real broken link, found while checking on launch-readiness basics). Both are clearly-labeled placeholders, not real legal text — confirmed with the user that drafting real Terms/Privacy language is a legal decision, not an engineering one. Still need real legal content before launch.
