@@ -16,7 +16,7 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 | **Email (Resend) / scheduled jobs (Vercel Cron)** | Same story — fully built, verified downstream, **zero real emails/cron runs have ever fired**. |
 | **Content** | The real gap. Only BECE has content, and it's seed/test-scale — nowhere near what a real product needs. WASSCE/Nursing/University Entrance/Digital Skills have **no content at all**. This is not engineering work and can't be sped up by more code. |
 | **QA** | One manual walkthrough round done (found 2 real bugs — fake nav-badge numbers, a Next.js compile error), currently with a second person for further QA. Not complete. |
-| **Production readiness** | Never deployed live. No confirmed real domain, no backup story discussed. Rate limiting on public routes is built (fails open until real Upstash keys exist). Error monitoring (Sentry) is built (fails safely with no DSN). A real security audit found and fixed a serious password-hash leak (see log below) — the kind of thing worth running again periodically as the app keeps growing. |
+| **Production readiness** | **Live as of 2026-08-14** at `testingyourpreparedness.com`, real Vercel deployment, verified end-to-end (not just a homepage check). No backup story discussed yet. Rate limiting and error monitoring (Sentry) now have real keys in production, not just fail-open/fail-safe placeholders. A real security audit found and fixed a serious password-hash leak (see log below) — the kind of thing worth running again periodically as the app keeps growing. |
 | **Legal** | `/terms` and `/privacy` now carry real, product-accurate drafted content — still a first draft pending a lawyer's review, not finalized legal text. |
 
 **On timeline**: not estimable responsibly without a defined launch scope (e.g. "BECE only, one pilot school" vs. full multi-program public launch) and without knowing content-authoring throughput. Ask if you want to work through a scenario together once scope is picked.
@@ -25,10 +25,11 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 ## What's actually blocking a real launch, in priority order
 
-1. **Real Paystack + Resend + Upstash keys, and a first real deployment.** Highest-leverage single action left — unlocks a genuinely real end-to-end test instead of "verified downstream of."
-2. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
-3. **QA sign-off**, currently in progress with a second reviewer.
-4. **Legal page content reviewed by a lawyer.** Real draft text now exists (product-accurate, covers what's actually collected/how payments work/Ghana's Data Protection Act) — still needs actual legal review before real users sign up on the strength of it.
+1. ~~Real Paystack + Resend + Upstash keys, and a first real deployment.~~ **Done 2026-08-14** — live at `testingyourpreparedness.com` with real keys, verified end-to-end.
+2. **A real end-to-end payment test on the live site.** Everything's been verified "downstream of a real API call" so far — the next real milestone is one actual live checkout completing start to finish.
+3. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
+4. **QA sign-off**, currently in progress with a second reviewer.
+5. **Legal page content reviewed by a lawyer.** Real draft text now exists (product-accurate, covers what's actually collected/how payments work/Ghana's Data Protection Act) — still needs actual legal review before real users sign up on the strength of it.
 
 ---
 
@@ -36,9 +37,11 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
-### 2026-08-14
+### 2026-08-14 (deployment)
 
-- **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before. Still needed: **the app itself has never actually been deployed to Vercel yet** (found while checking this, the same day — the domain is on Vercel but serves an old/unrelated deployment; everything real has only ever run on localhost), so these keys need a real deployment to matter beyond local testing, plus a live Paystack subaccount test for tutor payouts.
+- **The app is now actually live** at `https://testingyourpreparedness.com` — the first real deployment this project has ever had (everything before this ran on localhost only). Getting there needed one real fix: the database client wasn't being regenerated during Vercel's build, which broke every page that touches the database — fixed and verified with a full production build before pushing. Confirmed working for real, not just "deployed": the legal pages, signup flow, and all 4 dashboards return real pages instead of 404s, and a real login against a real seeded account returned a real session token from the live database. The site's own public URL setting was also corrected from a placeholder to the real domain (this feeds into Paystack's checkout redirect, so it had to be right before a real payment could complete). Next real-world test to run: an actual payment end-to-end on the live site, not just downstream-verified plumbing.
+
+- **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before, and (as of the deployment above, same day) these keys are now live in production too, not just local.
 
 ### 2026-08-10
 
