@@ -43,6 +43,10 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 - **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before, and (as of the deployment above, same day) these keys are now live in production too, not just local.
 
+### 2026-08-14
+
+- **The contact page now has a newsletter signup form**, wired to Brevo (a marketing-email tool, separate from Resend which just handles things like password resets). Entering an email adds it to a real Brevo mailing list for future newsletter sends. Same as Paystack/Resend, this needs a real Brevo account and API key to actually deliver anything — the form itself is done and will show a clear message instead of silently failing until those are added.
+
 ### 2026-08-10
 
 - **Work has started on a mobile app** (Flutter, iOS + Android) — a new track alongside the web platform, not a replacement. First slice covers the core student loop: log in, see your assigned exams, view past results. Taking an exam on the phone itself isn't wired up yet. New backend API routes were added for the app to talk to, and everything's been verified working end-to-end against the real database and a real Flutter toolchain (not just "should work" — actually run and checked).

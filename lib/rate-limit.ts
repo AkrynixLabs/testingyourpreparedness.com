@@ -27,6 +27,7 @@ const LIMITS = {
   signup: { limit: 5, window: "1 h" as const },
   "forgot-password": { limit: 3, window: "15 m" as const },
   contact: { limit: 5, window: "1 h" as const },
+  newsletter: { limit: 5, window: "1 h" as const },
 } satisfies Record<string, { limit: number; window: `${number} ${"s" | "m" | "h"}` }>
 
 export type RateLimitName = keyof typeof LIMITS

@@ -6,7 +6,6 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { Reveal } from "@/components/reveal"
-import { AnimatedStat } from "@/components/animated-stat"
 import { CustomCursor } from "@/components/custom-cursor"
 import { HeroImageSlider } from "@/components/hero-image-slider"
 import { ExamDemoDashboard } from "@/components/exam-demo-dashboard"
@@ -24,7 +23,6 @@ import {
   Landmark,
   Laptop2,
   Clock,
-  ClipboardCheck,
   BarChart3,
   Brain,
   Trophy,
@@ -95,21 +93,13 @@ const programs: {
   },
 ]
 
-const stats = [
-  { icon: Users, value: "45,000+", label: "Students" },
-  { icon: School, value: "127", label: "Partner Schools" },
-  { icon: BookOpen, value: "8,750+", label: "Questions" },
-  { icon: ClipboardCheck, value: "284K+", label: "Assessments Taken" },
-]
-
 const heroSliderImages = [
+  { src: "/images/homepage/dom-fou-YRMWVcdyhmI-unsplash.jpg", alt: "Students seated in a large lecture hall during a presentation" },
+  { src: "/images/homepage/pexels-joseph-oti-nyametease-2148147873-29941468.jpg", alt: "Two nurses in scrubs with stethoscopes standing in a hospital ward" },
   { src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg", alt: "A classroom of students seated at their desks during an exam" },
-  { src: "/images/homepage/annie-spratt-OIuCXxx08yg.jpg", alt: "Students seated attentively in a classroom" },
-  { src: "/images/homepage/emmanuel-ikwuegbu-VC6MGt9ZoBA.jpg", alt: "A student reading through her workbook during a lesson" },
-  { src: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg", alt: "A student in class alongside classmates writing in their notebooks" },
-  { src: "/images/homepage/storyzangu-hub-2JFGBQhdHu0.jpg", alt: "A student concentrating while writing in her notebook during class" },
   { src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg", alt: "A group of students smiling together outside their classroom" },
-  { src: "/images/homepage/bill-wegener-hs98_9hzTcU.jpg", alt: "A student smiling and making a peace sign in class" },
+  { src: "/images/homepage/barak-paul-munuo-K5F_iHnR-Mg-unsplash.jpg", alt: "University students smiling together in a lecture hall" },
+  { src: "/images/homepage/ato-aikins-y842V6cRTKM-unsplash.jpg", alt: "Students in school uniform seated together in a classroom" },
 ]
 
 const classroomPhotos = [
@@ -254,7 +244,7 @@ export default async function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative isolate overflow-hidden pt-4 pb-24 md:pt-6 md:pb-32">
+        <section className="relative isolate overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
           <HeroImageSlider images={heroSliderImages} maxOpacity={0.9} />
           <div className="absolute inset-0 bg-background/20" />
           <div className="absolute inset-0 bg-grain" />
@@ -272,17 +262,15 @@ export default async function LandingPage() {
           <div className="container mx-auto px-4 relative">
             {/* Centered copy */}
             <div className="text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 text-muted-foreground text-xs font-semibold tracking-[0.15em] uppercase mb-4">
-                <span className="h-px w-6 bg-border" />
-                Trusted by 127+ schools across Ghana
-                <span className="h-px w-6 bg-border" />
-              </div>
-              <h5 className="font-sans text-2xl md:text-4xl font-semibold tracking-tight mb-6 text-balance drop-shadow-[0_2px_16px_rgba(0,0,0,0.25)]">
-                From BECE to University,Prepare with{" "}
+              <h5 className="font-sans text-xl md:text-3xl font-bold tracking-tight mb-6 text-balance drop-shadow-[0_2px_16px_rgba(0,0,0,0.25)]">
+                From BECE to University, Prepare with{" "}
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Confidence
                 </span>
               </h5>
+              <p className="font-sans text-base md:text-lg font-medium text-foreground max-w-2xl mx-auto mb-8 text-pretty drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
+                TYP is a home for Ghanaian students getting ready for what&apos;s next, whether that&apos;s BECE, WASSCE, a nursing entrance exam, or university admission. Practice with real, examiner style questions, see exactly where you stand, and walk into exam day feeling ready instead of anxious.
+              </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="lg" asChild className="group text-base px-8">
                   <Link href="/signup" data-cursor="small">
@@ -297,27 +285,8 @@ export default async function LandingPage() {
             </div>
 
             {/* Full-width demo dashboard */}
-            <div className="mt-6 md:mt-8" data-cursor="big">
+            <div className="mt-10 md:mt-14" data-cursor="big">
               <ExamDemoDashboard />
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-12 border-y border-border bg-muted/40">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y divide-border md:divide-y-0 md:divide-x">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center justify-center gap-2 py-4 md:py-0">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <p className="text-2xl md:text-3xl font-semibold tabular-nums">
-                    <AnimatedStat value={stat.value} />
-                  </p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>

@@ -28,7 +28,7 @@ import {
   CheckCircle2,
   ArrowRight,
 } from "lucide-react"
-import { submitContactMessage } from "./actions"
+import { submitContactMessage, subscribeNewsletter } from "./actions"
 
 const colorClasses = {
   "chart-1": { bg: "bg-chart-1/15", text: "text-chart-1" },
@@ -70,12 +70,6 @@ const contactOptions = [
   },
 ] as const
 
-const trustPoints = [
-  { icon: Clock, label: "24-hour response time" },
-  { icon: CheckCircle2, label: "Real support team, not bots" },
-  { icon: Mail, label: "Multiple ways to reach us" },
-]
-
 const initialContactForm = {
   firstName: "",
   lastName: "",
@@ -91,6 +85,11 @@ export default function ContactPage() {
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState(initialContactForm)
 
+  const [newsletterEmail, setNewsletterEmail] = useState("")
+  const [newsletterLoading, setNewsletterLoading] = useState(false)
+  const [newsletterError, setNewsletterError] = useState<string | null>(null)
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -105,64 +104,26 @@ export default function ContactPage() {
     }
   }
 
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setNewsletterError(null)
+    setNewsletterLoading(true)
+    try {
+      await subscribeNewsletter({ email: newsletterEmail })
+      setNewsletterSubscribed(true)
+    } catch (err) {
+      setNewsletterError(err instanceof Error ? err.message : "Failed to subscribe.")
+    } finally {
+      setNewsletterLoading(false)
+    }
+  }
+
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
       <CustomCursor />
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative isolate overflow-hidden pt-14 pb-16 md:pt-20 md:pb-20 border-b border-border">
-          <div className="absolute inset-0 bg-grain" />
-          <div
-            aria-hidden
-            className="animate-glow-pulse absolute left-1/2 top-0 -z-10 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/20 blur-[120px]"
-          />
-          <MessageSquare
-            aria-hidden
-            className="pointer-events-none absolute -right-16 top-6 h-72 w-72 text-primary/[0.05] hidden lg:block"
-            strokeWidth={0.5}
-          />
-
-          <div className="container mx-auto px-4 relative text-center max-w-2xl">
-            <div className="inline-flex items-center gap-2 text-muted-foreground text-xs font-semibold tracking-[0.15em] uppercase mb-4">
-              <span className="h-px w-6 bg-border" />
-              We reply within 24 hours
-              <span className="h-px w-6 bg-border" />
-            </div>
-            <h1 className="font-sans text-2xl md:text-4xl font-semibold tracking-tight mb-4 text-balance">
-              Let&apos;s talk about your{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                exam prep journey
-              </span>
-            </h1>
-            <p className="font-sans text-base md:text-lg text-foreground/80 max-w-xl mx-auto text-balance mb-8">
-              Questions about a subscription, a school partnership, or just need a hand getting started? Our team is
-              a message away.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" asChild className="group text-base px-8">
-                <a href="#contact-form" data-cursor="small">
-                  Send a Message
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="text-base px-8">
-                <a href="tel:+233302401234" data-cursor="small">Call Us Now</a>
-              </Button>
-            </div>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
-              {trustPoints.map((point) => (
-                <div key={point.label} className="flex items-center gap-2">
-                  <point.icon className="h-4 w-4 text-primary" />
-                  {point.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Contact Options */}
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
@@ -402,6 +363,52 @@ export default function ContactPage() {
                 </Card>
               </Reveal>
             </div>
+          </div>
+        </section>
+
+        {/* Newsletter Section */}
+        <section className="py-12 md:py-16">
+          <div className="container mx-auto px-4">
+            <Reveal className="max-w-xl mx-auto">
+              <Card className="border-border shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Mail className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mb-2">Stay in the loop</h2>
+                  <p className="font-sans text-sm md:text-base text-muted-foreground mb-6">
+                    Exam prep tips, new subject launches, and platform updates, straight to your inbox. No spam, unsubscribe anytime.
+                  </p>
+
+                  {newsletterSubscribed ? (
+                    <div className="flex items-center justify-center gap-2 text-emerald-600 text-sm font-medium py-2">
+                      <CheckCircle2 className="h-5 w-5" />
+                      You&apos;re subscribed. Thanks for joining!
+                    </div>
+                  ) : (
+                    <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row items-start gap-3 max-w-md mx-auto">
+                      <div className="w-full flex-1">
+                        <Label htmlFor="newsletter-email" className="sr-only">Email</Label>
+                        <Input
+                          id="newsletter-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={newsletterEmail}
+                          onChange={(e) => setNewsletterEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" disabled={newsletterLoading} className="w-full sm:w-auto shrink-0">
+                        {newsletterLoading ? "Subscribing..." : "Subscribe"}
+                      </Button>
+                    </form>
+                  )}
+                  {newsletterError && (
+                    <p className="mt-3 text-sm text-destructive">{newsletterError}</p>
+                  )}
+                </CardContent>
+              </Card>
+            </Reveal>
           </div>
         </section>
 

@@ -93,7 +93,7 @@ export function ExamDemoDashboard() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
           </div>
           <div className="mx-auto flex w-64 items-center justify-center rounded-md bg-background px-3 py-1 text-xs text-muted-foreground">
-            typ.com.gh
+            <span className="truncate">testingyourpreparedness.com/dashboard</span>
           </div>
         </div>
 

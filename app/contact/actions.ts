@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { subscribeToNewsletter, type SubscribeToNewsletterResult } from "@/lib/newsletter/brevo"
 
 export type ContactFormInput = {
   firstName: string
@@ -29,4 +30,17 @@ export async function submitContactMessage(input: ContactFormInput) {
   await prisma.contactMessage.create({
     data: { firstName, lastName, email, role: input.role, subject: input.subject, message },
   })
+}
+
+export type NewsletterSubscribeInput = { email: string }
+
+export async function subscribeNewsletter(input: NewsletterSubscribeInput): Promise<SubscribeToNewsletterResult> {
+  await enforceRateLimit("newsletter")
+
+  const email = input.email.trim().toLowerCase()
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Please enter a valid email address.")
+  }
+
+  return subscribeToNewsletter(email)
 }

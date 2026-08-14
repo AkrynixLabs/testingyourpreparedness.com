@@ -21,18 +21,32 @@ export function HeroImageSlider({
     return () => clearInterval(rotate)
   }, [images.length])
 
+  const total = images.length
+
   return (
-    <div className="absolute inset-0 [transform:translateZ(0)]" aria-hidden>
-      {images.map((image, i) => (
-        <img
-          key={image.src}
-          src={image.src}
-          alt={image.alt}
-          decoding="async"
-          style={{ opacity: i === active ? maxOpacity : 0, willChange: "opacity" }}
-          className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ease-in-out [transform:translateZ(0)] [backface-visibility:hidden]"
-        />
-      ))}
+    <div className="absolute inset-0 overflow-hidden [transform:translateZ(0)]" aria-hidden>
+      {images.map((image, i) => {
+        let offset = i - active
+        if (offset > total / 2) offset -= total
+        if (offset < -total / 2) offset += total
+
+        return (
+          <img
+            key={image.src}
+            src={image.src}
+            alt={image.alt}
+            decoding="async"
+            loading={i === 0 ? "eager" : "lazy"}
+            fetchPriority={i === 0 ? "high" : "auto"}
+            style={{
+              opacity: maxOpacity,
+              transform: `translate3d(${offset * 100}%, 0, 0)`,
+              willChange: "transform",
+            }}
+            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1000 ease-in-out [backface-visibility:hidden]"
+          />
+        )
+      })}
 
       {/* Slide indicators - kept fully opaque and clickable regardless of maxOpacity */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
