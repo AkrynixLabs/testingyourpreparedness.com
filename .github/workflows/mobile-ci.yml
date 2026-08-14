@@ -10,7 +10,12 @@ on:
     paths: ["mobile/**"]
   pull_request:
     paths: ["mobile/**"]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      generate_keystore:
+        description: "Generate a NEW release keystore (one-time setup only - leave unchecked once ANDROID_KEYSTORE_BASE64/ANDROID_KEYSTORE_PASSWORD secrets already exist, or you'll overwrite the key your installed APK is signed with)"
+        type: boolean
+        default: false
 
 jobs:
   analyze-and-test:
@@ -95,14 +100,17 @@ jobs:
           retention-days: 30
 
   # One-time, manually-triggered helper - not part of the normal build path.
-  # Run once via the Actions tab (workflow_dispatch), download the artifact,
-  # then add its two values as repo secrets (Settings -> Secrets and
-  # variables -> Actions): ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD.
-  # After that, every future build-android-apk run signs with this same key
-  # instead of a fresh throwaway one, so new builds install over old ones
-  # instead of Android rejecting them as a signature mismatch.
+  # Gated on the generate_keystore checkbox above (not just workflow_dispatch)
+  # so a routine "Run workflow" click for a normal APK build doesn't also
+  # silently mint a second, different keystore every time. Run once via the
+  # Actions tab with that box checked, download the artifact, then add its
+  # two values as repo secrets (Settings -> Secrets and variables -> Actions):
+  # ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD. After that, every
+  # future build-android-apk run signs with this same key instead of a fresh
+  # throwaway one, so new builds install over old ones instead of Android
+  # rejecting them as a signature mismatch.
   generate-keystore:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.generate_keystore == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-java@v4
