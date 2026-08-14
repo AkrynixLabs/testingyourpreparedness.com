@@ -36,6 +36,10 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
+### 2026-08-14
+
+- **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before. Still needed: adding these same keys to the live Vercel deployment (they currently only work on this local machine), and a live Paystack subaccount test for tutor payouts.
+
 ### 2026-08-10
 
 - **Work has started on a mobile app** (Flutter, iOS + Android) — a new track alongside the web platform, not a replacement. First slice covers the core student loop: log in, see your assigned exams, view past results. Taking an exam on the phone itself isn't wired up yet. New backend API routes were added for the app to talk to, and everything's been verified working end-to-end against the real database and a real Flutter toolchain (not just "should work" — actually run and checked).
