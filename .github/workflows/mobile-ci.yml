@@ -37,9 +37,10 @@ jobs:
   # built in (see CLAUDE.md's standing caveat), so this is the first place a
   # real native Android build has ever actually run - GitHub's ubuntu-latest
   # runners ship a preinstalled Android SDK, no separate setup needed here.
-  # Signed with the debug key (android/app/build.gradle's own TODO) - fine
-  # for sideloading onto a test device, not for a real Play Store upload,
-  # which needs a real release signing key first.
+  # Signed with a persisted release key when the ANDROID_KEYSTORE_BASE64
+  # secret is set (see the generate-keystore job below to create one), falls
+  # back to Flutter's own debug key otherwise. Either way this is a
+  # self-signed sideload key, not a Play Store submission key.
   build-android-apk:
     needs: analyze-and-test
     runs-on: ubuntu-latest
@@ -60,10 +61,66 @@ jobs:
           channel: "stable"
 
       - run: flutter pub get
-      - run: flutter build apk --release
+
+      # Only runs once the ANDROID_KEYSTORE_BASE64/ANDROID_KEYSTORE_PASSWORD
+      # secrets exist (see the generate-keystore job) - without them the
+      # build falls through to android/app/build.gradle.kts's debug-key
+      # fallback, so this workflow keeps working before that one-time setup.
+      - name: Configure release signing
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+          cat > android/app/key.properties <<EOF
+          storeFile=release.keystore
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=typmobile
+          keyPassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          EOF
+
+      # Bakes the real deployed backend in at build time (see lib/services/
+      # api_client.dart's ApiClient.baseUrl) instead of the local-dev default
+      # - without this, a sideloaded APK can install fine but every API call
+      # fails since it's still pointed at the build machine's own localhost.
+      - run: flutter build apk --release --dart-define=API_BASE_URL=https://testingyourpreparedness.com
 
       - uses: actions/upload-artifact@v4
         with:
           name: typ-android-release-apk
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+  # One-time, manually-triggered helper - not part of the normal build path.
+  # Run once via the Actions tab (workflow_dispatch), download the artifact,
+  # then add its two values as repo secrets (Settings -> Secrets and
+  # variables -> Actions): ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD.
+  # After that, every future build-android-apk run signs with this same key
+  # instead of a fresh throwaway one, so new builds install over old ones
+  # instead of Android rejecting them as a signature mismatch.
+  generate-keystore:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Generate a release keystore
+        run: |
+          PASSWORD=$(openssl rand -base64 24)
+          keytool -genkeypair -v \
+            -keystore release.keystore \
+            -alias typmobile \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "$PASSWORD" -keypass "$PASSWORD" \
+            -dname "CN=TYP, OU=Mobile, O=Akrynix Labs, L=Accra, ST=Greater Accra, C=GH"
+          base64 -w0 release.keystore > release.keystore.base64.txt
+          echo "$PASSWORD" > keystore-password.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: typ-release-keystore-SAVE-THEN-DELETE
+          path: |
+            release.keystore.base64.txt
+            keystore-password.txt
+          retention-days: 1

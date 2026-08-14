@@ -1,7 +1,21 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Optional release keystore, provided by CI (see .github/workflows/mobile-ci.yml)
+// as android/app/key.properties + android/app/release.keystore, both gitignored
+// (Flutter's own template .gitignore rule) and never committed. Falls back to
+// the debug signing config when absent, e.g. on a local `flutter build apk`.
+val keyPropertiesFile = file("key.properties")
+val hasReleaseSigning = keyPropertiesFile.exists()
+val keyProperties = Properties()
+if (hasReleaseSigning) {
+    keyProperties.load(FileInputStream(keyPropertiesFile))
 }
 
 android {
@@ -25,11 +39,30 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(keyProperties["storeFile"] as String)
+                storePassword = keyProperties["storePassword"] as String
+                keyAlias = keyProperties["keyAlias"] as String
+                keyPassword = keyProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Every build without a release keystore present (e.g. local
+            // `flutter run --release`) still falls back to the debug key so
+            // that command keeps working with zero setup - only CI, which
+            // provisions key.properties from a persisted secret, signs with
+            // a real, stable release key. This is what fixes "App not
+            // installed" on a device that already has an older CI build:
+            // previously every CI run signed with a fresh, ephemeral debug
+            // keystore (GitHub's runners don't persist ~/.android/debug.keystore
+            // across runs), so consecutive builds had different signatures
+            // and Android refused to install over the existing app.
+            signingConfig = if (hasReleaseSigning) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }
