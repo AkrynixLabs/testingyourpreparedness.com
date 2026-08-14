@@ -33,3 +33,4 @@ skills-lock.json
 .vercel
 .env*
 vercel-env-import.txt
+typ-login-credentials.txt
