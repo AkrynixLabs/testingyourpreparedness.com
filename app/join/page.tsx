@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft, ArrowRight, School, CheckCircle2, AlertCircle, Lock, User, Mail } from "lucide-react"
 import { verifySchoolCode, registerJoinedStudent, type VerifiedSchool } from "./actions"
 
@@ -71,6 +72,7 @@ export default function JoinSchoolPage() {
 
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <header className="p-4">
         <Link
           href="/signup/student"

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CustomCursor } from "@/components/custom-cursor"
 import { GraduationCap, Mail, ArrowLeft, CheckCircle2, KeyRound } from "lucide-react"
 import { requestPasswordReset } from "./actions"
 
@@ -33,6 +34,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+      <CustomCursor />
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center">

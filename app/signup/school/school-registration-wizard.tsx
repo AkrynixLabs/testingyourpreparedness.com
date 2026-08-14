@@ -9,14 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
-  School,
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronRight,
   User,
   Mail,
   Lock,
@@ -28,8 +27,18 @@ import {
   FileText,
   Shield,
 } from "lucide-react"
+import { CustomCursor } from "@/components/custom-cursor"
+import { cn } from "@/lib/utils"
 import { registerSchool, initializeSchoolCheckout } from "./actions"
 import type { OwnershipType, SubscriptionPlan } from "@/lib/generated/prisma/client"
+
+const steps = [
+  { number: 1, label: "School Info" },
+  { number: 2, label: "Location" },
+  { number: 3, label: "Administrator" },
+  { number: 4, label: "School Size" },
+  { number: 5, label: "Plan" },
+]
 
 const regions = [
   "Greater Accra",
@@ -95,7 +104,6 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
   })
 
   const totalSteps = 5
-  const progress = (step / totalSteps) * 100
 
   const handleNext = () => {
     if (step < totalSteps) setStep(step + 1)
@@ -172,38 +180,78 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
   }
 
   return (
-    <div className="marketing min-h-screen bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="marketing relative isolate min-h-screen bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+      <CustomCursor />
+      <div className="absolute inset-0 bg-grain" />
+      <div
+        aria-hidden
+        className="animate-glow-pulse absolute left-1/2 top-0 -z-10 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/20 blur-[120px]"
+      />
+
+      <header className="relative border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <School className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-xl">TYP</span>
+          <Link href="/" className="flex items-center" data-cursor="small">
+            <img src="/logo.png" alt="TYP - Testing Your Preparedness" className="h-9 w-auto" />
           </Link>
           <Link href="/login">
-            <Button variant="ghost">Already registered?</Button>
+            <Button size="sm" className="bg-primary/10 text-primary hover:bg-primary/25">
+              Already registered?
+            </Button>
           </Link>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="relative container mx-auto px-4 py-10 md:py-12">
         <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-1.5">Register Your School</h1>
+            <p className="text-base text-muted-foreground">Get your school set up on TYP in a few quick steps</p>
+          </div>
+
+          {/* Step navigation */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl font-bold">Register Your School</h1>
-              <span className="text-sm text-muted-foreground">
-                Step {step} of {totalSteps}
-              </span>
+            <div className="flex flex-wrap items-center justify-center gap-y-2">
+              {steps.map((s, idx) => (
+                <div key={s.number} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => s.number < step && setStep(s.number)}
+                    disabled={s.number >= step}
+                    aria-current={s.number === step ? "step" : undefined}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium transition-all",
+                      s.number < step
+                        ? "cursor-pointer border-primary/30 bg-primary/10 text-primary hover:border-primary hover:bg-primary/15"
+                        : s.number === step
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "cursor-default border-border text-muted-foreground"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+                        s.number < step
+                          ? "bg-primary text-primary-foreground"
+                          : s.number === step
+                          ? "bg-primary-foreground text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {s.number < step ? <Check className="h-3 w-3" /> : s.number}
+                    </span>
+                    <span className="hidden sm:inline">{s.label}</span>
+                  </button>
+                  {idx < steps.length - 1 && (
+                    <ChevronRight
+                      className={cn("mx-1 h-4 w-4 shrink-0", s.number < step ? "text-primary" : "text-border")}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-            <Progress value={progress} className="h-2" />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span className={step >= 1 ? "text-primary font-medium" : ""}>School Info</span>
-              <span className={step >= 2 ? "text-primary font-medium" : ""}>Location</span>
-              <span className={step >= 3 ? "text-primary font-medium" : ""}>Administrator</span>
-              <span className={step >= 4 ? "text-primary font-medium" : ""}>School Size</span>
-              <span className={step >= 5 ? "text-primary font-medium" : ""}>Plan</span>
-            </div>
+            <p className="mt-3 text-center text-xs text-muted-foreground sm:hidden">
+              Step {step} of {totalSteps} &middot; {steps[step - 1].label}
+            </p>
           </div>
 
           {error && (
@@ -213,7 +261,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           )}
 
           {step === 1 && (
-            <Card>
+            <Card className="border-border/60 shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -305,7 +353,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           )}
 
           {step === 2 && (
-            <Card>
+            <Card className="border-border/60 shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -383,7 +431,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           )}
 
           {step === 3 && (
-            <Card>
+            <Card className="border-border/60 shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -494,7 +542,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           )}
 
           {step === 4 && (
-            <Card>
+            <Card className="border-border/60 shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -569,7 +617,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           )}
 
           {step === 5 && (
-            <Card>
+            <Card className="border-border/60 shadow-lg">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -725,13 +773,13 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
 
           <div className="flex items-center justify-between mt-6">
             {step > 1 ? (
-              <Button variant="outline" onClick={handleBack}>
+              <Button size="lg" variant="outline" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
             ) : (
               <Link href="/signup">
-                <Button variant="outline">
+                <Button size="lg" variant="outline">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Options
                 </Button>
@@ -739,12 +787,13 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
             )}
 
             {step < totalSteps ? (
-              <Button onClick={handleNext}>
+              <Button size="lg" onClick={handleNext} className="group">
                 Continue
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
             ) : (
               <Button
+                size="lg"
                 onClick={handleSubmit}
                 disabled={!formData.agreeTerms || !formData.authorizedSignup || isPending}
               >

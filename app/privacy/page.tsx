@@ -1,5 +1,6 @@
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
+import { CustomCursor } from "@/components/custom-cursor"
 import { LegalDraftNotice } from "@/components/legal-draft-notice"
 
 const EFFECTIVE_DATE = "August 10, 2026"
@@ -7,6 +8,7 @@ const EFFECTIVE_DATE = "August 10, 2026"
 export default function PrivacyPage() {
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
+      <CustomCursor />
       <PublicHeader />
 
       <main className="flex-1">

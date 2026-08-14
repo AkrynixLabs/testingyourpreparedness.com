@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft } from "lucide-react"
 import { registerTutor } from "./actions"
 
@@ -58,17 +59,31 @@ export default function TutorSignupPage() {
   }
 
   return (
-    <div className="marketing min-h-screen flex flex-col bg-background text-foreground">
-      <header className="p-4">
-        <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Back
+    <div className="marketing relative isolate min-h-screen flex flex-col overflow-hidden bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+      <CustomCursor />
+      <div className="absolute inset-0 bg-grain" />
+      <div
+        aria-hidden
+        className="animate-glow-pulse absolute left-1/2 top-1/4 -z-10 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-[120px]"
+      />
+
+      <header className="p-4 md:p-6 relative">
+        <Link
+          href="/signup"
+          data-cursor="small"
+          className="group inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-all hover:border-border hover:bg-background hover:text-foreground hover:shadow-md"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+          Back to Options
         </Link>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg border-border/50 shadow-sm">
-          <CardHeader>
+      <main className="flex-1 flex items-center justify-center p-4 relative">
+        <Card className="w-full max-w-lg border-border/60 shadow-xl">
+          <CardHeader className="text-center pb-4">
+            <Link href="/" className="inline-flex items-center justify-center mb-5">
+              <img src="/logo.png" alt="TYP - Testing Your Preparedness" className="h-12 w-auto" />
+            </Link>
             <CardTitle className="text-2xl">Become a Tutor</CardTitle>
             <CardDescription>Create courses and start earning from student enrollments.</CardDescription>
           </CardHeader>
@@ -125,7 +140,7 @@ export default function TutorSignupPage() {
                   onChange={(e) => handleChange("expertiseAreas", e.target.value)}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" size="lg" className="w-full text-base" disabled={isSubmitting}>
                 {isSubmitting ? "Creating account..." : "Create Tutor Account"}
               </Button>
             </form>

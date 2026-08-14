@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, AlertTriangle, Clock, GraduationCap } from "lucide-react"
+import { CustomCursor } from "@/components/custom-cursor"
 import { verifyTransaction } from "@/lib/payments/paystack"
 
 // Same pattern as app/signup/school/checkout/callback - synchronous,
@@ -26,6 +27,7 @@ export default async function StudentCheckoutCallbackPage({
 
   return (
     <div className="marketing min-h-screen flex flex-col bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+      <CustomCursor />
       <header className="border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center">
           <Link href="/" className="flex items-center gap-2">
