@@ -10,8 +10,11 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
+    // Prisma 7's config schema has no `directUrl` field (only `url` and
+    // `shadowDatabaseUrl` - confirmed against @prisma/config's own types).
+    // Migrations run through this same pooled DATABASE_URL; DIRECT_URL is
+    // unused by Prisma itself, kept in .env only in case a future need
+    // (e.g. a script that wants an unpooled connection) comes up.
     url: env("DATABASE_URL"),
-    // Neon: migrations need a direct (non-pooled) connection.
-    directUrl: env("DIRECT_URL"),
   },
 });
