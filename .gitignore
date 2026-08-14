@@ -32,3 +32,4 @@ skills-lock.json
 .env.sentry-build-plugin
 .vercel
 .env*
+vercel-env-import.txt
