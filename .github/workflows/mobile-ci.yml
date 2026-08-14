@@ -10,6 +10,7 @@ on:
     paths: ["mobile/**"]
   pull_request:
     paths: ["mobile/**"]
+  workflow_dispatch: {}
 
 jobs:
   analyze-and-test:
@@ -31,3 +32,38 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+
+  # No local Java/Android SDK exists in the dev sandbox this project has been
+  # built in (see CLAUDE.md's standing caveat), so this is the first place a
+  # real native Android build has ever actually run - GitHub's ubuntu-latest
+  # runners ship a preinstalled Android SDK, no separate setup needed here.
+  # Signed with the debug key (android/app/build.gradle's own TODO) - fine
+  # for sideloading onto a test device, not for a real Play Store upload,
+  # which needs a real release signing key first.
+  build-android-apk:
+    needs: analyze-and-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: "stable"
+
+      - run: flutter pub get
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: typ-android-release-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
