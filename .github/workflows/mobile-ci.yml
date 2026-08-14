@@ -44,6 +44,11 @@ jobs:
   build-android-apk:
     needs: analyze-and-test
     runs-on: ubuntu-latest
+    # `if:` conditionals can't reference `secrets` directly (a real GitHub
+    # Actions restriction, not a typo) - routed through a job-level env var
+    # instead, which `if:` can read.
+    env:
+      HAS_RELEASE_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     defaults:
       run:
         working-directory: mobile
@@ -67,7 +72,7 @@ jobs:
       # build falls through to android/app/build.gradle.kts's debug-key
       # fallback, so this workflow keeps working before that one-time setup.
       - name: Configure release signing
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
           cat > android/app/key.properties <<EOF
