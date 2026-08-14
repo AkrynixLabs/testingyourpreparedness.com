@@ -38,7 +38,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-14
 
-- **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before. Still needed: adding these same keys to the live Vercel deployment (they currently only work on this local machine), and a live Paystack subaccount test for tutor payouts.
+- **Real payment and email keys are now live and confirmed working** — Paystack (test mode), Resend (on a verified domain, `testingyourpreparedness.com`), and Sentry error monitoring all went from "no keys, plumbing only" to actually tested: a real bank-list call to Paystack succeeded, a real test email was sent and delivered through Resend. This unblocks real end-to-end payment/email testing that wasn't possible before. Still needed: **the app itself has never actually been deployed to Vercel yet** (found while checking this, the same day — the domain is on Vercel but serves an old/unrelated deployment; everything real has only ever run on localhost), so these keys need a real deployment to matter beyond local testing, plus a live Paystack subaccount test for tutor payouts.
 
 ### 2026-08-10
 

@@ -1,5 +1,7 @@
 # typ-platform
 
+**Proprietary — all rights reserved.** This repository is public for hosting/deployment convenience only; it is not open source. See [`LICENSE`](./LICENSE) — no permission is granted to use, copy, or redistribute this code.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
 
 ## Built with v0

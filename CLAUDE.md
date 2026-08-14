@@ -107,7 +107,7 @@ Short summary — see [`docs/data-model.md`](./docs/data-model.md) for the full 
 
 ## Tech Stack
 
-**Frontend** — Next.js (App Router) + TypeScript + Tailwind CSS v4, shadcn/ui (Radix). Deployed on Vercel (v0-linked; merges to `main` auto-deploy).
+**Frontend** — Next.js (App Router) + TypeScript + Tailwind CSS v4, shadcn/ui (Radix). Intended for Vercel (v0-linked; merges to `main` are meant to auto-deploy) — **corrected 2026-08-14: not actually live yet.** `testingyourpreparedness.com` is on Vercel DNS-wise but serves a much older/different deployment (most routes 404 — `/terms`, `/privacy`, `/signup`, all 4 dashboard roots); the user confirmed everything real has only ever run on localhost. Don't assume a live URL exists for this app until this note is updated.
 
 **Backend** — Next.js fullstack (Server Actions/API routes), no separate service. Zod for validation.
 
