@@ -1,0 +1,176 @@
+<!--
+  TYP marketing-broadcast email template, for Brevo's Campaigns -> custom
+  HTML/code editor (paste this whole file). NOT used by the app itself -
+  Resend's plain-string templates in lib/email/templates.ts are unrelated and
+  stay as they are; this is a standalone asset for whoever composes the next
+  Brevo broadcast.
+
+  Built to real HTML-email constraints, not modern web CSS: table layout
+  (email clients don't reliably support flex/grid), every style inlined
+  (many clients strip <style> blocks), a bulletproof VML button fallback for
+  Outlook desktop, and a hosted logo image (https://testingyourpreparedness.com/logo.png)
+  rather than a base64 embed, which most inboxes clip or flag.
+
+  Brand: primary blue #0072D5 is this project's real --primary token
+  (oklch(0.55 0.18 250) in app/globals.css), not a guessed color. Logo is the
+  actual public/logo.png (512x280), same file the web app's own header uses.
+
+  Everything in a [[DOUBLE-BRACKET]] placeholder is meant to be rewritten per
+  send - eyebrow label, headline, body copy, button text/link. Nothing else
+  needs touching between campaigns.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>TYP</title>
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<style>
+  table, td, div, h1, p { font-family: Arial, sans-serif; }
+</style>
+<![endif]-->
+<style>
+  body, table, td { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+  a { text-decoration: none; }
+  body { margin: 0; padding: 0; width: 100% !important; }
+
+  @media screen and (max-width: 600px) {
+    .typ-container { width: 100% !important; }
+    .typ-px { padding-left: 20px !important; padding-right: 20px !important; }
+    .typ-headline { font-size: 24px !important; line-height: 30px !important; }
+    .typ-stack { display: block !important; width: 100% !important; text-align: center !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background-color:#EEF3FA;">
+<!-- Preheader: hidden preview text shown next to the subject line in the inbox list -->
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#EEF3FA;">
+  [[One short line that previews the email in the inbox list - not shown in the email body itself.]]
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EEF3FA;">
+  <tr>
+    <td align="center" style="padding: 32px 16px;">
+
+      <table role="presentation" class="typ-container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px;">
+
+        <!-- Accent bar -->
+        <tr>
+          <td style="height:4px; line-height:4px; font-size:0; background-color:#0072D5; border-radius:10px 10px 0 0;">&nbsp;</td>
+        </tr>
+
+        <!-- Card -->
+        <tr>
+          <td style="background-color:#FFFFFF; border-radius:0 0 10px 10px; box-shadow:0 1px 3px rgba(20,42,79,0.06);">
+
+            <!-- Header / logo -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" align="left" style="padding: 32px 40px 24px 40px;">
+                  <img src="https://testingyourpreparedness.com/logo.png" width="132" height="72" alt="TYP - Testing Your Preparedness" style="display:block; width:132px; height:72px;">
+                </td>
+              </tr>
+            </table>
+
+            <!-- Eyebrow + headline -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" style="padding: 0 40px;">
+                  <p style="margin:0 0 10px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#0072D5;">
+                    [[EYEBROW LABEL, E.G. "PRODUCT UPDATE"]]
+                  </p>
+                  <h1 class="typ-headline" style="margin:0 0 16px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:28px; line-height:34px; font-weight:800; color:#142A4F;">
+                    [[Headline goes here]]
+                  </h1>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Body copy -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" style="padding: 0 40px 8px 40px;">
+                  <p style="margin:0 0 16px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:26px; color:#45526A;">
+                    [[Opening paragraph. Say the one thing this email is about in the first sentence - most people decide whether to keep reading right here.]]
+                  </p>
+                  <p style="margin:0 0 16px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:26px; color:#45526A;">
+                    [[Second paragraph, if needed - the specifics, or why it matters to them.]]
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- CTA button (bulletproof: real table button + VML fallback for Outlook) -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" align="left" style="padding: 8px 40px 32px 40px;">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="[[https://testingyourpreparedness.com/...]]" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="12%" fillcolor="#0072D5" stroke="f">
+                  <w:anchorlock/>
+                  <center style="color:#FFFFFF;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;">[[Button text]]</center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-->
+                  <a href="[[https://testingyourpreparedness.com/...]]" target="_blank" style="display:inline-block; background-color:#0072D5; color:#FFFFFF; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; font-weight:700; line-height:48px; height:48px; padding:0 28px; border-radius:8px; text-decoration:none;">
+                    [[Button text]]
+                  </a>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+            </table>
+
+            <!-- Divider -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" style="padding: 0 40px;">
+                  <div style="border-top:1px solid #DCE4F0; line-height:1px; font-size:1px;">&nbsp;</div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Footer -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="typ-px" style="padding: 24px 40px 32px 40px;">
+                  <p style="margin:0 0 6px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#7A88A0;">
+                    TYP &middot; Ghana&rsquo;s exam-prep and digital-skills platform
+                  </p>
+                  <p style="margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#7A88A0;">
+                    <a href="https://testingyourpreparedness.com" target="_blank" style="color:#0072D5;">testingyourpreparedness.com</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="https://testingyourpreparedness.com/contact" target="_blank" style="color:#0072D5;">Contact us</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="{{ unsubscribe }}" target="_blank" style="color:#7A88A0; text-decoration:underline;">Unsubscribe</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+
+        <!-- Below-card spacer -->
+        <tr>
+          <td style="height:24px; line-height:24px; font-size:0;">&nbsp;</td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>
