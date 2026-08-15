@@ -6,16 +6,19 @@ import '../models/user.dart';
 import '../services/api_client.dart';
 import '../widgets/async_state_views.dart';
 import 'course_catalog_screen.dart';
+import 'dashboard_screen.dart';
 import 'exam_taking_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
 
-/// Top-level shell once logged in - a bottom nav between the exam-prep loop
-/// (v1's original scope) and the course marketplace (added 2026-08-10).
-/// Each destination keeps its own full Scaffold/AppBar (via IndexedStack)
-/// rather than trying to merge two different AppBar shapes (exams needs a
-/// bottom TabBar, courses needs a search/filter row) into one shared one.
+/// Top-level shell once logged in - a bottom nav across the exam-prep loop
+/// (v1's original scope), the dashboard (added 2026-08-15, closing the
+/// standing "no client screen yet" gap for GET /api/mobile/dashboard), and
+/// the course marketplace (added 2026-08-10). Each destination keeps its own
+/// full Scaffold/AppBar (via IndexedStack) rather than trying to merge
+/// differently-shaped AppBars (exams needs a bottom TabBar, courses needs a
+/// search/filter row) into one shared one.
 class HomeScreen extends StatefulWidget {
   final AppUser user;
   const HomeScreen({super.key, required this.user});
@@ -34,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _index,
         children: [
           _ExamsTab(user: widget.user),
+          const DashboardScreen(),
           const CourseCatalogScreen(),
         ],
       ),
@@ -42,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.quiz_outlined), selectedIcon: Icon(Icons.quiz), label: 'Exams'),
+          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
           NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Courses'),
         ],
       ),

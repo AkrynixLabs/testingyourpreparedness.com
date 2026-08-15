@@ -39,6 +39,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **The mobile app now has a Dashboard tab** showing a student's completed-exam stats, score trend, subject strengths, and recent results — the backend for this existed already, it just had no screen to show it on.
 - **Super admins can now edit a platform display name and support email** from `Settings → Platform`, instead of those values being hardcoded nowhere at all. This is groundwork, not a visible change yet — the public contact page and footer still show their own fixed values; hooking those up to read this live is a small later step.
 
 ### 2026-08-14 (deployment)

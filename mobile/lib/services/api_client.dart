@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/course.dart';
+import '../models/dashboard.dart';
 import '../models/exam.dart';
 import '../models/exam_attempt.dart';
 import '../models/result_detail.dart';
@@ -75,6 +76,11 @@ class ApiClient {
   Future<StudentProfile> getProfile() async {
     final body = await _authorizedRequest('GET', '/api/mobile/me', fallback: 'Could not load profile.');
     return StudentProfile.fromJson(body);
+  }
+
+  Future<StudentDashboard> getDashboard() async {
+    final body = await _authorizedRequest('GET', '/api/mobile/dashboard', fallback: 'Could not load your dashboard.');
+    return StudentDashboard.fromJson(body);
   }
 
   Future<ExamStart> startExam(String assessmentId) async {
