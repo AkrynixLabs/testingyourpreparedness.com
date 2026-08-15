@@ -274,7 +274,7 @@ export default async function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="lg" asChild className="group text-base px-8">
                   <Link href="/signup" data-cursor="small">
-                    Start Free Trial
+                    Get Registered
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>

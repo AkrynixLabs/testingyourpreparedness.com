@@ -48,7 +48,17 @@ export function PublicFooter() {
             &copy; {new Date().getFullYear()} TYP. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Made with care in Ghana</span>
+            <span>
+              Built by{" "}
+              <a
+                href="https://akrynixlabs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                Akrynix Labs
+              </a>
+            </span>
           </div>
         </div>
       </div>

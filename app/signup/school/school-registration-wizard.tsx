@@ -568,7 +568,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="jhsStudents">JHS Students (Forms 1-3) *</Label>
+                    <Label htmStudents">Students (Forms 1-3) *</Label>
                     <Input
                       id="jhsStudents"
                       type="number"
@@ -576,12 +576,12 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       value={formData.jhsStudents}
                       onChange={(e) => updateFormData("jhsStudents", e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">Only JHS students will use the TYP platform</p>
+                    <p className="text-xs text-muted-foreground">All students will use the TYP platform</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="numberOfClasses">Number of JHS Classes</Label>
+                  <Label htmlFor="numberOfClasses">Number of Classes</Label>
                   <Select value={formData.numberOfClasses} onValueChange={(v) => updateFormData("numberOfClasses", v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select number of classes" />
@@ -600,7 +600,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
                     <p className="text-sm font-medium">Recommended Plan</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Based on {formData.jhsStudents} JHS students, we recommend the{" "}
+                      Based on {formData.jhsStudents} students, we recommend the{" "}
                       <span className="font-medium text-primary">
                         {parseInt(formData.jhsStudents) <= 100
                           ? "Starter"

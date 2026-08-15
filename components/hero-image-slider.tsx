@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 export function HeroImageSlider({
   images,
@@ -31,19 +32,20 @@ export function HeroImageSlider({
         if (offset < -total / 2) offset += total
 
         return (
-          <img
+          <Image
             key={image.src}
             src={image.src}
             alt={image.alt}
-            decoding="async"
+            fill
+            sizes="100vw"
+            priority={i === 0}
             loading={i === 0 ? "eager" : "lazy"}
-            fetchPriority={i === 0 ? "high" : "auto"}
             style={{
               opacity: maxOpacity,
               transform: `translate3d(${offset * 100}%, 0, 0)`,
               willChange: "transform",
             }}
-            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1000 ease-in-out [backface-visibility:hidden]"
+            className="object-cover object-center transition-transform duration-1000 ease-in-out [backface-visibility:hidden]"
           />
         )
       })}
