@@ -10,6 +10,8 @@ import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { stripTrailingSlash } from "@/lib/utils"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -104,6 +106,13 @@ export async function registerSchool(input: RegisterSchoolInput) {
   if (input.subscribeNewsletter) {
     await subscribeToNewsletterBestEffort(adminEmail)
   }
+
+  const { subject, html } = welcomeEmail({
+    name: `${adminFirstName} ${adminLastName}`,
+    roleLabel: "school administrator",
+    dashboardPath: "/school-admin",
+  })
+  await sendEmailBestEffort({ to: adminEmail, subject, html })
 
   return { schoolId: school.id }
 }

@@ -6,6 +6,8 @@ import { Role } from "@/lib/generated/prisma/client"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString, asStringArray } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
 
 export type RegisterTutorInput = {
   name: string
@@ -58,6 +60,9 @@ export async function registerTutor(input: RegisterTutorInput) {
   if (input.subscribeNewsletter) {
     await subscribeToNewsletterBestEffort(email)
   }
+
+  const { subject, html } = welcomeEmail({ name, roleLabel: "tutor", dashboardPath: "/tutor" })
+  await sendEmailBestEffort({ to: email, subject, html })
 
   return { tutorId: tutor.id, email }
 }

@@ -46,6 +46,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 - **A real, on-brand email template is ready for Brevo broadcasts** (`docs/email-templates/brevo-broadcast-template.html`) — paste it straight into Brevo's campaign editor. Uses the real TYP logo and brand blue, tested against real email-client quirks (Outlook included), with the parts you'd actually change per send clearly marked.
 
+- **New accounts now get a real welcome email** — school admins, independent students, tutors, and students joining via school code all get a "Welcome to TYP" confirmation right after signing up. Previously nobody got one at all (caught because a real tutor signup produced silence).
+
 - **The required-field asterisks now match on mobile too** — login and the "join your school" screen were missing them even though the equivalent web forms already had them. Fixed directly rather than left as a gap.
 
 - **Every required field, on every real form across the whole app, now shows a `*`** — not just signup. Went through content-admin, school-admin, super-admin, student, and tutor forms one by one and marked anything the backend actually treats as mandatory, including a couple that were missed even on the already-shipped signup/contact forms (the contact form's "I am a..." and "Subject" dropdowns were required but unmarked).

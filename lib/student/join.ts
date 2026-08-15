@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -72,6 +74,13 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   if (input.subscribeNewsletter) {
     await subscribeToNewsletterBestEffort(email)
   }
+
+  const { subject, html } = welcomeEmail({
+    name: `${firstName} ${lastName}`,
+    roleLabel: "student",
+    dashboardPath: "/student",
+  })
+  await sendEmailBestEffort({ to: email, subject, html })
 
   return { email, password, schoolName: school.name }
 }

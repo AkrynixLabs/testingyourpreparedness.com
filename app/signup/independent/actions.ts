@@ -10,6 +10,8 @@ import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { stripTrailingSlash } from "@/lib/utils"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -63,6 +65,9 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
   if (input.subscribeNewsletter) {
     await subscribeToNewsletterBestEffort(email)
   }
+
+  const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "student", dashboardPath: "/student" })
+  await sendEmailBestEffort({ to: email, subject, html })
 
   return { studentId: student.id, email, password }
 }
