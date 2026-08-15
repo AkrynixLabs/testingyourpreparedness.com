@@ -39,6 +39,10 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **The required-field asterisks now match on mobile too** — login and the "join your school" screen were missing them even though the equivalent web forms already had them. Fixed directly rather than left as a gap.
+
+- **Every required field, on every real form across the whole app, now shows a `*`** — not just signup. Went through content-admin, school-admin, super-admin, student, and tutor forms one by one and marked anything the backend actually treats as mandatory, including a couple that were missed even on the already-shipped signup/contact forms (the contact form's "I am a..." and "Subject" dropdowns were required but unmarked).
+
 - **Every signup form now has a "send me marketing updates" checkbox and a real Terms/Privacy agreement checkbox** — website and mobile app both. The newsletter checkbox is new everywhere; the terms checkbox already existed on the school and independent-student signup forms but was completely missing from tutor signup and the "join your school" flow (web and mobile) — all now have it, with real links to the actual legal pages, and you can't submit without agreeing.
 
 - **Students can now leave and edit course reviews from the mobile app**, not just read them — the review feature itself already existed on the website, this closes the mobile-only gap. Same rule as the website: only tutors see an average star rating on their own course, not the actual comments; no one else (super admin included) has a review-moderation view.

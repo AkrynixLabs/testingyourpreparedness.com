@@ -141,12 +141,12 @@ export function StudentSettingsView({
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input id="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email Address *</Label>
                 <Input id="email" type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} />
               </div>
 
@@ -181,11 +181,11 @@ export function StudentSettingsView({
               )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="guardianName">Guardian Name</Label>
+                  <Label htmlFor="guardianName">Guardian Name *</Label>
                   <Input id="guardianName" value={guardianForm.name} onChange={(e) => setGuardianForm({ ...guardianForm, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="guardianPhone">Guardian Phone</Label>
+                  <Label htmlFor="guardianPhone">Guardian Phone *</Label>
                   <Input id="guardianPhone" value={guardianForm.phone} onChange={(e) => setGuardianForm({ ...guardianForm, phone: e.target.value })} />
                 </div>
               </div>
@@ -329,7 +329,7 @@ export function StudentSettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword">Current Password *</Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
@@ -349,7 +349,7 @@ export function StudentSettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">New Password *</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
@@ -369,7 +369,7 @@ export function StudentSettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"

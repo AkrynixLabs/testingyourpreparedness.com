@@ -172,11 +172,11 @@ export function TutorSettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name *</Label>
                 <Input id="name" value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input id="email" type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} />
               </div>
               <Button onClick={handleSaveProfile} disabled={isPending}>
@@ -263,7 +263,7 @@ export function TutorSettingsView({
               ) : (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="bank">Bank / Mobile Money</Label>
+                    <Label htmlFor="bank">Bank / Mobile Money *</Label>
                     <Select
                       value={payoutForm.bankCode}
                       onValueChange={(v) => {
@@ -285,7 +285,7 @@ export function TutorSettingsView({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account-number">Account Number</Label>
+                    <Label htmlFor="account-number">Account Number *</Label>
                     <Input
                       id="account-number"
                       value={payoutForm.accountNumber}
@@ -332,7 +332,7 @@ export function TutorSettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="current-password">Current Password</Label>
+                <Label htmlFor="current-password">Current Password *</Label>
                 <Input
                   id="current-password"
                   type="password"
@@ -341,7 +341,7 @@ export function TutorSettingsView({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
+                <Label htmlFor="new-password">New Password *</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -350,7 +350,7 @@ export function TutorSettingsView({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Label htmlFor="confirm-password">Confirm New Password *</Label>
                 <Input
                   id="confirm-password"
                   type="password"

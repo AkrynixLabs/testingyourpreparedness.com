@@ -138,7 +138,7 @@ export function SubjectsView({
             </DialogHeader>
             <form className="space-y-4" onSubmit={handleCreateSubject}>
               <div className="space-y-2">
-                <Label htmlFor="subjectProgram">Program</Label>
+                <Label htmlFor="subjectProgram">Program *</Label>
                 <Select value={subjectProgramId} onValueChange={setSubjectProgramId}>
                   <SelectTrigger id="subjectProgram">
                     <SelectValue placeholder="Select program" />
@@ -153,7 +153,7 @@ export function SubjectsView({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="subjectName">Subject Name</Label>
+                <Label htmlFor="subjectName">Subject Name *</Label>
                 <Input
                   id="subjectName"
                   placeholder="e.g., French Language"
@@ -163,7 +163,7 @@ export function SubjectsView({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="subjectCode">Subject Code</Label>
+                <Label htmlFor="subjectCode">Subject Code *</Label>
                 <Input
                   id="subjectCode"
                   placeholder="e.g., FRE"
@@ -241,7 +241,7 @@ export function SubjectsView({
               </DialogHeader>
               <form className="space-y-4" onSubmit={handleCreateTopic}>
                 <div className="space-y-2">
-                  <Label htmlFor="topicSubject">Subject</Label>
+                  <Label htmlFor="topicSubject">Subject *</Label>
                   <Select value={topicSubjectId} onValueChange={setTopicSubjectId}>
                     <SelectTrigger id="topicSubject">
                       <SelectValue placeholder="Select subject" />
@@ -256,7 +256,7 @@ export function SubjectsView({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="topicName">Topic Name</Label>
+                  <Label htmlFor="topicName">Topic Name *</Label>
                   <Input
                     id="topicName"
                     placeholder="e.g., Quadratic Equations"

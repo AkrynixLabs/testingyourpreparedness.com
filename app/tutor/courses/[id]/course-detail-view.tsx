@@ -148,7 +148,7 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
                   <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
                 )}
                 <Input
-                  placeholder="Module title"
+                  placeholder="Module title *"
                   required
                   value={moduleTitle}
                   onChange={(e) => setModuleTitle(e.target.value)}
@@ -158,7 +158,7 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
                     <div key={index} className="rounded-lg border p-3 space-y-3 bg-muted/30">
                       <div className="flex items-center gap-2">
                         <Input
-                          placeholder={`Lesson ${index + 1} title`}
+                          placeholder={`Lesson ${index + 1} title *`}
                           required
                           value={lesson.title}
                           onChange={(e) => updateLesson(index, { title: e.target.value })}
@@ -180,14 +180,14 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
                       </div>
                       {lesson.type === "video" ? (
                         <Input
-                          placeholder="Video URL"
+                          placeholder="Video URL *"
                           required
                           value={lesson.videoUrl}
                           onChange={(e) => updateLesson(index, { videoUrl: e.target.value })}
                         />
                       ) : (
                         <Textarea
-                          placeholder="Article content"
+                          placeholder="Article content *"
                           required
                           rows={2}
                           value={lesson.content}

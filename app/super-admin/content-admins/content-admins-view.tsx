@@ -196,11 +196,11 @@ export function ContentAdminsView({ admins, subjects }: { admins: AdminRow[]; su
             ) : (
               <form className="space-y-4" onSubmit={handleAdd}>
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Full Name *</Label>
                   <Input id="name" placeholder="Enter full name" value={addName} onChange={(e) => setAddName(e.target.value)} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"

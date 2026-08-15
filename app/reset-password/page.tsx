@@ -108,7 +108,7 @@ function ResetPasswordForm() {
                     </p>
                   )}
                   <div className="space-y-2">
-                    <Label htmlFor="password">New Password</Label>
+                    <Label htmlFor="password">New Password *</Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"

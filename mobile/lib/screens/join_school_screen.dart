@@ -251,14 +251,14 @@ class _DetailsStep extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: firstNameController,
-                decoration: const InputDecoration(labelText: 'First Name'),
+                decoration: const InputDecoration(labelText: 'First Name *'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: TextField(
                 controller: lastNameController,
-                decoration: const InputDecoration(labelText: 'Last Name'),
+                decoration: const InputDecoration(labelText: 'Last Name *'),
               ),
             ),
           ],
@@ -268,14 +268,14 @@ class _DetailsStep extends StatelessWidget {
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
           autocorrect: false,
-          decoration: const InputDecoration(labelText: 'Email Address'),
+          decoration: const InputDecoration(labelText: 'Email Address *'),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: passwordController,
           obscureText: obscurePassword,
           decoration: InputDecoration(
-            labelText: 'Create Password',
+            labelText: 'Create Password *',
             suffixIcon: IconButton(
               icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
               onPressed: onToggleObscurePassword,
@@ -286,7 +286,7 @@ class _DetailsStep extends StatelessWidget {
         TextField(
           controller: confirmPasswordController,
           obscureText: obscurePassword,
-          decoration: const InputDecoration(labelText: 'Confirm Password'),
+          decoration: const InputDecoration(labelText: 'Confirm Password *'),
         ),
         const SizedBox(height: 16),
         // Not wrapped in a whole-row tap-to-toggle (unlike the newsletter
@@ -366,7 +366,7 @@ class _CodeStep extends StatelessWidget {
           textAlign: TextAlign.center,
           maxLength: 20,
           style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
-          decoration: const InputDecoration(labelText: 'School Code', hintText: 'e.g., ACH-001'),
+          decoration: const InputDecoration(labelText: 'School Code *', hintText: 'e.g., ACH-001'),
         ),
       ],
     );

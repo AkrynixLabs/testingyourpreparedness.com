@@ -194,7 +194,7 @@ export function SettingsView({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="schoolName">School Name</Label>
+                  <Label htmlFor="schoolName">School Name *</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -211,7 +211,7 @@ export function SettingsView({
                   <p className="text-xs text-muted-foreground">This is your unique school identifier</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -224,7 +224,7 @@ export function SettingsView({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -265,7 +265,7 @@ export function SettingsView({
                   </Select>
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address">Address *</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Textarea
@@ -310,7 +310,7 @@ export function SettingsView({
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="py-4">
-                      <Label htmlFor="inviteEmail">Email Address</Label>
+                      <Label htmlFor="inviteEmail">Email Address *</Label>
                       <Input
                         id="inviteEmail"
                         type="email"
@@ -474,7 +474,7 @@ export function SettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword">Current Password *</Label>
                 <Input
                   id="currentPassword"
                   type="password"
@@ -483,7 +483,7 @@ export function SettingsView({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">New Password *</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -493,7 +493,7 @@ export function SettingsView({
                 <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
