@@ -37,6 +37,10 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
+### 2026-08-15
+
+- **Super admins can now edit a platform display name and support email** from `Settings → Platform`, instead of those values being hardcoded nowhere at all. This is groundwork, not a visible change yet — the public contact page and footer still show their own fixed values; hooking those up to read this live is a small later step.
+
 ### 2026-08-14 (deployment)
 
 - **The app is now actually live** at `https://testingyourpreparedness.com` — the first real deployment this project has ever had (everything before this ran on localhost only). Getting there needed one real fix: the database client wasn't being regenerated during Vercel's build, which broke every page that touches the database — fixed and verified with a full production build before pushing. Confirmed working for real, not just "deployed": the legal pages, signup flow, and all 4 dashboards return real pages instead of 404s, and a real login against a real seeded account returned a real session token from the live database. The site's own public URL setting was also corrected from a placeholder to the real domain (this feeds into Paystack's checkout redirect, so it had to be right before a real payment could complete). Next real-world test to run: an actual payment end-to-end on the live site, not just downstream-verified plumbing.
