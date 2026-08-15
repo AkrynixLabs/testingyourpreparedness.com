@@ -187,6 +187,17 @@ class ApiClient {
     return CourseDetail.fromJson(body);
   }
 
+  /// Upsert, not a one-time submission - matches submitCourseReviewForStudent's
+  /// own contract (a student can revise their rating/comment later).
+  Future<void> submitCourseReview({required String courseId, required int rating, required String comment}) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/courses/$courseId/review',
+      body: {'rating': rating, 'comment': comment},
+      fallback: 'Failed to submit review.',
+    );
+  }
+
   /// Returns `alreadyEnrolled` so a redundant tap (e.g. a double-submit)
   /// doesn't need to be treated as an error by the caller.
   Future<bool> enrollInFreeCourse(String courseId) async {

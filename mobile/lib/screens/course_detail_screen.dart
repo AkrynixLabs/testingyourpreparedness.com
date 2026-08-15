@@ -9,10 +9,9 @@ import 'course_learn_screen.dart';
 import 'course_purchase_webview_screen.dart';
 
 /// Mirrors app/student/courses/[id]/course-detail-purchase-view.tsx's
-/// content (tutor info, curriculum, reviews) and its enroll/buy action.
-/// Review *submission* is a fast-follow (not built here, per the task's own
-/// explicit scope call) - existing reviews and the average rating still
-/// display, since getCourseDetail already returns them for free.
+/// content (tutor info, curriculum, reviews) and its enroll/buy action,
+/// including review submission/editing (closes the fast-follow flagged when
+/// the course marketplace first landed on the Flutter client).
 class CourseDetailScreen extends StatefulWidget {
   final String courseId;
   const CourseDetailScreen({super.key, required this.courseId});
@@ -26,17 +25,71 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   bool _enrolling = false;
   String? _enrollError;
 
+  // Review form state - initialized once from course.myReview the first
+  // time it loads (see _initReviewFormIfNeeded), then left alone across
+  // FutureBuilder rebuilds so the student's in-progress edits aren't lost.
+  bool _reviewFormInitialized = false;
+  int _reviewRating = 0;
+  final _reviewCommentController = TextEditingController();
+  bool _reviewSubmitting = false;
+  String? _reviewError;
+  bool _reviewJustSaved = false;
+
   @override
   void initState() {
     super.initState();
     _courseFuture = ApiClient.instance.getCourseDetail(widget.courseId);
   }
 
+  @override
+  void dispose() {
+    _reviewCommentController.dispose();
+    super.dispose();
+  }
+
   void _reload() {
     setState(() {
       _courseFuture = ApiClient.instance.getCourseDetail(widget.courseId);
       _enrollError = null;
+      _reviewFormInitialized = false;
     });
+  }
+
+  void _initReviewFormIfNeeded(CourseDetail course) {
+    if (_reviewFormInitialized) return;
+    _reviewFormInitialized = true;
+    _reviewRating = course.myReview?.rating ?? 0;
+    _reviewCommentController.text = course.myReview?.comment ?? '';
+  }
+
+  Future<void> _submitReview(CourseDetail course) async {
+    if (_reviewRating < 1) {
+      setState(() => _reviewError = 'Select a star rating.');
+      return;
+    }
+
+    setState(() {
+      _reviewSubmitting = true;
+      _reviewError = null;
+      _reviewJustSaved = false;
+    });
+
+    try {
+      await ApiClient.instance.submitCourseReview(
+        courseId: course.id,
+        rating: _reviewRating,
+        comment: _reviewCommentController.text,
+      );
+      if (!mounted) return;
+      setState(() => _reviewJustSaved = true);
+      _reload();
+    } on ApiException catch (e) {
+      setState(() => _reviewError = e.message);
+    } catch (_) {
+      setState(() => _reviewError = 'Failed to submit review.');
+    } finally {
+      if (mounted) setState(() => _reviewSubmitting = false);
+    }
   }
 
   Future<void> _handleEnroll(CourseDetail course) async {
@@ -138,6 +191,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           }
 
           final course = snapshot.data!;
+          _initReviewFormIfNeeded(course);
           final totalLessons = course.modules.fold<int>(0, (sum, m) => sum + m.lessons.length);
 
           return ListView(
@@ -284,6 +338,79 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     children: [
                       Text('Reviews', style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 12),
+                      if (course.isEnrolled) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                course.myReview != null ? 'Edit your review' : 'Leave a review',
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
+                              const SizedBox(height: 8),
+                              if (_reviewError != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(_reviewError!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              if (_reviewJustSaved && _reviewError == null) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text('Review saved.', style: TextStyle(color: Colors.green, fontSize: 12)),
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              StarRatingInput(
+                                value: _reviewRating,
+                                onChanged: (n) => setState(() {
+                                  _reviewRating = n;
+                                  _reviewJustSaved = false;
+                                }),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: _reviewCommentController,
+                                maxLines: 3,
+                                decoration: const InputDecoration(
+                                  hintText: 'What did you think of this course? (optional)',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton(
+                                  onPressed: _reviewSubmitting ? null : () => _submitReview(course),
+                                  child: Text(
+                                    _reviewSubmitting
+                                        ? 'Saving...'
+                                        : course.myReview != null
+                                            ? 'Update Review'
+                                            : 'Submit Review',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       if (course.reviews.isEmpty)
                         Text('No reviews yet.', style: Theme.of(context).textTheme.bodySmall)
                       else

@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **Students can now leave and edit course reviews from the mobile app**, not just read them — the review feature itself already existed on the website, this closes the mobile-only gap. Same rule as the website: only tutors see an average star rating on their own course, not the actual comments; no one else (super admin included) has a review-moderation view.
+- **The mobile app has now been installed and run on a real phone via a real CI build** — confirmed working end-to-end, not just passing automated checks. This closes the last open question about whether the app's build/signing pipeline actually works outside a dev sandbox. Still no Google Play or Apple App Store listing — that's a separate, later step.
 - **Signup forms now block you from skipping required fields.** Previously the multi-step school and independent-student signup wizards let you click "Continue" past a step with blank required fields — you'd only find out something was missing (or, worse, hit a raw error) at the very end. Now each step checks itself and won't let you move on until the required fields are filled, with the empty ones highlighted. The backend side of every signup/join form was also hardened so a malformed submission fails with a clear message instead of crashing.
 
 - **Fixed the mobile app's icon and splash screen** — they were showing a leftover placeholder logo from an earlier design pass instead of TYP's real shield-and-checkmark mark. The app name itself ("TYP") was already correct and didn't need changing.
