@@ -24,14 +24,19 @@ export async function POST(request: Request) {
   const lastName = typeof body?.lastName === "string" ? body.lastName : null
   const email = typeof body?.email === "string" ? body.email : null
   const password = typeof body?.password === "string" ? body.password : null
+  const agreeTerms = body?.agreeTerms === true
+  const subscribeNewsletter = body?.subscribeNewsletter === true
 
   if (!schoolCode || !firstName || !lastName || !email || !password) {
     return NextResponse.json({ error: "All fields are required." }, { status: 400 })
   }
+  if (!agreeTerms) {
+    return NextResponse.json({ error: "You must agree to the Terms of Service and Privacy Policy." }, { status: 400 })
+  }
 
   let created: Awaited<ReturnType<typeof createJoinedStudent>>
   try {
-    created = await createJoinedStudent({ schoolCode, firstName, lastName, email, password })
+    created = await createJoinedStudent({ schoolCode, firstName, lastName, email, password, agreeTerms, subscribeNewsletter })
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Could not create your account." }, { status: 400 })
   }

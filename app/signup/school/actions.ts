@@ -8,6 +8,7 @@ import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -25,6 +26,7 @@ export type RegisterSchoolInput = {
   adminEmail: string
   adminPhone: string
   adminPassword: string
+  subscribeNewsletter: boolean
 }
 
 // Creates the School (in its existing `pending` verification state) and the
@@ -97,6 +99,10 @@ export async function registerSchool(input: RegisterSchoolInput) {
       },
     },
   })
+
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(adminEmail)
+  }
 
   return { schoolId: school.id }
 }

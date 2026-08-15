@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString, asStringArray } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 
 export type RegisterTutorInput = {
   name: string
@@ -13,6 +14,8 @@ export type RegisterTutorInput = {
   headline: string
   bio: string
   expertiseAreas: string[]
+  agreeTerms: boolean
+  subscribeNewsletter: boolean
 }
 
 // Tutor onboarding is genuinely self-service, no admin-approval gate -
@@ -34,6 +37,7 @@ export async function registerTutor(input: RegisterTutorInput) {
   if (!name) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
   if (password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (!input.agreeTerms) throw new Error("You must agree to the Terms of Service and Privacy Policy.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
@@ -50,6 +54,10 @@ export async function registerTutor(input: RegisterTutorInput) {
       },
     },
   })
+
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(email)
+  }
 
   return { tutorId: tutor.id, email }
 }

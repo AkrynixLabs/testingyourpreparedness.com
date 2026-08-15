@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft } from "lucide-react"
@@ -22,11 +23,17 @@ export default function TutorSignupPage() {
     headline: "",
     bio: "",
     expertiseAreas: "",
+    agreeTerms: false,
+    subscribeNewsletter: false,
   })
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleCheckboxChange = (field: "agreeTerms" | "subscribeNewsletter", value: boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -42,6 +49,8 @@ export default function TutorSignupPage() {
         headline: formData.headline,
         bio: formData.bio,
         expertiseAreas: formData.expertiseAreas.split(",").map((a) => a.trim()).filter(Boolean),
+        agreeTerms: formData.agreeTerms,
+        subscribeNewsletter: formData.subscribeNewsletter,
       })
 
       const signInResult = await signIn("credentials", { email, password: formData.password, redirect: false })
@@ -140,7 +149,36 @@ export default function TutorSignupPage() {
                   onChange={(e) => handleChange("expertiseAreas", e.target.value)}
                 />
               </div>
-              <Button type="submit" size="lg" className="w-full text-base" disabled={isSubmitting}>
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="agreeTerms"
+                    checked={formData.agreeTerms}
+                    onCheckedChange={(checked) => handleCheckboxChange("agreeTerms", checked as boolean)}
+                  />
+                  <label htmlFor="agreeTerms" className="text-sm text-muted-foreground">
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-primary hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="subscribeNewsletter"
+                    checked={formData.subscribeNewsletter}
+                    onCheckedChange={(checked) => handleCheckboxChange("subscribeNewsletter", checked as boolean)}
+                  />
+                  <label htmlFor="subscribeNewsletter" className="text-sm text-muted-foreground">
+                    Send me marketing emails and feature updates (optional)
+                  </label>
+                </div>
+              </div>
+              <Button type="submit" size="lg" className="w-full text-base" disabled={isSubmitting || !formData.agreeTerms}>
                 {isSubmitting ? "Creating account..." : "Create Tutor Account"}
               </Button>
             </form>

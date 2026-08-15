@@ -101,6 +101,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
     agreeTerms: false,
     agreePrivacy: false,
     authorizedSignup: false,
+    subscribeNewsletter: false,
   })
 
   const totalSteps = 5
@@ -212,6 +213,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
           adminEmail: formData.adminEmail,
           adminPhone: formData.adminPhone,
           adminPassword: formData.adminPassword,
+          subscribeNewsletter: formData.subscribeNewsletter,
         })
         schoolId = result.schoolId
       } catch (err) {
@@ -804,6 +806,17 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       <Link href="/privacy" className="text-primary hover:underline">
                         Privacy Policy
                       </Link>
+                    </label>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="subscribeNewsletter"
+                      checked={formData.subscribeNewsletter}
+                      onCheckedChange={(checked) => updateFormData("subscribeNewsletter", checked as boolean)}
+                    />
+                    <label htmlFor="subscribeNewsletter" className="text-sm text-muted-foreground">
+                      Send me marketing emails and feature updates (optional)
                     </label>
                   </div>
                 </div>

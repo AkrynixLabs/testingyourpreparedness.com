@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -32,6 +33,8 @@ export type JoinedStudentInput = {
   lastName: string
   email: string
   password: string
+  agreeTerms: boolean
+  subscribeNewsletter: boolean
 }
 
 export async function createJoinedStudent(input: JoinedStudentInput) {
@@ -48,6 +51,7 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   if (!firstName || !lastName) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
   if (password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (!input.agreeTerms) throw new Error("You must agree to the Terms of Service and Privacy Policy.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
@@ -64,6 +68,10 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
       status: "active",
     },
   })
+
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(email)
+  }
 
   return { email, password, schoolName: school.name }
 }

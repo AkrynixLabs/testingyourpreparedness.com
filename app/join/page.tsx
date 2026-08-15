@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Checkbox } from "@/components/ui/checkbox"
 import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft, ArrowRight, School, CheckCircle2, AlertCircle, Lock, User, Mail } from "lucide-react"
 import { verifySchoolCode, registerJoinedStudent, type VerifiedSchool } from "./actions"
@@ -26,9 +27,15 @@ export default function JoinSchoolPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    agreeTerms: false,
+    subscribeNewsletter: false,
   })
 
   const updateFormData = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const updateCheckbox = (field: "agreeTerms" | "subscribeNewsletter", value: boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -55,6 +62,8 @@ export default function JoinSchoolPage() {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
+          agreeTerms: formData.agreeTerms,
+          subscribeNewsletter: formData.subscribeNewsletter,
         })
 
         const result = await signIn("credentials", { email, password, redirect: false })
@@ -250,6 +259,36 @@ export default function JoinSchoolPage() {
                     />
                   </div>
 
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="agreeTerms"
+                        checked={formData.agreeTerms}
+                        onCheckedChange={(checked) => updateCheckbox("agreeTerms", checked as boolean)}
+                      />
+                      <label htmlFor="agreeTerms" className="text-sm text-muted-foreground">
+                        I agree to the{" "}
+                        <Link href="/terms" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                      </label>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="subscribeNewsletter"
+                        checked={formData.subscribeNewsletter}
+                        onCheckedChange={(checked) => updateCheckbox("subscribeNewsletter", checked as boolean)}
+                      />
+                      <label htmlFor="subscribeNewsletter" className="text-sm text-muted-foreground">
+                        Send me marketing emails and feature updates (optional)
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="flex gap-3 pt-4">
                     <Button
                       variant="outline"
@@ -270,6 +309,7 @@ export default function JoinSchoolPage() {
                         !formData.email ||
                         !formData.password ||
                         formData.password !== formData.confirmPassword ||
+                        !formData.agreeTerms ||
                         isPending
                       }
                     >

@@ -65,6 +65,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
     town: "",
     selectedPlan: plans.find((p) => (p.monthlyPrice ?? 0) > 0)?.id ?? plans[0]?.id ?? "",
     agreeTerms: false,
+    subscribeNewsletter: false,
   })
 
   const totalSteps = 3
@@ -148,6 +149,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
           password: formData.password,
           region: formData.region,
           town: formData.town,
+          subscribeNewsletter: formData.subscribeNewsletter,
         })
         studentId = result.studentId
         email = result.email
@@ -489,6 +491,17 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
                       Privacy Policy
                     </Link>
                     .
+                  </label>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="subscribeNewsletter"
+                    checked={formData.subscribeNewsletter}
+                    onCheckedChange={(checked) => updateFormData("subscribeNewsletter", checked as boolean)}
+                  />
+                  <label htmlFor="subscribeNewsletter" className="text-sm text-muted-foreground">
+                    Send me marketing emails and feature updates (optional)
                   </label>
                 </div>
               </CardContent>

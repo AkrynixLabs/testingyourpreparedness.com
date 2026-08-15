@@ -86,13 +86,18 @@ class ApiClient {
   }
 
   /// Step 2 - creates the account and signs the student straight in (same
-  /// response shape as login), mirroring app/join's web flow.
+  /// response shape as login), mirroring app/join's web flow. `agreeTerms`
+  /// is required server-side (matches the web join page's disabled-until-
+  /// checked submit button) - added 2026-08-15 alongside every other
+  /// signup flow's terms-agreement checkbox.
   Future<AppUser> joinSchool({
     required String schoolCode,
     required String firstName,
     required String lastName,
     required String email,
     required String password,
+    required bool agreeTerms,
+    required bool subscribeNewsletter,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/mobile/auth/join'),
@@ -103,6 +108,8 @@ class ApiClient {
         'lastName': lastName,
         'email': email,
         'password': password,
+        'agreeTerms': agreeTerms,
+        'subscribeNewsletter': subscribeNewsletter,
       }),
     );
     final body = _decode(response);

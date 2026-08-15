@@ -8,6 +8,7 @@ import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -16,6 +17,7 @@ export type RegisterIndependentStudentInput = {
   password: string
   region: string
   town: string
+  subscribeNewsletter: boolean
 }
 
 // Creates the account only - no Subscription/Payment row here. Checkout
@@ -56,6 +58,10 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
       address: [town, region].filter(Boolean).join(", ") || null,
     },
   })
+
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(email)
+  }
 
   return { studentId: student.id, email, password }
 }
