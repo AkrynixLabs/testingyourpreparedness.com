@@ -1,7 +1,17 @@
+import type { Metadata } from "next"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { CustomCursor } from "@/components/custom-cursor"
 import { LegalPlaceholderNotice } from "@/components/legal-placeholder-notice"
+
+// Thin placeholder content - kept out of the index until real policy text ships,
+// same reasoning as /help below, so search engines don't rank an empty page.
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description: "Cookie Policy for TYP (Testing Your Preparedness).",
+  alternates: { canonical: "/cookies" },
+  robots: { index: false, follow: true },
+}
 
 // Same "pending legal review" framing as /terms and /privacy (not the
 // lighter ComingSoonNotice used for pure marketing pages) - a cookie policy

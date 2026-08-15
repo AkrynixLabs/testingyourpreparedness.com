@@ -127,6 +127,7 @@ export default function ContactPage() {
         {/* Contact Options */}
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
+            <h1 className="sr-only">Contact TYP - Testing Your Preparedness</h1>
             <div className="grid gap-4 md:grid-cols-3 max-w-4xl mx-auto">
               {contactOptions.map((option, i) => (
                 <Reveal key={option.title} delay={i * 80}>

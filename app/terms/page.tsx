@@ -1,7 +1,14 @@
+import type { Metadata } from "next"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { CustomCursor } from "@/components/custom-cursor"
 import { LegalDraftNotice } from "@/components/legal-draft-notice"
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "Terms of Service for TYP (Testing Your Preparedness), Ghana's exam prep and digital skills platform.",
+  alternates: { canonical: "/terms" },
+}
 
 const EFFECTIVE_DATE = "August 10, 2026"
 

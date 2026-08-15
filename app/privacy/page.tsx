@@ -1,7 +1,14 @@
+import type { Metadata } from "next"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { CustomCursor } from "@/components/custom-cursor"
 import { LegalDraftNotice } from "@/components/legal-draft-notice"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "Privacy Policy for TYP (Testing Your Preparedness), Ghana's exam prep and digital skills platform.",
+  alternates: { canonical: "/privacy" },
+}
 
 const EFFECTIVE_DATE = "August 10, 2026"
 

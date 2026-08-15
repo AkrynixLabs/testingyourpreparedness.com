@@ -1,7 +1,16 @@
+import type { Metadata } from "next"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { CustomCursor } from "@/components/custom-cursor"
 import { ComingSoonNotice } from "@/components/coming-soon-notice"
+
+// Thin placeholder content - kept out of the index until real help content ships.
+export const metadata: Metadata = {
+  title: "Help Center",
+  description: "TYP (Testing Your Preparedness) help center.",
+  alternates: { canonical: "/help" },
+  robots: { index: false, follow: true },
+}
 
 export default function HelpPage() {
   return (

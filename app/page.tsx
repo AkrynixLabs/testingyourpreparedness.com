@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,21 @@ const colorClasses = {
   "chart-4": { bg: "bg-chart-4/15", text: "text-chart-4", ring: "hover:shadow-chart-4/10" },
   "chart-5": { bg: "bg-chart-5/15", text: "text-chart-5", ring: "hover:shadow-chart-5/10" },
 } as const
+
+export const metadata: Metadata = {
+  title: "TYP - Testing Your Preparedness | Ghana's Exam Prep Platform",
+  description:
+    "TYP (Testing Your Preparedness) helps Ghanaian students prepare for BECE, WASSCE, nursing entrance, and university entrance exams with real, examiner-style practice questions, timed mock exams, and progress tracking.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "TYP - Testing Your Preparedness",
+    description:
+      "Ghana's all-in-one exam prep platform for BECE, WASSCE, nursing entrance, and university entrance exams.",
+    url: "/",
+  },
+}
 
 type ChartColor = keyof typeof colorClasses
 
@@ -262,12 +278,12 @@ export default async function LandingPage() {
           <div className="container mx-auto px-4 relative">
             {/* Centered copy */}
             <div className="text-center max-w-3xl mx-auto">
-              <h5 className="font-sans text-xl md:text-3xl font-bold tracking-tight mb-6 text-balance drop-shadow-[0_2px_16px_rgba(0,0,0,0.25)]">
+              <h1 className="font-sans text-xl md:text-3xl font-bold tracking-tight mb-6 text-balance drop-shadow-[0_2px_16px_rgba(0,0,0,0.25)]">
                 From BECE to University, Prepare with{" "}
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                   Confidence
                 </span>
-              </h5>
+              </h1>
               <p className="font-sans text-base md:text-lg font-medium text-foreground max-w-2xl mx-auto mb-8 text-pretty drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
                 TYP is a home for Ghanaian students getting ready for what&apos;s next, whether that&apos;s BECE, WASSCE, a nursing entrance exam, or university admission. Practice with real, examiner style questions, see exactly where you stand, and walk into exam day feeling ready instead of anxious.
               </p>
@@ -582,6 +598,23 @@ export default async function LandingPage() {
 
         {/* FAQ Section */}
         <section id="faq" className="relative overflow-hidden py-8 md:py-10 bg-muted/40 border-y border-border scroll-mt-20">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: faqs.map((faq) => ({
+                  "@type": "Question",
+                  name: faq.question,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                  },
+                })),
+              }),
+            }}
+          />
           <div className="container mx-auto px-4 relative">
             <Reveal className="text-center mb-4">
               <span className="text-sm font-semibold tracking-wide uppercase text-primary">FAQ</span>
