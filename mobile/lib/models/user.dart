@@ -20,6 +20,30 @@ class AppUser {
       );
 }
 
+/// Mirrors POST /api/mobile/auth/join/verify's response - the school a
+/// student's invite code resolved to, shown for confirmation before they
+/// fill in the rest of the join form.
+class VerifiedSchool {
+  final String schoolId;
+  final String name;
+  final String town;
+  final String region;
+
+  const VerifiedSchool({
+    required this.schoolId,
+    required this.name,
+    required this.town,
+    required this.region,
+  });
+
+  factory VerifiedSchool.fromJson(Map<String, dynamic> json) => VerifiedSchool(
+        schoolId: json['schoolId'] as String,
+        name: json['name'] as String,
+        town: json['town'] as String,
+        region: json['region'] as String,
+      );
+}
+
 /// Mirrors GET /api/mobile/me's response. Not required for v1 but built
 /// alongside the other models since the endpoint already exists.
 class StudentProfile {

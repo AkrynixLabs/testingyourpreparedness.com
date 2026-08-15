@@ -68,6 +68,52 @@ class ApiClient {
     return AppUser.fromJson(body['user'] as Map<String, dynamic>);
   }
 
+  /// Step 1 of the school-code join flow - looks up the school so the UI
+  /// can show its name/town for confirmation before the student fills in
+  /// the rest of the form. Not routed through _authorizedRequest (there's no
+  /// token yet at this point in the flow).
+  Future<VerifiedSchool> verifySchoolCode(String schoolCode) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/mobile/auth/join/verify'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'schoolCode': schoolCode}),
+    );
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, body['error'] as String? ?? 'Invalid invite code.');
+    }
+    return VerifiedSchool.fromJson(body);
+  }
+
+  /// Step 2 - creates the account and signs the student straight in (same
+  /// response shape as login), mirroring app/join's web flow.
+  Future<AppUser> joinSchool({
+    required String schoolCode,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/mobile/auth/join'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'schoolCode': schoolCode,
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+      }),
+    );
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not create your account.');
+    }
+
+    await TokenStorage.instance.saveToken(body['token'] as String);
+    return AppUser.fromJson(body['user'] as Map<String, dynamic>);
+  }
+
   Future<StudentExams> getExams() async {
     final body = await _authorizedRequest('GET', '/api/mobile/exams', fallback: 'Could not load exams.');
     return StudentExams.fromJson(body);

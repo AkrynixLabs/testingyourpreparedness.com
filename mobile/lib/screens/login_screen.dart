@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
 import 'home_screen.dart';
+import 'join_school_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   /// Set when ApiClient's app-wide 401 handler bounced here from another
@@ -152,6 +153,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         : const Text('Log In'),
                   ),
                   const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: _loading
+                        ? null
+                        : () => Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const JoinSchoolScreen()),
+                            ),
+                    child: const Text('Have a school invite code? Join your school'),
+                  ),
+                  const SizedBox(height: 4),
                   Text(
                     'TYP mobile is currently available to students only.',
                     textAlign: TextAlign.center,
