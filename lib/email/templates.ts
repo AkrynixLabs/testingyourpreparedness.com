@@ -209,3 +209,125 @@ export function removedAsSchoolAdminEmail(input: { name: string; schoolName: str
     `),
   }
 }
+
+// Broader audit 2026-08-15, prompted by the user asking for "any important
+// email notification there should be" after the account-removed pair above -
+// went through every status/moderation action in the app looking for other
+// currently-silent ones. Confirmed in scope with the user (multi-select,
+// picked these 6 + flagged payment receipts and approval confirmations as
+// real but deliberately deferred - see docs/build-log.md's 2026-08-15 entry).
+
+// Shared by content-admin and tutor suspend/reactivate (setContentAdminStatus,
+// setTutorStatus) - both are a simple "you can/can't log in" toggle, same
+// message shape either way.
+export function accountStatusChangedEmail(input: { name: string; roleLabel: string; active: boolean }) {
+  return {
+    subject: input.active ? "Your TYP account has been reactivated" : "Your TYP account has been suspended",
+    html: wrapper(
+      input.active
+        ? `
+          ${heading("Account reactivated")}
+          <p style="margin:0 0 20px 0;">Hi ${input.name}, your TYP ${input.roleLabel} account has been reactivated. You can log in again now.</p>
+          ${button("Log In", `${appUrl()}/login`)}
+        `
+        : `
+          ${heading("Account suspended")}
+          <p style="margin:0 0 12px 0;">Hi ${input.name}, your TYP ${input.roleLabel} account has been suspended by a platform administrator. You won't be able to log in until it's reactivated.</p>
+          <p style="margin:0; font-size:13px; color:#7A88A0;">If you believe this was a mistake, <a href="${appUrl()}/contact" style="color:#0072D5;">contact us</a>.</p>
+        `
+    ),
+  }
+}
+
+// Sent to the school's own contact email (School.email) rather than a
+// specific admin, since a school can have several admins and this affects
+// all of them equally - matches how the rest of the app treats School.email
+// as the school's own address (e.g. Paystack checkout receipts).
+export function schoolStatusChangedEmail(input: { schoolName: string; status: "active" | "suspended" }) {
+  return {
+    subject:
+      input.status === "active"
+        ? `${input.schoolName} has been approved on TYP`
+        : `${input.schoolName}'s TYP account has been suspended`,
+    html: wrapper(
+      input.status === "active"
+        ? `
+          ${heading("School approved")}
+          <p style="margin:0 0 20px 0;"><strong style="color:#142A4F;">${input.schoolName}</strong> has been verified and approved on TYP. Every school admin can now log in and get started.</p>
+          ${button("Log In", `${appUrl()}/login`)}
+        `
+        : `
+          ${heading("School suspended")}
+          <p style="margin:0 0 12px 0;"><strong style="color:#142A4F;">${input.schoolName}</strong>'s TYP account has been suspended by a platform administrator. School admins won't be able to log in until it's reactivated.</p>
+          <p style="margin:0; font-size:13px; color:#7A88A0;">If you believe this was a mistake, <a href="${appUrl()}/contact" style="color:#0072D5;">contact us</a>.</p>
+        `
+    ),
+  }
+}
+
+// Shared by flagCourse/removeCourse (app/super-admin/courses/actions.ts).
+// "flagged" is reversible (course exists, just hidden from the catalog);
+// "removed" is not - the copy is deliberately different, not just a
+// find-replace on one word.
+export function courseModeratedEmail(input: { tutorName: string; courseTitle: string; action: "flagged" | "removed"; reason: string }) {
+  return {
+    subject:
+      input.action === "flagged"
+        ? `Your course "${input.courseTitle}" has been flagged`
+        : `Your course "${input.courseTitle}" has been removed`,
+    html: wrapper(`
+      ${heading(input.action === "flagged" ? "Course flagged" : "Course removed")}
+      <p style="margin:0 0 12px 0;">Hi ${input.tutorName}, your course <strong style="color:#142A4F;">${input.courseTitle}</strong> has been ${input.action === "flagged" ? "flagged and temporarily hidden from the catalog" : "removed from TYP"} by a platform administrator.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+        <tr>
+          <td style="background-color:#EEF3FA; border-radius:8px; padding:14px 16px; font-size:14px; color:#142A4F;">
+            Reason: ${input.reason}
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">Questions about this decision? <a href="${appUrl()}/contact" style="color:#0072D5;">Contact us</a>.</p>
+    `),
+  }
+}
+
+// Shared by rejectQuestion/rejectAssessment (app/super-admin/review-queue/
+// actions.ts) - the one review-queue outcome that carries actionable
+// feedback (a reason), unlike approval, which is why it's the one built in
+// this pass and approval isn't (see the build-log entry for the full call).
+export function contentRejectedEmail(input: { name: string; contentType: "question" | "assessment"; excerpt: string; reason: string }) {
+  return {
+    subject: `Your ${input.contentType} submission was rejected`,
+    html: wrapper(`
+      ${heading("Submission rejected")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, a ${input.contentType} you submitted was rejected during review:</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0;">
+        <tr>
+          <td style="background-color:#EEF3FA; border-radius:8px; padding:14px 16px; font-size:14px; color:#142A4F; font-style:italic;">
+            &ldquo;${input.excerpt}&rdquo;
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 20px 0;"><strong style="color:#142A4F;">Reason:</strong> ${input.reason}</p>
+      ${button("View in TYP", `${appUrl()}/content-admin`)}
+    `),
+  }
+}
+
+// Sent right after a successful password change (not the reset-request
+// email, which already exists) - a real security-best-practice gap: an
+// account-takeover attempt that changes the password currently produces no
+// signal to the real owner at all. Deliberately vague about *how* it was
+// changed (this is shared by 5 near-identical updatePassword actions across
+// every role's own settings page - content-admin, school-admin, super-admin,
+// student, tutor) since the mechanism is always the same "logged in, entered
+// current + new password" flow.
+export function passwordChangedEmail(input: { name: string }) {
+  return {
+    subject: "Your TYP password was changed",
+    html: wrapper(`
+      ${heading("Password changed")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, your TYP password was just changed.</p>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">If this wasn't you, <a href="${appUrl()}/contact" style="color:#0072D5;">contact us</a> right away.</p>
+    `),
+  }
+}

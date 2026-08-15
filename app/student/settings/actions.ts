@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import type { GuardianRelation } from "@/lib/generated/prisma/client"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { passwordChangedEmail } from "@/lib/email/templates"
 
 async function resolveStudent() {
   const session = await auth()
@@ -58,4 +60,7 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
 
   const passwordHash = await bcrypt.hash(input.newPassword, 10)
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } })
+
+  const { subject, html } = passwordChangedEmail({ name: user.name })
+  await sendEmailBestEffort({ to: user.email, subject, html })
 }

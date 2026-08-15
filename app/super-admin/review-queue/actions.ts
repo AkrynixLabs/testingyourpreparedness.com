@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { contentRejectedEmail } from "@/lib/email/templates"
 
 async function requireSuperAdmin() {
   const session = await auth()
@@ -40,7 +42,7 @@ export async function rejectQuestion(questionId: string, reason: string) {
   const question = await prisma.question.update({
     where: { id: questionId },
     data: { status: "rejected", reviewedById: actorId, rejectionReason: reason },
-    include: { subject: true },
+    include: { subject: true, createdBy: true },
   })
 
   await prisma.auditLog.create({
@@ -52,6 +54,14 @@ export async function rejectQuestion(questionId: string, reason: string) {
       details: { type: "question", questionId, reason },
     },
   })
+
+  const { subject: emailSubject, html } = contentRejectedEmail({
+    name: question.createdBy.name,
+    contentType: "question",
+    excerpt: question.text.length > 120 ? `${question.text.slice(0, 120)}...` : question.text,
+    reason,
+  })
+  await sendEmailBestEffort({ to: question.createdBy.email, subject: emailSubject, html })
 
   revalidatePath("/super-admin/review-queue")
 }
@@ -109,7 +119,7 @@ export async function rejectAssessment(assessmentId: string, reason: string) {
   const assessment = await prisma.assessment.update({
     where: { id: assessmentId },
     data: { status: "draft" },
-    include: { subject: true },
+    include: { subject: true, createdBy: true },
   })
 
   await prisma.auditLog.create({
@@ -121,6 +131,14 @@ export async function rejectAssessment(assessmentId: string, reason: string) {
       details: { type: "assessment", assessmentId, title: assessment.title, subject: assessment.subject.name, reason },
     },
   })
+
+  const { subject: emailSubject, html } = contentRejectedEmail({
+    name: assessment.createdBy.name,
+    contentType: "assessment",
+    excerpt: assessment.title,
+    reason,
+  })
+  await sendEmailBestEffort({ to: assessment.createdBy.email, subject: emailSubject, html })
 
   revalidatePath("/super-admin/review-queue")
 }

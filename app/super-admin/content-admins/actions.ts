@@ -7,7 +7,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Role, type ContentAdminStatus } from "@/lib/generated/prisma/client"
 import { sendEmailBestEffort } from "@/lib/email/resend"
-import { newAccountTempPasswordEmail, contentAdminAccountRemovedEmail } from "@/lib/email/templates"
+import { newAccountTempPasswordEmail, contentAdminAccountRemovedEmail, accountStatusChangedEmail } from "@/lib/email/templates"
 
 // A temporary password is generated and returned once so the super admin
 // can hand it to the new content admin directly (still true even now that
@@ -134,6 +134,13 @@ export async function setContentAdminStatus(profileId: string, status: ContentAd
       details: { type: "content_admin", userId: profile.userId, status },
     },
   })
+
+  const { subject, html } = accountStatusChangedEmail({
+    name: profile.user.name,
+    roleLabel: "content admin",
+    active: status === "active",
+  })
+  await sendEmailBestEffort({ to: profile.user.email, subject, html })
 
   revalidatePath("/super-admin/content-admins")
 }

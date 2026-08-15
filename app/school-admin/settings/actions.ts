@@ -7,7 +7,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import type { EducationLevel } from "@/lib/generated/prisma/client"
 import { sendEmailBestEffort } from "@/lib/email/resend"
-import { schoolAdminInviteEmail, removedAsSchoolAdminEmail } from "@/lib/email/templates"
+import { schoolAdminInviteEmail, removedAsSchoolAdminEmail, passwordChangedEmail } from "@/lib/email/templates"
 
 const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
@@ -151,4 +151,7 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
 
   const passwordHash = await bcrypt.hash(input.newPassword, 10)
   await prisma.user.update({ where: { id: session.user.id }, data: { passwordHash } })
+
+  const { subject, html } = passwordChangedEmail({ name: user.name })
+  await sendEmailBestEffort({ to: user.email, subject, html })
 }

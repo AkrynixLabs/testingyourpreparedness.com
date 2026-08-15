@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { courseModeratedEmail } from "@/lib/email/templates"
+import { TUTOR_SUSPENSION_CASCADE_REASON } from "./constants"
 
 async function requireSuperAdmin() {
   const session = await auth()
@@ -30,6 +33,21 @@ export async function flagCourse(courseId: string, reason: string) {
       details: { type: "course", courseId, status: "flagged", reason },
     },
   })
+
+  // Skip the individual per-course email when this flag is part of a tutor
+  // suspension cascade (setTutorStatus in ../tutors/actions.ts) - that
+  // action already sends its own "your account was suspended" email, and a
+  // tutor with many published courses would otherwise get one email per
+  // course on top of it.
+  if (reason !== TUTOR_SUSPENSION_CASCADE_REASON) {
+    const { subject, html } = courseModeratedEmail({
+      tutorName: course.tutor.user.name,
+      courseTitle: course.title,
+      action: "flagged",
+      reason,
+    })
+    await sendEmailBestEffort({ to: course.tutor.user.email, subject, html })
+  }
 
   revalidatePath("/super-admin/courses")
   revalidatePath(`/super-admin/courses/${courseId}`)
@@ -76,6 +94,14 @@ export async function removeCourse(courseId: string, reason: string) {
       details: { type: "course", courseId, status: "removed", reason },
     },
   })
+
+  const { subject, html } = courseModeratedEmail({
+    tutorName: course.tutor.user.name,
+    courseTitle: course.title,
+    action: "removed",
+    reason,
+  })
+  await sendEmailBestEffort({ to: course.tutor.user.email, subject, html })
 
   revalidatePath("/super-admin/courses")
   revalidatePath(`/super-admin/courses/${courseId}`)
