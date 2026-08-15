@@ -2,15 +2,11 @@ import type { Metadata } from "next"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { CustomCursor } from "@/components/custom-cursor"
-import { LegalDraftNotice } from "@/components/legal-draft-notice"
-
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms of Service for TYP (Testing Your Preparedness), Ghana's exam prep and digital skills platform.",
   alternates: { canonical: "/terms" },
 }
-
-const EFFECTIVE_DATE = "August 10, 2026"
 
 export default function TermsPage() {
   return (
@@ -22,9 +18,6 @@ export default function TermsPage() {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">Terms of Service</h1>
-            <p className="text-sm text-muted-foreground mb-6">Draft effective date: {EFFECTIVE_DATE}</p>
-
-            <LegalDraftNotice policyName="Terms of Service" />
 
             <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8 text-muted-foreground leading-relaxed [&_h2]:text-foreground [&_h2]:font-semibold [&_h2]:text-xl [&_h2]:mt-0 [&_h2]:mb-3 [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-1 [&_strong]:text-foreground">
               <section>
@@ -163,8 +156,7 @@ export default function TermsPage() {
               <section>
                 <h2>11. Changes to these Terms</h2>
                 <p>
-                  We may update these Terms as the product changes. Material changes will be reflected by updating
-                  the effective date above.
+                  We may update these Terms as the product changes. Material changes will be reflected on this page.
                 </p>
               </section>
 
