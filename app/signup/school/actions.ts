@@ -7,6 +7,7 @@ import { Role, type BillingCycle, type OwnershipType } from "@/lib/generated/pri
 import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { asString } from "@/lib/validation"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -34,15 +35,16 @@ export type RegisterSchoolInput = {
 export async function registerSchool(input: RegisterSchoolInput) {
   await enforceRateLimit("signup")
 
-  const schoolName = input.schoolName.trim()
-  const region = input.region.trim()
-  const district = input.district.trim()
-  const town = input.town.trim()
-  const address = input.address.trim()
-  const adminFirstName = input.adminFirstName.trim()
-  const adminLastName = input.adminLastName.trim()
-  const adminEmail = input.adminEmail.trim().toLowerCase()
-  const adminPhone = input.adminPhone.trim()
+  const schoolName = asString(input.schoolName).trim()
+  const region = asString(input.region).trim()
+  const district = asString(input.district).trim()
+  const town = asString(input.town).trim()
+  const address = asString(input.address).trim()
+  const adminFirstName = asString(input.adminFirstName).trim()
+  const adminLastName = asString(input.adminLastName).trim()
+  const adminEmail = asString(input.adminEmail).trim().toLowerCase()
+  const adminPhone = asString(input.adminPhone).trim()
+  const adminPassword = asString(input.adminPassword)
 
   if (!schoolName) throw new Error("School name is required.")
   if (!input.ownershipType) throw new Error("Ownership type is required.")
@@ -53,19 +55,19 @@ export async function registerSchool(input: RegisterSchoolInput) {
   if (!adminFirstName || !adminLastName) throw new Error("Administrator name is required.")
   if (!adminEmail) throw new Error("Administrator email is required.")
   if (!adminPhone) throw new Error("Administrator phone is required.")
-  if (input.adminPassword.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (adminPassword.length < 8) throw new Error("Password must be at least 8 characters.")
 
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } })
   if (existing) throw new Error("An account with that email already exists.")
 
   const code = await generateSchoolCode(schoolName)
-  const passwordHash = await bcrypt.hash(input.adminPassword, 10)
+  const passwordHash = await bcrypt.hash(adminPassword, 10)
 
   const school = await prisma.school.create({
     data: {
       code,
       name: schoolName,
-      registrationNumber: input.registrationNumber.trim() || null,
+      registrationNumber: asString(input.registrationNumber).trim() || null,
       ownershipType: input.ownershipType,
       // This wizard only collects JHS student counts - BECE prep is JHS-scoped,
       // so junior_high is the only level this signup flow can honestly infer.
@@ -74,10 +76,10 @@ export async function registerSchool(input: RegisterSchoolInput) {
       district,
       town,
       address,
-      postalCode: input.postalCode.trim() || null,
+      postalCode: asString(input.postalCode).trim() || null,
       email: adminEmail,
       phone: adminPhone,
-      website: input.website.trim() || null,
+      website: asString(input.website).trim() || null,
       established: input.yearEstablished ? Number(input.yearEstablished) : null,
       status: "pending",
       admins: {

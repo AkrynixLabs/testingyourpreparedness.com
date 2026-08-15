@@ -7,6 +7,7 @@ import { Role, type BillingCycle } from "@/lib/generated/prisma/client"
 import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { asString } from "@/lib/validation"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -26,22 +27,23 @@ export type RegisterIndependentStudentInput = {
 export async function registerIndependentStudent(input: RegisterIndependentStudentInput) {
   await enforceRateLimit("signup")
 
-  const firstName = input.firstName.trim()
-  const lastName = input.lastName.trim()
-  const email = input.email.trim().toLowerCase()
-  const region = input.region.trim()
-  const town = input.town.trim()
+  const firstName = asString(input.firstName).trim()
+  const lastName = asString(input.lastName).trim()
+  const email = asString(input.email).trim().toLowerCase()
+  const region = asString(input.region).trim()
+  const town = asString(input.town).trim()
+  const password = asString(input.password)
 
   if (!firstName || !lastName) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
-  if (input.password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (password.length < 8) throw new Error("Password must be at least 8 characters.")
   if (!region) throw new Error("Region is required.")
   if (!town) throw new Error("Town is required.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
 
-  const passwordHash = await bcrypt.hash(input.password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
   const studentName = `${firstName} ${lastName}`
 
   const student = await prisma.student.create({
@@ -55,7 +57,7 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
     },
   })
 
-  return { studentId: student.id, email, password: input.password }
+  return { studentId: student.id, email, password }
 }
 
 export type InitializeStudentCheckoutInput = {

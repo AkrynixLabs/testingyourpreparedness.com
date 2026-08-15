@@ -87,3 +87,42 @@ export async function updatePlatformFeePercent(platformFeePercent: number) {
 
   revalidatePath("/super-admin/settings")
 }
+
+export async function updatePlatformInfo(input: { platformName: string; supportEmail: string }) {
+  const session = await auth()
+  if (session?.user?.role !== "super_admin") {
+    throw new Error("Not authorized")
+  }
+
+  const platformName = input.platformName.trim()
+  const supportEmail = input.supportEmail.trim().toLowerCase()
+  if (!platformName) throw new Error("Platform name is required.")
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail)) throw new Error("Enter a valid support email address.")
+
+  const previous = await prisma.platformSettings.upsert({
+    where: { id: "default" },
+    create: { id: "default" },
+    update: {},
+  })
+
+  await prisma.platformSettings.update({
+    where: { id: "default" },
+    data: { platformName, supportEmail },
+  })
+
+  await prisma.auditLog.create({
+    data: {
+      actorId: session.user.id,
+      action: "update",
+      category: "settings",
+      description: `Updated platform info (name: "${previous.platformName}" → "${platformName}", support email: "${previous.supportEmail}" → "${supportEmail}")`,
+      details: {
+        type: "platform_settings",
+        from: { platformName: previous.platformName, supportEmail: previous.supportEmail },
+        to: { platformName, supportEmail },
+      },
+    },
+  })
+
+  revalidatePath("/super-admin/settings")
+}

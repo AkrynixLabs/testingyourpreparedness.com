@@ -7,8 +7,17 @@
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:windowSplashScreenBackground">#0072D5</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/android12branding</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
         <item name="android:windowSplashScreenIconBackgroundColor">#0072D5</item>
+        <!-- flutter_native_splash has no config key for this - manually
+             added since the platform default icon zoom/fade plays very
+             quickly. 1000ms is the OS-enforced maximum for this attribute
+             (a higher value is silently capped), so this is as slow as a
+             single native run can go; re-add after any future
+             `flutter_native_splash:create` regeneration, which will
+             overwrite this file. -->
+        <item name="android:windowSplashScreenAnimationDuration">1000</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your

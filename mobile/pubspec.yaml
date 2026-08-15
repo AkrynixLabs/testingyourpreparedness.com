@@ -64,8 +64,19 @@ flutter_native_splash:
   image: assets/branding/splash_logo.png
   color_dark: "0F92F7"
   image_dark: assets/branding/splash_logo.png
+  # "TYP" wordmark pinned near the bottom, alongside the centered icon above
+  # - flutter_native_splash composites this as a separate, unmasked layer
+  # (unlike the android_12 `image`, which the OS clips to its own icon
+  # mask/animation), so it's the right place for a full wordmark rather than
+  # trying to cram text into the masked icon area itself.
+  branding: assets/branding/brand_wordmark.png
+  branding_dark: assets/branding/brand_wordmark.png
+  branding_mode: bottom
+  branding_bottom_padding: 64
   android_12:
     image: assets/branding/splash_logo.png
     icon_background_color: "0072D5"
     image_dark: assets/branding/splash_logo.png
     icon_background_color_dark: "0F92F7"
+    branding: assets/branding/brand_wordmark.png
+    branding_dark: assets/branding/brand_wordmark.png

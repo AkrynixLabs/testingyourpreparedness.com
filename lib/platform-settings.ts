@@ -12,3 +12,11 @@ export async function getPlatformFeePercent(): Promise<number> {
   })
   return settings.platformFeePercent
 }
+
+export async function getPlatformSettings() {
+  return prisma.platformSettings.upsert({
+    where: { id: "default" },
+    create: { id: "default" },
+    update: {},
+  })
+}

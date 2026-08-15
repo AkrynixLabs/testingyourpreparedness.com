@@ -68,14 +68,62 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
   })
 
   const totalSteps = 3
+  const [attemptedNext, setAttemptedNext] = useState(false)
+
+  // Required fields per step, checked before advancing - previously `handleNext`
+  // just incremented the step with no validation, so a user could click through
+  // with every field blank and only find out something was wrong at final submit.
+  const requiredFields: Record<number, { field: keyof typeof formData; label: string }[]> = {
+    1: [
+      { field: "firstName", label: "First Name" },
+      { field: "lastName", label: "Last Name" },
+      { field: "email", label: "Email Address" },
+      { field: "password", label: "Password" },
+      { field: "confirmPassword", label: "Confirm Password" },
+    ],
+    2: [
+      { field: "region", label: "Region" },
+      { field: "town", label: "Town/City" },
+    ],
+  }
+
+  const isFieldMissing = (field: keyof typeof formData) => {
+    const value = formData[field]
+    return typeof value === "string" && !value.trim()
+  }
 
   const handleNext = () => {
+    const missing = (requiredFields[step] ?? []).filter(({ field }) => isFieldMissing(field))
+    if (missing.length > 0) {
+      setAttemptedNext(true)
+      setError(`Please fill in: ${missing.map((m) => m.label).join(", ")}.`)
+      return
+    }
+    if (step === 1) {
+      if (formData.password.length < 8) {
+        setAttemptedNext(true)
+        setError("Password must be at least 8 characters.")
+        return
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setAttemptedNext(true)
+        setError("Password and confirmation don't match.")
+        return
+      }
+    }
+    setAttemptedNext(false)
+    setError(null)
     if (step < totalSteps) setStep(step + 1)
   }
 
   const handleBack = () => {
+    setAttemptedNext(false)
+    setError(null)
     if (step > 1) setStep(step - 1)
   }
+
+  const invalidClass = (field: keyof typeof formData) =>
+    cn(attemptedNext && isFieldMissing(field) && "border-destructive focus-visible:ring-destructive")
 
   const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -236,34 +284,36 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">First Name *</Label>
                     <Input
                       id="firstName"
                       placeholder="Enter your first name"
                       value={formData.firstName}
                       onChange={(e) => updateFormData("firstName", e.target.value)}
+                      className={invalidClass("firstName")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName">Last Name *</Label>
                     <Input
                       id="lastName"
                       placeholder="Enter your last name"
                       value={formData.lastName}
                       onChange={(e) => updateFormData("lastName", e.target.value)}
+                      className={invalidClass("lastName")}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
-                      className="pl-10"
+                      className={cn("pl-10", invalidClass("email"))}
                       value={formData.email}
                       onChange={(e) => updateFormData("email", e.target.value)}
                     />
@@ -272,25 +322,26 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Password *</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
                         type="password"
                         placeholder="Create password"
-                        className="pl-10"
+                        className={cn("pl-10", invalidClass("password"))}
                         value={formData.password}
                         onChange={(e) => updateFormData("password", e.target.value)}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       placeholder="Confirm password"
+                      className={invalidClass("confirmPassword")}
                       value={formData.confirmPassword}
                       onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                     />
@@ -315,9 +366,9 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="region">Region</Label>
+                  <Label htmlFor="region">Region *</Label>
                   <Select value={formData.region} onValueChange={(v) => updateFormData("region", v)}>
-                    <SelectTrigger>
+                    <SelectTrigger className={invalidClass("region")}>
                       <SelectValue placeholder="Select your region" />
                     </SelectTrigger>
                     <SelectContent>
@@ -331,12 +382,13 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="town">Town/City</Label>
+                  <Label htmlFor="town">Town/City *</Label>
                   <Input
                     id="town"
                     placeholder="Enter your town or city"
                     value={formData.town}
                     onChange={(e) => updateFormData("town", e.target.value)}
+                    className={invalidClass("town")}
                   />
                 </div>
 
