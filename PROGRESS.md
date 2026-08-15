@@ -39,6 +39,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **Fixed the mobile app's icon and splash screen** — they were showing a leftover placeholder logo from an earlier design pass instead of TYP's real shield-and-checkmark mark. The app name itself ("TYP") was already correct and didn't need changing.
 - **Students can now sign up for the mobile app directly from their phone**, using their school's invite code (no personal payment involved) — previously the app was login-only, and a new account had to be created on the web first. Signing up as an independent (self-paying) student is still web-only for now.
 - **The mobile app now has a Dashboard tab** showing a student's completed-exam stats, score trend, subject strengths, and recent results — the backend for this existed already, it just had no screen to show it on.
 - **Super admins can now edit a platform display name and support email** from `Settings → Platform`, instead of those values being hardcoded nowhere at all. This is groundwork, not a visible change yet — the public contact page and footer still show their own fixed values; hooking those up to read this live is a small later step.
