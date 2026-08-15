@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { asString, asStringArray } from "@/lib/validation"
 
 export type RegisterTutorInput = {
   name: string
@@ -23,20 +24,21 @@ export type RegisterTutorInput = {
 export async function registerTutor(input: RegisterTutorInput) {
   await enforceRateLimit("signup")
 
-  const name = input.name.trim()
-  const email = input.email.trim().toLowerCase()
-  const headline = input.headline.trim()
-  const bio = input.bio.trim()
-  const expertiseAreas = input.expertiseAreas.map((a) => a.trim()).filter(Boolean)
+  const name = asString(input.name).trim()
+  const email = asString(input.email).trim().toLowerCase()
+  const headline = asString(input.headline).trim()
+  const bio = asString(input.bio).trim()
+  const password = asString(input.password)
+  const expertiseAreas = asStringArray(input.expertiseAreas).map((a) => a.trim()).filter(Boolean)
 
   if (!name) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
-  if (input.password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (password.length < 8) throw new Error("Password must be at least 8 characters.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
 
-  const passwordHash = await bcrypt.hash(input.password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
 
   const tutor = await prisma.tutorProfile.create({
     data: {

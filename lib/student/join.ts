@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
+import { asString } from "@/lib/validation"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -14,7 +15,7 @@ import { Role } from "@/lib/generated/prisma/client"
 export type VerifiedSchool = { schoolId: string; name: string; town: string; region: string }
 
 export async function lookupSchoolByCode(code: string): Promise<VerifiedSchool> {
-  const normalized = code.trim().toUpperCase()
+  const normalized = asString(code).trim().toUpperCase()
   if (!normalized) throw new Error("Enter an invite code.")
 
   const school = await prisma.school.findUnique({ where: { code: normalized } })
@@ -39,18 +40,19 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   // applied everywhere else in this app.
   const school = await lookupSchoolByCode(input.schoolCode)
 
-  const firstName = input.firstName.trim()
-  const lastName = input.lastName.trim()
-  const email = input.email.trim().toLowerCase()
+  const firstName = asString(input.firstName).trim()
+  const lastName = asString(input.lastName).trim()
+  const email = asString(input.email).trim().toLowerCase()
+  const password = asString(input.password)
 
   if (!firstName || !lastName) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
-  if (input.password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (password.length < 8) throw new Error("Password must be at least 8 characters.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
 
-  const passwordHash = await bcrypt.hash(input.password, 10)
+  const passwordHash = await bcrypt.hash(password, 10)
 
   await prisma.student.create({
     data: {
@@ -63,5 +65,5 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
     },
   })
 
-  return { email, password: input.password, schoolName: school.name }
+  return { email, password, schoolName: school.name }
 }

@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **Signup forms now block you from skipping required fields.** Previously the multi-step school and independent-student signup wizards let you click "Continue" past a step with blank required fields — you'd only find out something was missing (or, worse, hit a raw error) at the very end. Now each step checks itself and won't let you move on until the required fields are filled, with the empty ones highlighted. The backend side of every signup/join form was also hardened so a malformed submission fails with a clear message instead of crashing.
+
 - **Fixed the mobile app's icon and splash screen** — they were showing a leftover placeholder logo from an earlier design pass instead of TYP's real shield-and-checkmark mark. The app name itself ("TYP") was already correct and didn't need changing.
 - **Students can now sign up for the mobile app directly from their phone**, using their school's invite code (no personal payment involved) — previously the app was login-only, and a new account had to be created on the web first. Signing up as an independent (self-paying) student is still web-only for now.
 - **The mobile app now has a Dashboard tab** showing a student's completed-exam stats, score trend, subject strengths, and recent results — the backend for this existed already, it just had no screen to show it on.

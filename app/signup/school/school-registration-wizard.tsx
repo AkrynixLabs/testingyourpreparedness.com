@@ -104,14 +104,71 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
   })
 
   const totalSteps = 5
+  const [attemptedNext, setAttemptedNext] = useState(false)
+
+  // Required fields per step, checked before advancing - previously `handleNext`
+  // just incremented the step with no validation at all, so a user could click
+  // through every step with every field blank and only find out something was
+  // missing (or, worse, hit a raw server error) at the final submit.
+  const requiredFields: Record<number, { field: keyof typeof formData; label: string }[]> = {
+    1: [
+      { field: "schoolName", label: "School Name" },
+      { field: "ownershipType", label: "Ownership Type" },
+    ],
+    2: [
+      { field: "region", label: "Region" },
+      { field: "district", label: "District" },
+      { field: "town", label: "Town/City" },
+      { field: "address", label: "Full Address" },
+    ],
+    3: [
+      { field: "adminFirstName", label: "First Name" },
+      { field: "adminLastName", label: "Last Name" },
+      { field: "adminEmail", label: "Official Email" },
+      { field: "adminPhone", label: "Phone Number" },
+      { field: "adminPassword", label: "Password" },
+      { field: "adminConfirmPassword", label: "Confirm Password" },
+    ],
+    4: [{ field: "jhsStudents", label: "JHS Students (Forms 1-3)" }],
+  }
+
+  const isFieldMissing = (field: keyof typeof formData) => {
+    const value = formData[field]
+    return typeof value === "string" && !value.trim()
+  }
 
   const handleNext = () => {
+    const missing = (requiredFields[step] ?? []).filter(({ field }) => isFieldMissing(field))
+    if (missing.length > 0) {
+      setAttemptedNext(true)
+      setError(`Please fill in: ${missing.map((m) => m.label).join(", ")}.`)
+      return
+    }
+    if (step === 3) {
+      if (formData.adminPassword.length < 8) {
+        setAttemptedNext(true)
+        setError("Password must be at least 8 characters.")
+        return
+      }
+      if (formData.adminPassword !== formData.adminConfirmPassword) {
+        setAttemptedNext(true)
+        setError("Password and confirmation don't match.")
+        return
+      }
+    }
+    setAttemptedNext(false)
+    setError(null)
     if (step < totalSteps) setStep(step + 1)
   }
 
   const handleBack = () => {
+    setAttemptedNext(false)
+    setError(null)
     if (step > 1) setStep(step - 1)
   }
+
+  const invalidClass = (field: keyof typeof formData) =>
+    cn(attemptedNext && isFieldMissing(field) && "border-destructive focus-visible:ring-destructive")
 
   const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -281,6 +338,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                     placeholder="e.g., Achimota Senior High School"
                     value={formData.schoolName}
                     onChange={(e) => updateFormData("schoolName", e.target.value)}
+                    className={invalidClass("schoolName")}
                   />
                 </div>
 
@@ -288,7 +346,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   <div className="space-y-2">
                     <Label htmlFor="ownershipType">Ownership Type *</Label>
                     <Select value={formData.ownershipType} onValueChange={(v) => updateFormData("ownershipType", v)}>
-                      <SelectTrigger>
+                      <SelectTrigger className={invalidClass("ownershipType")}>
                         <SelectValue placeholder="Select school type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -370,7 +428,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   <div className="space-y-2">
                     <Label htmlFor="region">Region *</Label>
                     <Select value={formData.region} onValueChange={(v) => updateFormData("region", v)}>
-                      <SelectTrigger>
+                      <SelectTrigger className={invalidClass("region")}>
                         <SelectValue placeholder="Select region" />
                       </SelectTrigger>
                       <SelectContent>
@@ -390,6 +448,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       placeholder="Enter district"
                       value={formData.district}
                       onChange={(e) => updateFormData("district", e.target.value)}
+                      className={invalidClass("district")}
                     />
                   </div>
                 </div>
@@ -402,6 +461,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       placeholder="Enter town or city"
                       value={formData.town}
                       onChange={(e) => updateFormData("town", e.target.value)}
+                      className={invalidClass("town")}
                     />
                   </div>
 
@@ -424,6 +484,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                     rows={3}
                     value={formData.address}
                     onChange={(e) => updateFormData("address", e.target.value)}
+                    className={invalidClass("address")}
                   />
                 </div>
               </CardContent>
@@ -452,6 +513,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       placeholder="First name"
                       value={formData.adminFirstName}
                       onChange={(e) => updateFormData("adminFirstName", e.target.value)}
+                      className={invalidClass("adminFirstName")}
                     />
                   </div>
 
@@ -462,6 +524,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       placeholder="Last name"
                       value={formData.adminLastName}
                       onChange={(e) => updateFormData("adminLastName", e.target.value)}
+                      className={invalidClass("adminLastName")}
                     />
                   </div>
                 </div>
@@ -474,7 +537,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       id="adminEmail"
                       type="email"
                       placeholder="admin@school.edu.gh"
-                      className="pl-10"
+                      className={cn("pl-10", invalidClass("adminEmail"))}
                       value={formData.adminEmail}
                       onChange={(e) => updateFormData("adminEmail", e.target.value)}
                     />
@@ -490,7 +553,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       id="adminPhone"
                       type="tel"
                       placeholder="+233 XX XXX XXXX"
-                      className="pl-10"
+                      className={cn("pl-10", invalidClass("adminPhone"))}
                       value={formData.adminPhone}
                       onChange={(e) => updateFormData("adminPhone", e.target.value)}
                     />
@@ -506,7 +569,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                         id="adminPassword"
                         type="password"
                         placeholder="Create password"
-                        className="pl-10"
+                        className={cn("pl-10", invalidClass("adminPassword"))}
                         value={formData.adminPassword}
                         onChange={(e) => updateFormData("adminPassword", e.target.value)}
                       />
@@ -519,6 +582,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       id="adminConfirmPassword"
                       type="password"
                       placeholder="Confirm password"
+                      className={invalidClass("adminConfirmPassword")}
                       value={formData.adminConfirmPassword}
                       onChange={(e) => updateFormData("adminConfirmPassword", e.target.value)}
                     />
@@ -568,13 +632,14 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmStudents">Students (Forms 1-3) *</Label>
+                    <Label htmlFor="jhsStudents">Students (Forms 1-3) *</Label>
                     <Input
                       id="jhsStudents"
                       type="number"
                       placeholder="e.g., 200"
                       value={formData.jhsStudents}
                       onChange={(e) => updateFormData("jhsStudents", e.target.value)}
+                      className={invalidClass("jhsStudents")}
                     />
                     <p className="text-xs text-muted-foreground">All students will use the TYP platform</p>
                   </div>
