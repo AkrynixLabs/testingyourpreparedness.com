@@ -965,5 +965,11 @@ model PlatformSettings {
   // was a hardcoded PLATFORM_FEE_PERCENT constant in
   // app/student/courses/actions.ts, now a real editable value.
   platformFeePercent Int      @default(15)
+  // First real expansion of this store beyond the marketplace fee (see
+  // CLAUDE.md's Open Decisions) - editable display name/support contact,
+  // super-admin-facing only for now (not yet wired into the public contact
+  // page or email templates, which still use their own hardcoded values).
+  platformName       String   @default("TYP")
+  supportEmail       String   @default("support@typ.edu.gh")
   updatedAt          DateTime @updatedAt
 }

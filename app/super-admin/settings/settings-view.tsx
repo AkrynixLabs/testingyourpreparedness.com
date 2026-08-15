@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { User, Bell, Shield, Eye, EyeOff, Key, Store } from "lucide-react"
+import { User, Bell, Shield, Eye, EyeOff, Key, Store, Settings2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,12 +10,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { updatePassword, updateProfile, updatePlatformFeePercent } from "./actions"
+import { updatePassword, updateProfile, updatePlatformFeePercent, updatePlatformInfo } from "./actions"
 import type { User as UserModel } from "@/lib/generated/prisma/client"
 
 type SafeUser = Omit<UserModel, "passwordHash">
 
-export function SettingsView({ user, platformFeePercent }: { user: SafeUser; platformFeePercent: number }) {
+export function SettingsView({
+  user,
+  platformFeePercent,
+  platformName,
+  supportEmail,
+}: {
+  user: SafeUser
+  platformFeePercent: number
+  platformName: string
+  supportEmail: string
+}) {
   const [isPending, startTransition] = useTransition()
 
   const [profile, setProfile] = useState({ name: user.name, email: user.email })
@@ -23,6 +33,9 @@ export function SettingsView({ user, platformFeePercent }: { user: SafeUser; pla
 
   const [feeValue, setFeeValue] = useState(String(platformFeePercent))
   const [feeMessage, setFeeMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  const [platformInfo, setPlatformInfo] = useState({ platformName, supportEmail })
+  const [platformInfoMessage, setPlatformInfoMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -77,6 +90,21 @@ export function SettingsView({ user, platformFeePercent }: { user: SafeUser; pla
     })
   }
 
+  const handleSavePlatformInfo = () => {
+    setPlatformInfoMessage(null)
+    startTransition(async () => {
+      try {
+        await updatePlatformInfo(platformInfo)
+        setPlatformInfoMessage({ type: "success", text: "Platform info updated." })
+      } catch (err) {
+        setPlatformInfoMessage({
+          type: "error",
+          text: err instanceof Error ? err.message : "Failed to update platform info.",
+        })
+      }
+    })
+  }
+
   const handleUpdatePassword = () => {
     setPasswordMessage(null)
     if (passwordForm.next !== passwordForm.confirm) {
@@ -118,6 +146,10 @@ export function SettingsView({ user, platformFeePercent }: { user: SafeUser; pla
           <TabsTrigger value="marketplace" className="gap-2">
             <Store className="h-4 w-4" />
             Marketplace
+          </TabsTrigger>
+          <TabsTrigger value="platform" className="gap-2">
+            <Settings2 className="h-4 w-4" />
+            Platform
           </TabsTrigger>
         </TabsList>
 
@@ -367,6 +399,59 @@ export function SettingsView({ user, platformFeePercent }: { user: SafeUser; pla
                 </p>
               </div>
               <Button onClick={handleSaveFee} disabled={isPending}>
+                {isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Platform Tab */}
+        <TabsContent value="platform" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Info</CardTitle>
+              <CardDescription>
+                Platform-wide display name and support contact, read live wherever the app shows them - no
+                redeploy needed to change either.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Settings2 className="h-4 w-4" />
+                <AlertDescription>
+                  Not yet wired into the public contact page or email templates, which still show their own
+                  hardcoded values - this is the config store only, for now.
+                </AlertDescription>
+              </Alert>
+              {platformInfoMessage && (
+                <p
+                  className={`text-sm ${
+                    platformInfoMessage.type === "success" ? "text-green-600" : "text-destructive"
+                  }`}
+                >
+                  {platformInfoMessage.text}
+                </p>
+              )}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="platformName">Platform Name</Label>
+                  <Input
+                    id="platformName"
+                    value={platformInfo.platformName}
+                    onChange={(e) => setPlatformInfo({ ...platformInfo, platformName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supportEmail">Support Email</Label>
+                  <Input
+                    id="supportEmail"
+                    type="email"
+                    value={platformInfo.supportEmail}
+                    onChange={(e) => setPlatformInfo({ ...platformInfo, supportEmail: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSavePlatformInfo} disabled={isPending}>
                 {isPending ? "Saving..." : "Save Changes"}
               </Button>
             </CardContent>
