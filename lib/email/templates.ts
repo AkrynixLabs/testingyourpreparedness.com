@@ -2,8 +2,10 @@
 // kept deliberately lean since this app's email needs are simple
 // transactional notices, not marketing/newsletter-grade design.
 
+import { stripTrailingSlash } from "@/lib/utils"
+
 function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  return stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
 }
 
 function wrapper(bodyHtml: string): string {

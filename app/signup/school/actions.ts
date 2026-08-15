@@ -9,6 +9,7 @@ import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { stripTrailingSlash } from "@/lib/utils"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -172,7 +173,7 @@ export async function initializeSchoolCheckout(input: InitializeCheckoutInput) {
     },
   })
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
   const { authorizationUrl } = await initializeTransaction({
     email: school.email,
     amountGhs,

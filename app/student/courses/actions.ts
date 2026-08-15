@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { stripTrailingSlash } from "@/lib/utils"
 import {
   enrollInFreeCourseForStudent,
   initializeCoursePurchaseForStudent,
@@ -28,7 +29,7 @@ export async function enrollInFreeCourse(courseId: string) {
 // client-side redirect back to the callback page is never trusted alone.
 export async function initializeCoursePurchase(courseId: string) {
   const { student, email } = await requireStudent()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
   const { authorizationUrl } = await initializeCoursePurchaseForStudent(
     student.id,
     email,

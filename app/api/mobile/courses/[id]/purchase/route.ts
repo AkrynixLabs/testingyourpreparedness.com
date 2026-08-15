@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { authenticateMobileRequest } from "@/lib/mobile-auth"
+import { stripTrailingSlash } from "@/lib/utils"
 import { initializeCoursePurchaseForStudent } from "@/lib/student/courses"
 
 // Reuses the exact same web callback URL as its callbackUrl (rather than a
@@ -23,7 +24,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const { id } = await params
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
 
   try {
     const result = await initializeCoursePurchaseForStudent(
