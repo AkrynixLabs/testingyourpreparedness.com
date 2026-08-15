@@ -39,6 +39,9 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **All the automated emails (password reset, invites, welcome, assignment notices, etc.) now actually look like they're from TYP** — real logo, real brand blue, proper layout, matching the new Brevo template's look instead of the old plain black-and-white notices.
+- **Two accounts-affected-silently gaps closed**: removing a content admin's account, or removing a school administrator's access, both now send a real notification email — previously the person just found out by failing to log in, with no explanation anywhere.
+
 - **A real, on-brand email template is ready for Brevo broadcasts** (`docs/email-templates/brevo-broadcast-template.html`) — paste it straight into Brevo's campaign editor. Uses the real TYP logo and brand blue, tested against real email-client quirks (Outlook included), with the parts you'd actually change per send clearly marked.
 
 - **The required-field asterisks now match on mobile too** — login and the "join your school" screen were missing them even though the equivalent web forms already had them. Fixed directly rather than left as a gap.

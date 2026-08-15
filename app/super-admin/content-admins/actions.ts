@@ -7,7 +7,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Role, type ContentAdminStatus } from "@/lib/generated/prisma/client"
 import { sendEmailBestEffort } from "@/lib/email/resend"
-import { newAccountTempPasswordEmail } from "@/lib/email/templates"
+import { newAccountTempPasswordEmail, contentAdminAccountRemovedEmail } from "@/lib/email/templates"
 
 // A temporary password is generated and returned once so the super admin
 // can hand it to the new content admin directly (still true even now that
@@ -149,6 +149,9 @@ export async function deleteContentAdmin(profileId: string) {
   if (profile.user._count.createdQuestions + profile.user._count.createdAssessments > 0) {
     throw new Error("Cannot remove a content admin who has created questions or assessments")
   }
+
+  const { subject, html } = contentAdminAccountRemovedEmail({ name: profile.user.name })
+  await sendEmailBestEffort({ to: profile.user.email, subject, html })
 
   await prisma.user.delete({ where: { id: profile.userId } })
 
