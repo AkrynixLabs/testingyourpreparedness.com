@@ -52,6 +52,28 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 - **Mobile app splash screen now stays on screen for a proper ~3 seconds instead of flashing by instantly.** The earlier fix only slowed down the icon's own zoom/fade animation, but the splash was still being dismissed the moment the app's first screen started rendering, which happens almost immediately. Now the app deliberately holds the splash up for a minimum 3 seconds (or however long the login-check takes, if that's longer) before showing the login or home screen. Can't be visually confirmed in this environment (no phone/emulator available here) - worth a quick look on a real device to make sure the timing feels right.
 
+- **The mobile app got a full visual redesign**, covering every single screen - real matching fonts, and much richer styling on buttons, cards, navigation, and pop-up dialogs, replacing the plain default look it had before.
+
+- **Mobile account deletion is now actually reachable in the app**, not just supported on the backend - it lives on a new dedicated Settings screen alongside Log Out, moved there from the Profile screen at your own request so account actions have one clear home.
+
+- **Mobile now asks "are you sure?" before logging out or deleting your account**, closing a real gap where those actions could fire with a single accidental tap and zero confirmation - one reusable confirmation-dialog design now used everywhere this matters (also submitting an exam, and course-payment results).
+
+- **Fixed a real, user-reported bug: pressing the phone's back button could log you out.** Turned out to be two separate problems. The back button had nowhere sensible to go on some screens, so it was quitting the app outright - now it steps back properly and only exits after two back presses in a row. And separately, if the app's connection blinked for even a moment right as it reopened, it was wrongly treating that the same as an expired login and signing you out for real - now it only signs you out when your login is actually no longer valid.
+
+- **Pull-to-refresh now works consistently everywhere it should on mobile** — a few screens (course details, profile, settings) were missing the swipe-down-to-refresh gesture that most of the app already had.
+
+- **Mobile now shows a real "you're offline" banner when the phone loses signal**, instead of just silently failing whatever you happened to be doing. The Settings screen also now shows the actual app version installed, useful for support/bug reports.
+
+- **A real accessibility pass on mobile**: a few icon-only buttons (like the eye icon that shows/hides your password) had no label at all for screen-reader users - fixed. A couple of buttons that were too small to comfortably tap (the star-rating picker, the exam question-number palette) were made easier to hit. And every text color combination the app actually uses was checked against accessibility contrast standards - all pass comfortably.
+
+- **Fixed the exact bug the user reported: on the assessment review screen (and a few others - course details, my courses, profile, settings, watching a lesson), the bottom of the content could get cut off by the phone's own on-screen navigation bar**, so the last item wasn't fully visible or tappable. Now there's always enough space at the bottom, calculated from the actual device rather than a fixed guess.
+
+- **Mobile now defaults to a light/white look, and you can actually change it.** The app previously had no real setting for this at all - it silently matched whatever your phone's system dark-mode setting was, which is why the last build looked dark with no way to change it from inside the app. There's now a real Light/Dark/System switch on the Settings screen, and it remembers your choice.
+
+- **Fixed a real bug that would have made any future build of the app unusable on a real phone.** If someone built the app without remembering a specific extra command-line flag, it would silently connect to "localhost" instead of the real server - meaning nothing in the app would work, with no clear error explaining why. The app now defaults to the real live server automatically; the extra flag is only needed for local development instead of every real build.
+
+- **Final polish pass on mobile before this build**: subtle vibration feedback on things like switching tabs, confirming an action, picking a star rating, and submitting an exam - the small touches that make an app feel responsive. Switching between the Exams/Dashboard/Courses tabs now fades smoothly instead of cutting instantly. And instead of a bare spinning circle while things load, the Exams, Dashboard, and Courses screens now show a shimmering outline of what's about to appear - a common touch in polished apps that makes loading feel faster even though it isn't.
+
 ### 2026-08-15
 
 - **Fixed: logging in as a tutor was landing on the homepage instead of the tutor dashboard.** A real bug, not related to anything shipped today — the login page had its own list of "which dashboard does each role go to" and had simply never been updated when the Tutor role was added. One-line fix.
