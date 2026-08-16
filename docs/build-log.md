@@ -1004,6 +1004,16 @@ Fixed sites, by pattern:
 - Verified live (not just typechecked): a temp script called the actual route handlers directly with a real signed mobile JWT - no-token correctly 401s, a real delete request returns the scheduled date and is reflected in `/me`, cancel correctly clears it and `/me` reflects that too. Test row cleaned up after.
 - `npx tsc --noEmit` clean.
 
+**Built 2026-08-16 — a real, super-admin-privileged "Add School" flow, replacing the old redirect out to the public self-signup wizard.** User pointed out the existing button (fixed 2026-08-08 from a fake no-op form to a link to `/signup/school`) was still wrong in a different way: that wizard is shaped for a school signing *itself* up (plan selection/checkout, lands in the same "pending verification" queue), not for a super admin creating one directly on someone's behalf. Confirmed 3 real shape decisions with the user before building (all picked the recommended option): starts `active` immediately, no plan/billing step at all, and the primary admin account uses the same generate-a-temp-password-and-email-it pattern already used for content-admin/school-added-student creation, not a bespoke flow.
+- `lib/school-code.ts` (new): `generateSchoolCode()` extracted out of `app/signup/school/actions.ts` unchanged (name-derived prefix + random 3-digit suffix), so this and the public wizard share one implementation instead of two.
+- `app/super-admin/schools/add/actions.ts` (new): `createSchoolBySuperAdmin` - same field validation as the public wizard's `registerSchool`, but creates the `School` with `status: "active"` directly (vs `"pending"`), no `Payment`/checkout involved at all, and emails the new admin a real temp password via the existing `newAccountTempPasswordEmail` template rather than inventing a new one.
+- `app/super-admin/schools/add/page.tsx` + `add-school-form.tsx` (new) - single-page form (not a multi-step wizard like the public one - no plan-selection step to wizard around, and this is an internal admin tool, not a consumer flow), auth-gated the same way every other `super-admin/**` page is.
+- `app/super-admin/schools/add-school-dialog.tsx`'s button now links to `/super-admin/schools/add` instead of the public `/signup/school`.
+- Verified live against the real Neon DB (not just typechecked): a temp script exercised the shared `generateSchoolCode()` post-extraction (confirmed still produces the right `PREFIX-###` shape) and the actual school+primary-admin creation write, confirming `status` lands as `active` and `isPrimary` is set correctly. Cleaned up afterward.
+- `npx tsc --noEmit` clean.
+
+**Also resolved 2026-08-16, user-confirmed**: (1) Brevo keys (`BREVO_API_KEY`/`BREVO_NEWSLETTER_LIST_ID`) and Resend keys are confirmed set in Vercel's production environment variables, not just local `.env` - closes the last open "is this actually live" question for those two integrations. (2) `/terms`/`/privacy` have been through actual legal review - the "draft, pending review" language (already removed from the pages themselves on 2026-08-15) is now also removed from `PROGRESS.md`'s launch-blocker list, since the review this was blocking on has happened.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

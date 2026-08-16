@@ -29,7 +29,7 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 2. **A real end-to-end payment test on the live site.** Everything's been verified "downstream of a real API call" so far — the next real milestone is one actual live checkout completing start to finish.
 3. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
 4. **QA sign-off**, currently in progress with a second reviewer.
-5. **Legal page content reviewed by a lawyer.** Real draft text now exists (product-accurate, covers what's actually collected/how payments work/Ghana's Data Protection Act) — still needs actual legal review before real users sign up on the strength of it.
+5. ~~Legal page content reviewed by a lawyer.~~ **Done** — `/terms`/`/privacy` have been through legal review; the "draft, pending review" banner was removed accordingly.
 
 ---
 
@@ -38,6 +38,9 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
 ### 2026-08-16
+
+- **"Add School" now actually adds a school** — a super admin creating a school directly gets a real form on its own page (name, location, primary administrator), activated immediately with no plan/payment step, instead of being sent to the public school-signup page meant for schools signing themselves up.
+- **Legal review and production email-key setup are both confirmed done** — closing out two of the standing launch-readiness items.
 
 - **Account deletion now has real backend support on mobile too**, not just web — the API side is done and tested; the actual "delete my account" screen in the app itself is the mobile team's next task.
 

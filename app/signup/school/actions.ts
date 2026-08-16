@@ -12,6 +12,7 @@ import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { stripTrailingSlash } from "@/lib/utils"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { welcomeEmail } from "@/lib/email/templates"
+import { generateSchoolCode } from "@/lib/school-code"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -194,18 +195,3 @@ export async function initializeSchoolCheckout(input: InitializeCheckoutInput) {
   return { authorizationUrl }
 }
 
-async function generateSchoolCode(schoolName: string) {
-  const prefix = schoolName
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 4) || "SCH"
-
-  for (let i = 0; i < 20; i++) {
-    const candidate = `${prefix}-${String(Math.floor(Math.random() * 900) + 100)}`
-    const exists = await prisma.school.findUnique({ where: { code: candidate } })
-    if (!exists) return candidate
-  }
-  throw new Error("Could not generate a unique school code, please try again.")
-}
