@@ -984,6 +984,8 @@ Fixed sites, by pattern:
 - Cross-checked mobile per the standing rule: no settings/account screen exists there at all (student-only v1 scope, confirmed no password-reset screen either) - nothing to wire, flagged as a natural addition once mobile gets a real settings screen, not a gap left behind.
 - `npx tsc --noEmit` clean throughout.
 
+**Fixed 2026-08-15 — logging in as a tutor landed on the homepage instead of `/tutor`.** User reported it directly after a real login attempt. Root cause: `app/login/page.tsx` keeps its own `ROLE_HOME` role→dashboard map (separate from `proxy.ts`'s own copy, which was already correct) for the client-side redirect after a successful `signIn()` - that map was missing a `tutor` entry entirely, so `ROLE_HOME[role]` resolved to `undefined` for a tutor and the `(role && ROLE_HOME[role]) || "/"` fallback silently sent them to `/`. Almost certainly a pre-existing gap from when Tutor was added as a 5th role (2026-08-07) after this login page was originally built for the first 4 - this map was never updated to match. Checked for the same pattern elsewhere (grepped for other role→path maps) - found none; `proxy.ts`'s copy already had `tutor` correct, and mobile's login is student-only (403s any other role), so no equivalent gap there. Fixed with one line. Verified with `npx tsc --noEmit` (clean); not re-tested via a live browser login this pass (no dev server exercised), but the fix is a direct 1:1 match with `proxy.ts`'s already-correct map.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

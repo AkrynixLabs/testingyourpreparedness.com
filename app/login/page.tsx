@@ -16,6 +16,7 @@ const ROLE_HOME: Record<string, string> = {
   content_admin: "/content-admin",
   school_admin: "/school-admin",
   student: "/student",
+  tutor: "/tutor",
 }
 
 export default function LoginPage() {

@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **Fixed: logging in as a tutor was landing on the homepage instead of the tutor dashboard.** A real bug, not related to anything shipped today — the login page had its own list of "which dashboard does each role go to" and had simply never been updated when the Tutor role was added. One-line fix.
+
 - **Students and tutors can now actually delete their own account.** Settings → Security → Danger Zone. It's not instant — a 30-day grace period, with a real confirmation email and a real "cancel this" option the whole time, then a final email once it actually happens. Under the hood this anonymizes rather than erases everything outright (courses a tutor made stay up for their students, purchase records stay intact for accounting) - your personal info (name, email, password) is what actually gets wiped. A tutor with an active course has to remove/unpublish it first. Verified against the real database with real test accounts before shipping, not just typechecked.
 
 - **The "password changed" email now also covers the forgot-password reset flow**, not just changing it from Settings while logged in — the reset-via-emailed-link path was missed in the earlier pass, caught by the user asking directly whether it was covered.
