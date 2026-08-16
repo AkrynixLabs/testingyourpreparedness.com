@@ -4,7 +4,7 @@ import { Role } from "@/lib/generated/prisma/client"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { sendEmailBestEffort } from "@/lib/email/resend"
-import { welcomeEmail } from "@/lib/email/templates"
+import { joinRequestPendingEmail, newJoinRequestEmail } from "@/lib/email/templates"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -59,15 +59,21 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   if (existing) throw new Error("An account with that email already exists.")
 
   const passwordHash = await bcrypt.hash(password, 10)
+  const name = `${firstName} ${lastName}`
 
   await prisma.student.create({
     data: {
-      user: { create: { name: `${firstName} ${lastName}`, email, passwordHash, role: Role.student } },
+      user: { create: { name, email, passwordHash, role: Role.student } },
       enrollmentType: "school",
       school: { connect: { id: school.schoolId } },
       // No class picker in this flow - a school admin assigns the class
       // afterwards, same as any other student added directly by a school.
-      status: "active",
+      // Decided/built 2026-08-16: starts "pending", not "active" - a school
+      // code is a short, guessable string (see lib/student/join-approval.ts's
+      // own note), so joining used to give instant, unnoticed access to
+      // anyone who knew or guessed it. A school admin must now approve the
+      // request before the account can log in.
+      status: "pending",
     },
   })
 
@@ -75,12 +81,13 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
     await subscribeToNewsletterBestEffort(email)
   }
 
-  const { subject, html } = welcomeEmail({
-    name: `${firstName} ${lastName}`,
-    roleLabel: "student",
-    dashboardPath: "/student",
-  })
-  await sendEmailBestEffort({ to: email, subject, html })
+  const schoolRecord = await prisma.school.findUniqueOrThrow({ where: { id: school.schoolId }, select: { email: true } })
 
-  return { email, password, schoolName: school.name }
+  const pendingEmail = joinRequestPendingEmail({ name, schoolName: school.name })
+  await sendEmailBestEffort({ to: email, subject: pendingEmail.subject, html: pendingEmail.html })
+
+  const adminEmail = newJoinRequestEmail({ schoolName: school.name, studentName: name, studentEmail: email })
+  await sendEmailBestEffort({ to: schoolRecord.email, subject: adminEmail.subject, html: adminEmail.html })
+
+  return { email, password, schoolName: school.name, pendingApproval: true as const }
 }

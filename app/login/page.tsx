@@ -39,6 +39,8 @@ export default function LoginPage() {
       setError(
         result?.code === "rate_limited"
           ? "Too many login attempts. Please wait a few minutes and try again."
+          : result?.code === "pending_approval"
+          ? "Your request to join your school is still pending approval from a school administrator."
           : "Invalid email or password."
       )
       return

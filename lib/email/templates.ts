@@ -375,3 +375,61 @@ export function accountDeletedEmail(input: { name: string }) {
     `),
   }
 }
+
+// Four-email lifecycle for school-code join requests now requiring admin
+// approval (added 2026-08-16, closing a real gap: previously anyone who
+// knew/guessed a school's code joined instantly with zero notice to the
+// school - see lib/student/join-approval.ts for the full flow).
+export function joinRequestPendingEmail(input: { name: string; schoolName: string }) {
+  return {
+    subject: `Your request to join ${input.schoolName} is pending approval`,
+    html: wrapper(`
+      ${heading("Request received")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, we've received your request to join <strong style="color:#142A4F;">${input.schoolName}</strong> on TYP. A school administrator needs to approve it before you can log in.</p>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">We'll email you as soon as a decision is made - usually within a day or two.</p>
+    `),
+  }
+}
+
+// Sent to the school's own contact email (School.email), not a specific
+// admin - same "affects everyone with access" reasoning as
+// schoolStatusChangedEmail. No direct approve/reject link in the email
+// itself - that action needs a real login and the school's own review
+// queue, not a one-click magic link, since it's a trust decision about
+// letting a stranger into the school's roster.
+export function newJoinRequestEmail(input: { schoolName: string; studentName: string; studentEmail: string }) {
+  return {
+    subject: `New join request for ${input.schoolName} on TYP`,
+    html: wrapper(`
+      ${heading("New join request")}
+      <p style="margin:0 0 12px 0;"><strong style="color:#142A4F;">${input.studentName}</strong> (${input.studentEmail}) used your school's code to request joining <strong style="color:#142A4F;">${input.schoolName}</strong> on TYP. Review and approve or reject it from your Students page.</p>
+      ${button("Review Request", `${appUrl()}/school-admin/students`)}
+    `),
+  }
+}
+
+export function joinRequestApprovedEmail(input: { name: string; schoolName: string }) {
+  return {
+    subject: `You're approved to join ${input.schoolName} on TYP`,
+    html: wrapper(`
+      ${heading("Request approved")}
+      <p style="margin:0 0 20px 0;">Hi ${input.name}, your request to join <strong style="color:#142A4F;">${input.schoolName}</strong> has been approved. You can log in now.</p>
+      ${button("Log In", `${appUrl()}/login`)}
+    `),
+  }
+}
+
+// Sent before the account is deleted (same "send before, not after"
+// ordering as contentAdminAccountRemovedEmail) - a rejected join request is
+// hard-deleted, not just deactivated, since it was never a real member of
+// the school.
+export function joinRequestRejectedEmail(input: { name: string; schoolName: string }) {
+  return {
+    subject: `Your request to join ${input.schoolName} was declined`,
+    html: wrapper(`
+      ${heading("Request declined")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, your request to join <strong style="color:#142A4F;">${input.schoolName}</strong> on TYP was declined by a school administrator.</p>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">If you believe this was a mistake, <a href="${appUrl()}/contact" style="color:#0072D5;">contact us</a> or reach out to the school directly.</p>
+    `),
+  }
+}
