@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **The "password changed" email now also covers the forgot-password reset flow**, not just changing it from Settings while logged in — the reset-via-emailed-link path was missed in the earlier pass, caught by the user asking directly whether it was covered.
+
 - **6 more account-notification emails added**, closing a broader audit: suspending/reactivating a content admin or tutor, suspending/approving a school, flagging or removing a tutor's course (with the real reason), a content admin's question/assessment being rejected (with the reason), and a "your password was changed" security notice on every role's own settings page. Previously all silent. Purchase-receipt emails and approval-confirmation emails were found too but deliberately held back for a separate, more careful pass — not forgotten, just not done yet.
 
 - **All the automated emails (password reset, invites, welcome, assignment notices, etc.) now actually look like they're from TYP** — real logo, real brand blue, proper layout, matching the new Brevo template's look instead of the old plain black-and-white notices.

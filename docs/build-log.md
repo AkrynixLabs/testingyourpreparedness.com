@@ -968,6 +968,8 @@ Fixed sites, by pattern:
 - **Deliberately deferred, not built - user explicitly asked this be remembered for future sessions too**: (1) payment/purchase receipt emails (course purchases, subscription payments) - a real gap, but touches the Paystack webhook's idempotency logic and wants its own careful pass rather than being bundled in; (2) question/assessment *approval* confirmations (the success-case mirror of the rejection email just built) - lower priority since there's no actionable feedback to deliver, just a nice-to-have confirmation. Also recorded in `CLAUDE.md`'s Open Decisions.
 - Verified with `npx tsc --noEmit` (clean). Not sent through a real Resend test send this pass - same standing caveat as the other email additions today.
 
+**Fixed 2026-08-15 — `passwordChangedEmail` had missed the forgot-password reset flow.** User asked directly "would I receive an email for password change," which surfaced the gap: the earlier password-change-notification pass only wired 5 logged-in settings-page `updatePassword` actions, missing `app/reset-password/actions.ts`'s `resetPassword` - the "click the emailed link, set a new password" flow, arguably the more important of the two to cover since it's the one an actual unauthorized reset would go through. Fixed with the same `passwordChangedEmail` template, sent right after the password row updates. Cross-checked mobile: no password-reset screen exists there at all (grepped `mobile/lib` for "reset"/"forgot" password, zero hits), so no mobile work applicable. Verified with `npx tsc --noEmit` (clean).
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
