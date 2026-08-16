@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../widgets/async_state_views.dart';
 import 'home_screen.dart';
 import 'join_school_screen.dart';
 
@@ -60,9 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
       );
     } on ApiException catch (e) {
-      // 401 (bad credentials), 403 (non-student role), 429 (rate limited) -
-      // all surfaced with the server's own message text as-is, per the
-      // backend session's spec, rather than a single generic error string.
+      // 401 (bad credentials), 403 (non-student role, or a still-pending
+      // join request - code "pending_approval"), 429 (rate limited) - all
+      // surfaced with the server's own message text as-is, per the backend
+      // session's spec, rather than a single generic error string. The
+      // pending-approval case doesn't need special client copy since the
+      // server's own message already explains it plainly.
       setState(() => _errorText = e.message);
     } catch (_) {
       setState(() => _errorText = 'Could not reach TYP. Check your connection and try again.');
@@ -73,65 +77,76 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'TYP',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Testing Your Preparedness',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 40),
-                  if (_errorText != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
+                  Center(
+                    child: Container(
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.25),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        _errorText!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
-                      ),
+                      child: const Icon(Icons.shield_moon_outlined, color: Colors.white, size: 34),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Welcome back',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Log in to continue your exam prep',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 36),
+                  if (_errorText != null) ...[
+                    ErrorBanner(message: _errorText!),
                     const SizedBox(height: 16),
                   ],
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    decoration: const InputDecoration(labelText: 'Email *'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.mail_outline),
+                    ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'Enter your email.';
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password *',
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                        icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                        tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                     ),
@@ -141,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     onFieldSubmitted: (_) => _submit(),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   ElevatedButton(
                     onPressed: _loading ? null : _submit,
                     child: _loading
@@ -152,16 +167,28 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text('Log In'),
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: colors.outline)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('or', style: Theme.of(context).textTheme.bodySmall),
+                      ),
+                      Expanded(child: Divider(color: colors.outline)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton.icon(
                     onPressed: _loading
                         ? null
                         : () => Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const JoinSchoolScreen()),
                             ),
-                    child: const Text('Have a school invite code? Join your school'),
+                    icon: const Icon(Icons.key_outlined, size: 18),
+                    label: const Text('Join your school with an invite code'),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 20),
                   Text(
                     'TYP mobile is currently available to students only.',
                     textAlign: TextAlign.center,
@@ -176,3 +203,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

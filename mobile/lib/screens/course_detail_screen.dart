@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../models/course.dart';
 import '../services/api_client.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
 import '../widgets/star_rating_display.dart';
 import 'course_learn_screen.dart';
@@ -55,6 +57,19 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     });
   }
 
+  Future<void> _onPullRefresh() async {
+    _reload();
+    // Swallow - the same future is also handed to FutureBuilder below, which
+    // already renders ErrorView on a failure; this try/catch only exists so
+    // RefreshIndicator's spinner stays visible until the fetch settles,
+    // without an unhandled-rejection warning for the same error twice.
+    try {
+      await _courseFuture;
+    } catch (_) {
+      // Handled by FutureBuilder's own error branch.
+    }
+  }
+
   void _initReviewFormIfNeeded(CourseDetail course) {
     if (_reviewFormInitialized) return;
     _reviewFormInitialized = true;
@@ -103,7 +118,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         await ApiClient.instance.enrollInFreeCourse(course.id);
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => CourseLearnScreen(courseId: course.id)),
+          MaterialPageRoute(
+              builder: (_) => CourseLearnScreen(courseId: course.id)),
         );
         return;
       }
@@ -111,7 +127,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       final init = await ApiClient.instance.initializeCoursePurchase(course.id);
       if (!mounted) return;
       final reference = await Navigator.of(context).push<String?>(
-        MaterialPageRoute(builder: (_) => CoursePurchaseWebviewScreen(authorizationUrl: init.authorizationUrl)),
+        MaterialPageRoute(
+            builder: (_) => CoursePurchaseWebviewScreen(
+                authorizationUrl: init.authorizationUrl)),
       );
 
       if (reference == null) {
@@ -144,7 +162,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           'Payment Successful',
           'Your enrollment is being activated.',
           Icons.check_circle,
-          Colors.green,
+          Theme.of(context).success,
         ),
       'failed' => (
           'Payment Not Completed',
@@ -160,17 +178,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         ),
     };
 
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: Icon(icon, color: color, size: 32),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-        ],
-      ),
-    );
+    return AppDialogs.info(context,
+        title: title, message: message, icon: icon, iconColor: color);
   }
 
   @override
@@ -185,268 +194,381 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           }
           if (snapshot.hasError) {
             return ErrorView(
-              message: errorMessageFor(snapshot.error!, fallback: 'Could not load this course.'),
+              message: errorMessageFor(snapshot.error!,
+                  fallback: 'Could not load this course.'),
               onRetry: _reload,
             );
           }
 
           final course = snapshot.data!;
           _initReviewFormIfNeeded(course);
-          final totalLessons = course.modules.fold<int>(0, (sum, m) => sum + m.lessons.length);
+          final totalLessons =
+              course.modules.fold<int>(0, (sum, m) => sum + m.lessons.length);
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Chip(label: Text(course.category), padding: EdgeInsets.zero, materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
-              const SizedBox(height: 8),
-              Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 6),
-              Text(course.description, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 10),
-              Text(
-                '${course.studentCount} students · ${course.modules.length} modules · $totalLessons lessons',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              if (course.averageRating != null) ...[
-                const SizedBox(height: 6),
+          final colors = Theme.of(context).colorScheme;
+
+          return RefreshIndicator(
+            onRefresh: _onPullRefresh,
+            child: ListView(
+              padding: screenScrollPadding(context),
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Text(
+                    course.category,
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: colors.primary),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(course.title,
+                    style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 8),
+                Text(course.description,
+                    style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    StarRatingDisplay(rating: course.averageRating!),
-                    const SizedBox(width: 6),
+                    Icon(Icons.people_outline,
+                        size: 15, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text('${course.studentCount} students',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(width: 12),
+                    Icon(Icons.menu_book_outlined,
+                        size: 15, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
                     Text(
-                      '${course.averageRating!.toStringAsFixed(1)} (${course.reviews.length} review${course.reviews.length == 1 ? '' : 's'})',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                        '${course.modules.length} modules · $totalLessons lessons',
+                        style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
-              ],
-              const SizedBox(height: 16),
-              if (_enrollError != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(_enrollError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                ),
-                const SizedBox(height: 12),
-              ],
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                if (course.averageRating != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            course.price == 0 ? 'Free' : 'GHS ${course.price}',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
-                          ),
-                          Text('One-time purchase - lifetime access', style: Theme.of(context).textTheme.bodySmall),
-                        ],
+                      StarRatingDisplay(rating: course.averageRating!),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${course.averageRating!.toStringAsFixed(1)} (${course.reviews.length} review${course.reviews.length == 1 ? '' : 's'})',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      if (course.isEnrolled)
-                        ElevatedButton.icon(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => CourseLearnScreen(courseId: course.id)),
-                          ),
-                          icon: const Icon(Icons.play_circle_outline),
-                          label: const Text('Continue'),
-                        )
-                      else
-                        ElevatedButton(
-                          onPressed: _enrolling ? null : () => _handleEnroll(course),
-                          child: _enrolling
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : Text(course.price == 0 ? 'Enroll for Free' : 'Buy Course'),
-                        ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('About the Tutor', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      Text(course.tutorName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      if (course.tutorHeadline != null) Text(course.tutorHeadline!, style: Theme.of(context).textTheme.bodySmall),
-                      if (course.tutorBio != null) ...[
-                        const SizedBox(height: 6),
-                        Text(course.tutorBio!, style: Theme.of(context).textTheme.bodySmall),
+                ],
+                const SizedBox(height: 20),
+                if (_enrollError != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .error
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(_enrollError!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Container(
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: colors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              course.price == 0
+                                  ? 'Free'
+                                  : 'GHS ${course.price}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(color: colors.primary),
+                            ),
+                            Text('One-time purchase - lifetime access',
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ],
+                        ),
+                        if (course.isEnrolled)
+                          ElevatedButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      CourseLearnScreen(courseId: course.id)),
+                            ),
+                            icon: const Icon(Icons.play_circle_outline),
+                            label: const Text('Continue'),
+                          )
+                        else
+                          ElevatedButton(
+                            onPressed:
+                                _enrolling ? null : () => _handleEnroll(course),
+                            child: _enrolling
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white),
+                                  )
+                                : Text(course.price == 0
+                                    ? 'Enroll for Free'
+                                    : 'Buy Course'),
+                          ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Curriculum', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      for (int i = 0; i < course.modules.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Module ${i + 1}: ${course.modules[i].title}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 4),
-                              for (final lesson in course.modules[i].lessons)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8, top: 2),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        lesson.type == 'video' ? Icons.play_circle_outline : Icons.article_outlined,
-                                        size: 16,
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(lesson.title, style: Theme.of(context).textTheme.bodySmall),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Reviews', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      if (course.isEnrolled) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                course.myReview != null ? 'Edit your review' : 'Leave a review',
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                              ),
-                              const SizedBox(height: 8),
-                              if (_reviewError != null) ...[
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(_reviewError!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              if (_reviewJustSaved && _reviewError == null) ...[
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text('Review saved.', style: TextStyle(color: Colors.green, fontSize: 12)),
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              StarRatingInput(
-                                value: _reviewRating,
-                                onChanged: (n) => setState(() {
-                                  _reviewRating = n;
-                                  _reviewJustSaved = false;
-                                }),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: _reviewCommentController,
-                                maxLines: 3,
-                                decoration: const InputDecoration(
-                                  hintText: 'What did you think of this course? (optional)',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: _reviewSubmitting ? null : () => _submitReview(course),
-                                  child: Text(
-                                    _reviewSubmitting
-                                        ? 'Saving...'
-                                        : course.myReview != null
-                                            ? 'Update Review'
-                                            : 'Submit Review',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('About the Tutor',
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        const SizedBox(height: 8),
+                        Text(course.tutorName,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        if (course.tutorHeadline != null)
+                          Text(course.tutorHeadline!,
+                              style: Theme.of(context).textTheme.bodySmall),
+                        if (course.tutorBio != null) ...[
+                          const SizedBox(height: 6),
+                          Text(course.tutorBio!,
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ],
                       ],
-                      if (course.reviews.isEmpty)
-                        Text('No reviews yet.', style: Theme.of(context).textTheme.bodySmall)
-                      else
-                        for (final review in course.reviews)
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Curriculum',
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        const SizedBox(height: 12),
+                        for (int i = 0; i < course.modules.length; i++)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      review.isMine ? '${review.studentName} (you)' : review.studentName,
-                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                Text(
+                                    'Module ${i + 1}: ${course.modules[i].title}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                for (final lesson in course.modules[i].lessons)
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 8, top: 2),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          lesson.type == 'video'
+                                              ? Icons.play_circle_outline
+                                              : Icons.article_outlined,
+                                          size: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.6),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(lesson.title,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall),
+                                      ],
                                     ),
-                                    Text(
-                                      DateFormat.yMMMd().format(review.createdAt),
-                                      style: Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                StarRatingDisplay(rating: review.rating),
-                                if (review.comment != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(review.comment!, style: Theme.of(context).textTheme.bodySmall),
-                                ],
+                                  ),
                               ],
                             ),
                           ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Reviews',
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        const SizedBox(height: 12),
+                        if (course.isEnrolled) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  course.myReview != null
+                                      ? 'Edit your review'
+                                      : 'Leave a review',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13),
+                                ),
+                                const SizedBox(height: 8),
+                                if (_reviewError != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .error
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(_reviewError!,
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                            fontSize: 12)),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                if (_reviewJustSaved &&
+                                    _reviewError == null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .success
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text('Review saved.',
+                                        style: TextStyle(
+                                            color: Theme.of(context).success,
+                                            fontSize: 12)),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                StarRatingInput(
+                                  value: _reviewRating,
+                                  onChanged: (n) => setState(() {
+                                    _reviewRating = n;
+                                    _reviewJustSaved = false;
+                                  }),
+                                ),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _reviewCommentController,
+                                  maxLines: 3,
+                                  decoration: const InputDecoration(
+                                    hintText:
+                                        'What did you think of this course? (optional)',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    onPressed: _reviewSubmitting
+                                        ? null
+                                        : () => _submitReview(course),
+                                    child: Text(
+                                      _reviewSubmitting
+                                          ? 'Saving...'
+                                          : course.myReview != null
+                                              ? 'Update Review'
+                                              : 'Submit Review',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (course.reviews.isEmpty)
+                          Text('No reviews yet.',
+                              style: Theme.of(context).textTheme.bodySmall)
+                        else
+                          for (final review in course.reviews)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        review.isMine
+                                            ? '${review.studentName} (you)'
+                                            : review.studentName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13),
+                                      ),
+                                      Text(
+                                        DateFormat.yMMMd()
+                                            .format(review.createdAt),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  StarRatingDisplay(rating: review.rating),
+                                  if (review.comment != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(review.comment!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall),
+                                  ],
+                                ],
+                              ),
+                            ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

@@ -40,69 +40,107 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
           }
           if (snapshot.hasError) {
             return ErrorView(
-              message: errorMessageFor(snapshot.error!, fallback: 'Could not load your courses.'),
+              message: errorMessageFor(snapshot.error!,
+                  fallback: 'Could not load your courses.'),
               onRetry: _refresh,
             );
           }
 
           final courses = snapshot.data!;
           if (courses.isEmpty) {
-            return const EmptyView(message: "You haven't enrolled in any courses yet.");
+            return const EmptyView(
+              message: "You haven't enrolled in any courses yet.",
+              icon: Icons.school_outlined,
+            );
           }
+
+          final colors = Theme.of(context).colorScheme;
 
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: screenScrollPadding(context),
               itemCount: courses.length,
               itemBuilder: (context, index) {
                 final course = courses[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Chip(
-                              label: Text(course.category, style: const TextStyle(fontSize: 12)),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            if (course.courseRemoved)
-                              Chip(
-                                label: const Text('No longer available', style: TextStyle(fontSize: 12, color: Colors.white)),
-                                backgroundColor: Theme.of(context).colorScheme.error,
-                                padding: EdgeInsets.zero,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: colors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(Icons.school_outlined,
+                                    color: colors.primary, size: 22),
                               ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(course.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Text('by ${course.tutorName}', style: Theme.of(context).textTheme.bodySmall),
-                        Text(
-                          '${course.lessonCount} lessons · Enrolled ${DateFormat.yMMMd().format(course.enrolledAt)}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: course.courseRemoved
-                                ? null
-                                : () => Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (_) => CourseLearnScreen(courseId: course.courseId)),
-                                    ),
-                            icon: const Icon(Icons.play_circle_outline),
-                            label: const Text('Continue Learning'),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(course.title,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium),
+                                    const SizedBox(height: 2),
+                                    Text('by ${course.tutorName}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall),
+                                  ],
+                                ),
+                              ),
+                              if (course.courseRemoved)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: colors.error,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'Unavailable',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: colors.onError),
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Text(
+                            '${course.lessonCount} lessons · Enrolled ${DateFormat.yMMMd().format(course.enrolledAt)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: course.courseRemoved
+                                  ? null
+                                  : () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) => CourseLearnScreen(
+                                                courseId: course.courseId)),
+                                      ),
+                              icon: const Icon(Icons.play_circle_outline,
+                                  size: 18),
+                              label: const Text('Continue Learning'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
