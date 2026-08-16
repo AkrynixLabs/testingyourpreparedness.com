@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Mirrors app/student/courses/star-rating.tsx's StarRatingDisplay - read
 /// only, rounded to the nearest whole star, no partial-fill stars (the exact
@@ -18,7 +19,9 @@ class StarRatingDisplay extends StatelessWidget {
         return Icon(
           filled ? Icons.star : Icons.star_border,
           size: size,
-          color: filled ? Colors.amber : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+          color: filled
+              ? Colors.amber
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
         );
       }),
     );
@@ -30,7 +33,8 @@ class StarRatingDisplay extends StatelessWidget {
 class StarRatingInput extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
-  const StarRatingInput({super.key, required this.value, required this.onChanged});
+  const StarRatingInput(
+      {super.key, required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +44,27 @@ class StarRatingInput extends StatelessWidget {
         final n = i + 1;
         final filled = n <= value;
         return IconButton(
+          // Kept at Material's real 48x48 minimum tap target (was shrunk to
+          // ~32x32 via VisualDensity.compact/tight constraints, below the
+          // accessible minimum and an easy mis-tap between adjacent stars)
+          // - fixed in the 2026-08-16 accessibility pass.
           padding: const EdgeInsets.all(2),
-          constraints: const BoxConstraints(),
-          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           icon: Icon(
             filled ? Icons.star : Icons.star_border,
             size: 28,
-            color: filled ? Colors.amber : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            color: filled
+                ? Colors.amber
+                : Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.3),
           ),
           tooltip: '$n star${n == 1 ? '' : 's'}',
-          onPressed: () => onChanged(n),
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            onChanged(n);
+          },
         );
       }),
     );
