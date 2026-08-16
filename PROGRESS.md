@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-16
 
+- **Fixed: pressing the browser Back button right after logging in looked like it logged you out.** It never actually did - your session was fine the whole time - but landing back on the login form after a successful sign-in reads exactly like being logged out. Now Back after login takes you straight to your dashboard instead of re-showing the form.
+
 - **"Add School" now actually adds a school** — a super admin creating a school directly gets a real form on its own page (name, location, primary administrator), activated immediately with no plan/payment step, instead of being sent to the public school-signup page meant for schools signing themselves up.
 - **Legal review and production email-key setup are both confirmed done** — closing out two of the standing launch-readiness items.
 

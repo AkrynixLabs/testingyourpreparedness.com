@@ -1012,6 +1012,11 @@ Fixed sites, by pattern:
 - Verified live against the real Neon DB (not just typechecked): a temp script exercised the shared `generateSchoolCode()` post-extraction (confirmed still produces the right `PREFIX-###` shape) and the actual school+primary-admin creation write, confirming `status` lands as `active` and `isPrimary` is set correctly. Cleaned up afterward.
 - `npx tsc --noEmit` clean.
 
+**Fixed 2026-08-16, web — pressing browser Back right after logging in looked like it logged the user out, user-reported (asked by the user whether the mobile app's equivalent bug had a web counterpart).** Not a real logout - the session cookie was never touched - but `/login` used `router.push()` after a successful sign-in and nothing ever redirected away from `/login` when already authenticated, so pressing Back landed the user back on the login form, indistinguishable from a real logout.
+- `proxy.ts`'s matcher now also covers `/login`; visiting it while already authenticated redirects straight to `ROLE_HOME[session.user.role]` instead of rendering the form.
+- `app/login/page.tsx` switched `router.push` to `router.replace` after a successful sign-in, so `/login` never sits in browser history at all post-login.
+- `npx tsc --noEmit` clean. No dev server available to click-test (per this file's standing per-directory dev-lock caveat) - verified by reading the resulting code path against `auth.config.ts`'s session shape instead.
+
 **Also resolved 2026-08-16, user-confirmed**: (1) Brevo keys (`BREVO_API_KEY`/`BREVO_NEWSLETTER_LIST_ID`) and Resend keys are confirmed set in Vercel's production environment variables, not just local `.env` - closes the last open "is this actually live" question for those two integrations. (2) `/terms`/`/privacy` have been through actual legal review - the "draft, pending review" language (already removed from the pages themselves on 2026-08-15) is now also removed from `PROGRESS.md`'s launch-blocker list, since the review this was blocking on has happened.
 
 <!-- BEGIN:nextjs-agent-rules -->

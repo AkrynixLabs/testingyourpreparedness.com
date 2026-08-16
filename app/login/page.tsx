@@ -49,7 +49,9 @@ export default function LoginPage() {
     const sessionResponse = await fetch("/api/auth/session")
     const session = await sessionResponse.json()
     const role = session?.user?.role as string | undefined
-    router.push((role && ROLE_HOME[role]) || "/")
+    // replace, not push - a successful login shouldn't leave /login sitting
+    // in browser history, or pressing Back would re-show the login form.
+    router.replace((role && ROLE_HOME[role]) || "/")
   }
 
   return (
