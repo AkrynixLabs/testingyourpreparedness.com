@@ -1017,6 +1017,11 @@ Fixed sites, by pattern:
 - `app/login/page.tsx` switched `router.push` to `router.replace` after a successful sign-in, so `/login` never sits in browser history at all post-login.
 - `npx tsc --noEmit` clean. No dev server available to click-test (per this file's standing per-directory dev-lock caveat) - verified by reading the resulting code path against `auth.config.ts`'s session shape instead.
 
+**Built 2026-08-16, web — new `components/confirm-dialog.tsx` (`ConfirmDialog`), the web-side counterpart to mobile's `AppDialogs.confirm`.** Wraps the existing `components/ui/alert-dialog.tsx` primitive (title/description/confirmLabel/variant, either a `trigger` prop or fully-controlled `open`/`onOpenChange`, async `onConfirm` support - disables buttons + "Please wait..." while pending, closes on completion).
+- First real usage: `components/dashboard-shell.tsx`'s "Sign out" menu item previously called `signOut()` on a single click with zero confirmation, shared across every role's dashboard shell - now opens a `ConfirmDialog` ("Sign out? You'll need to log in again...") and only signs out on explicit confirm. The dropdown item's `onSelect` calls `preventDefault()` and sets local state to open the dialog (rather than nesting an `AlertDialogTrigger` inside the `DropdownMenuItem`), avoiding the known Radix conflict where a dropdown closing itself unmounts a nested dialog trigger before it can open.
+- Several pages (`student/settings`'s account-deletion dialog, etc.) already had their own hand-rolled `AlertDialog` confirmations before this - left as-is, not migrated, since they already work correctly; natural future candidates to consolidate onto `ConfirmDialog` for consistency.
+- `npx tsc --noEmit` clean.
+
 **Also resolved 2026-08-16, user-confirmed**: (1) Brevo keys (`BREVO_API_KEY`/`BREVO_NEWSLETTER_LIST_ID`) and Resend keys are confirmed set in Vercel's production environment variables, not just local `.env` - closes the last open "is this actually live" question for those two integrations. (2) `/terms`/`/privacy` have been through actual legal review - the "draft, pending review" language (already removed from the pages themselves on 2026-08-15) is now also removed from `PROGRESS.md`'s launch-blocker list, since the review this was blocking on has happened.
 
 <!-- BEGIN:nextjs-agent-rules -->

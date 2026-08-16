@@ -41,6 +41,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 - **Fixed: pressing the browser Back button right after logging in looked like it logged you out.** It never actually did - your session was fine the whole time - but landing back on the login form after a successful sign-in reads exactly like being logged out. Now Back after login takes you straight to your dashboard instead of re-showing the form.
 
+- **Added a reusable confirmation dialog component on web, and used it to fix a real gap: signing out had zero confirmation.** Clicking "Sign out" fired immediately with no "are you sure?" - a single misclick logged you out. Now shows a confirm dialog first, same pattern already used for account deletion elsewhere in the app, and available for other pages to reuse going forward.
+
 - **"Add School" now actually adds a school** — a super admin creating a school directly gets a real form on its own page (name, location, primary administrator), activated immediately with no plan/payment step, instead of being sent to the public school-signup page meant for schools signing themselves up.
 - **Legal review and production email-key setup are both confirmed done** — closing out two of the standing launch-readiness items.
 
