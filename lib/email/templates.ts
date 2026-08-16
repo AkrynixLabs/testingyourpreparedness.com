@@ -331,3 +331,47 @@ export function passwordChangedEmail(input: { name: string }) {
     `),
   }
 }
+
+// Three-email lifecycle for self-service account deletion (added 2026-08-15,
+// student/tutor only - see lib/account-deletion.ts for the full flow).
+// Anonymized, not hard-deleted, once the 30-day window elapses - "removed"
+// wording is deliberately avoided in favor of being precise about what
+// actually happens (login stops working, personal info is wiped; the
+// account isn't a literal missing row afterward).
+export function accountDeletionRequestedEmail(input: { name: string; scheduledDate: string }) {
+  return {
+    subject: "Your TYP account deletion is scheduled",
+    html: wrapper(`
+      ${heading("Deletion scheduled")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, we've received your request to delete your TYP account. It's scheduled for <strong style="color:#142A4F;">${input.scheduledDate}</strong> - 30 days from today.</p>
+      <p style="margin:0 0 20px 0;">Changed your mind, or this wasn't you? Log in before then and cancel it from Settings.</p>
+      ${button("Log In", `${appUrl()}/login`)}
+      <p style="margin:20px 0 0 0; font-size:13px; color:#7A88A0;">After that date, your name, email, and password will be permanently wiped and you won't be able to log in again.</p>
+    `),
+  }
+}
+
+export function accountDeletionCancelledEmail(input: { name: string }) {
+  return {
+    subject: "Your TYP account deletion was cancelled",
+    html: wrapper(`
+      ${heading("Deletion cancelled")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, your scheduled account deletion has been cancelled. Your account is safe and nothing has changed.</p>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">Didn't do this? <a href="${appUrl()}/contact" style="color:#0072D5;">Contact us</a> right away.</p>
+    `),
+  }
+}
+
+// Sent right before the anonymization itself runs (the account's real email
+// address won't be usable to reach afterward - same "send before, not
+// after" ordering as contentAdminAccountRemovedEmail).
+export function accountDeletedEmail(input: { name: string }) {
+  return {
+    subject: "Your TYP account has been deleted",
+    html: wrapper(`
+      ${heading("Account deleted")}
+      <p style="margin:0 0 12px 0;">Hi ${input.name}, as requested 30 days ago, your TYP account has now been deleted. Your name, email, and password have been permanently removed and you can no longer log in.</p>
+      <p style="margin:0; font-size:13px; color:#7A88A0;">This is the last email you'll receive from us regarding this account.</p>
+    `),
+  }
+}

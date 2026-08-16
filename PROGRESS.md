@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-15
 
+- **Students and tutors can now actually delete their own account.** Settings → Security → Danger Zone. It's not instant — a 30-day grace period, with a real confirmation email and a real "cancel this" option the whole time, then a final email once it actually happens. Under the hood this anonymizes rather than erases everything outright (courses a tutor made stay up for their students, purchase records stay intact for accounting) - your personal info (name, email, password) is what actually gets wiped. A tutor with an active course has to remove/unpublish it first. Verified against the real database with real test accounts before shipping, not just typechecked.
+
 - **The "password changed" email now also covers the forgot-password reset flow**, not just changing it from Settings while logged in — the reset-via-emailed-link path was missed in the earlier pass, caught by the user asking directly whether it was covered.
 
 - **6 more account-notification emails added**, closing a broader audit: suspending/reactivating a content admin or tutor, suspending/approving a school, flagging or removing a tutor's course (with the real reason), a content admin's question/assessment being rejected (with the reason), and a "your password was changed" security notice on every role's own settings page. Previously all silent. Purchase-receipt emails and approval-confirmation emails were found too but deliberately held back for a separate, more careful pass — not forgotten, just not done yet.

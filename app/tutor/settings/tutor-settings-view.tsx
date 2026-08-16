@@ -8,7 +8,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { CheckCircle2, AlertTriangle } from "lucide-react"
 import {
   updateProfile,
   updateTutorProfile,
@@ -17,6 +29,8 @@ import {
   resolvePayoutAccount,
   connectPaystackSubaccount,
   disconnectPaystackSubaccount,
+  deleteAccount,
+  cancelDeleteAccount,
 } from "./actions"
 import type { User as UserModel } from "@/lib/generated/prisma/client"
 
@@ -53,6 +67,34 @@ export function TutorSettingsView({
   const [resolvedAccountName, setResolvedAccountName] = useState<string | null>(null)
   const [payoutMessage, setPayoutMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [isResolving, setIsResolving] = useState(false)
+
+  const [scheduledDeletionAt, setScheduledDeletionAt] = useState(user.scheduledDeletionAt)
+  const [deleteMessage, setDeleteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  const handleDeleteAccount = () => {
+    setDeleteMessage(null)
+    startTransition(async () => {
+      try {
+        const { scheduledDeletionAt: date } = await deleteAccount()
+        setScheduledDeletionAt(date)
+      } catch (err) {
+        setDeleteMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to schedule account deletion." })
+      }
+    })
+  }
+
+  const handleCancelDeleteAccount = () => {
+    setDeleteMessage(null)
+    startTransition(async () => {
+      try {
+        await cancelDeleteAccount()
+        setScheduledDeletionAt(null)
+        setDeleteMessage({ type: "success", text: "Account deletion cancelled." })
+      } catch (err) {
+        setDeleteMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to cancel account deletion." })
+      }
+    })
+  }
 
   useEffect(() => {
     if (connectedSubaccountCode) return
@@ -361,6 +403,68 @@ export function TutorSettingsView({
               <Button onClick={handleSavePassword} disabled={isPending}>
                 Update Password
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>Permanently delete your account and personal information.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {deleteMessage && (
+                <p className={`text-sm ${deleteMessage.type === "success" ? "text-green-600" : "text-destructive"}`}>
+                  {deleteMessage.text}
+                </p>
+              )}
+              {scheduledDeletionAt ? (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Your account is scheduled for deletion on{" "}
+                    <strong>{new Date(scheduledDeletionAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</strong>.
+                    You can still cancel this before then.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Deleting your account gives you a 30-day window to change your mind. After that, your name, email,
+                  and password are permanently removed and you won&apos;t be able to log in again. Any published
+                  courses need to be removed or unpublished first.
+                </p>
+              )}
+              {scheduledDeletionAt ? (
+                <Button variant="outline" onClick={handleCancelDeleteAccount} disabled={isPending}>
+                  {isPending ? "Cancelling..." : "Cancel Deletion"}
+                </Button>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isPending}>
+                      Delete My Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This schedules your account for deletion in 30 days. You&apos;ll get a confirmation email now
+                        and can cancel any time before then from this page. After 30 days, your name, email, and
+                        password are permanently removed. This will fail if you still have any active courses.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete My Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

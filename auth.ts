@@ -39,6 +39,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({ where: { email } })
         if (!user) return null
+        // Belt-and-suspenders alongside the anonymized email itself no
+        // longer matching what anyone would type (see lib/account-deletion.ts) -
+        // explicit here so this doesn't rely solely on that side effect.
+        if (user.deletedAt) return null
 
         const passwordsMatch = await bcrypt.compare(password, user.passwordHash)
         if (!passwordsMatch) return null

@@ -81,7 +81,7 @@ Auth is real Auth.js (Credentials provider + JWT sessions, no adapter — own Po
 
 Short summary — see [`docs/data-model.md`](./docs/data-model.md) for the full field-by-field version, and [`docs/build-log.md`](./docs/build-log.md) for the reasoning behind each shape.
 
-- **User** — base identity; `role` enum (`super_admin | content_admin | school_admin | student | tutor`); email/password.
+- **User** — base identity; `role` enum (`super_admin | content_admin | school_admin | student | tutor`); email/password. **Decided/built 2026-08-15**: real self-service account deletion for student/tutor (`deletionRequestedAt`/`scheduledDeletionAt`/`deletedAt`, all nullable) — a 30-day grace period, cancellable, with 3 new emails. Deliberately **anonymizes, not hard-deletes** — `Course.tutorId`/`Enrollment.studentId` are `ON DELETE RESTRICT` in the live schema, so a real hard delete would either fail for anyone with real history or require loosening those constraints, which has real consequences for other people's data (an enrolled student's course disappearing because their tutor deleted their account) — confirmed with the user rather than decided unilaterally. See `lib/account-deletion.ts` and `docs/build-log.md`'s 2026-08-15 entry.
 - **School** — name, GES reg. number, region/district/town/address, contact, `status` (`active|pending|suspended`), `ownershipType` + `educationLevel` (two separate fields).
 - **Student** — belongs to a `School` (nullable for independent students), class/form; independent students carry a `Guardian` relation + subscription.
 - **Class/Form** — canonical naming "Form N[A/B/C]"; identity is `(schoolId, form, section, academicYear)`, enforced by a compound unique constraint.

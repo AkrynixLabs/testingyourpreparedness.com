@@ -38,6 +38,20 @@ model User {
   resetToken          String?   @unique
   resetTokenExpiresAt DateTime?
 
+  // Self-service account deletion (added 2026-08-15) - student/tutor only.
+  // A 30-day grace period between request and actual anonymization, real
+  // cancel option in between (see lib/account-deletion.ts). deletedAt marks
+  // an account as already anonymized (name/email/password overwritten,
+  // login blocked) - deliberately anonymized, not hard-deleted, since
+  // Course.tutorId/Enrollment.studentId are ON DELETE RESTRICT and a real
+  // hard delete would either fail outright for anyone with history or
+  // require changing those constraints, which has real consequences for
+  // other people's data (an enrolled student's course vanishing under them)
+  // - confirmed with the user rather than decided unilaterally.
+  deletionRequestedAt DateTime?
+  scheduledDeletionAt DateTime?
+  deletedAt           DateTime?
+
   schoolAdmin         SchoolAdmin?
   student             Student?
   contentAdminProfile ContentAdminProfile?

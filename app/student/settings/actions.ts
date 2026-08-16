@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import type { GuardianRelation } from "@/lib/generated/prisma/client"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { passwordChangedEmail } from "@/lib/email/templates"
+import { requestAccountDeletion, cancelAccountDeletion } from "@/lib/account-deletion"
 
 async function resolveStudent() {
   const session = await auth()
@@ -63,4 +64,17 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
 
   const { subject, html } = passwordChangedEmail({ name: user.name })
   await sendEmailBestEffort({ to: user.email, subject, html })
+}
+
+export async function deleteAccount() {
+  const { userId } = await resolveStudent()
+  const { scheduledDeletionAt } = await requestAccountDeletion(userId)
+  revalidatePath("/student/settings")
+  return { scheduledDeletionAt }
+}
+
+export async function cancelDeleteAccount() {
+  const { userId } = await resolveStudent()
+  await cancelAccountDeletion(userId)
+  revalidatePath("/student/settings")
 }
