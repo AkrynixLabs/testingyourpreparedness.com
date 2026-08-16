@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
+import '../widgets/skeleton.dart';
 import 'course_catalog_screen.dart';
 import 'dashboard_screen.dart';
 import 'exam_taking_screen.dart';
@@ -27,28 +31,111 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int _index = 0;
+  DateTime? _lastBackPressAt;
+  late final AnimationController _tabFadeController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Drives a quick crossfade on tab switch - deliberately a single
+    // persistent IndexedStack underneath (not an AnimatedSwitcher swapping
+    // widget instances), since each tab does its own async fetch on
+    // initState and would otherwise re-fetch every time it's revisited.
+    _tabFadeController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 180))
+      ..value = 1;
+  }
+
+  @override
+  void dispose() {
+    _tabFadeController.dispose();
+    super.dispose();
+  }
+
+  void _selectTab(int i) {
+    if (i == _index) return;
+    HapticFeedback.selectionClick();
+    setState(() => _index = i);
+    _tabFadeController.forward(from: 0);
+  }
+
+  // HomeScreen sits alone at the root of the navigation stack (AuthGate/
+  // LoginScreen both reach it via pushReplacement, never push) - with no
+  // nested Navigator for the bottom-nav tabs, a bare hardware/gesture back
+  // press here previously had nothing to pop, so Flutter's default behavior
+  // killed the Activity outright. Relaunching then cold-started the app from
+  // main() again - if that happened to land on AuthGate before the stored
+  // token/session was ready to check, or any transient failure hit on that
+  // relaunch, it looked exactly like "the back button logged me out," even
+  // though the real problem was the app exiting at all, not any lost data.
+  // Now: back on a non-Exams tab returns to the first tab; back on the
+  // first tab needs a second press within 2s (a "press back again to exit"
+  // prompt, the standard Android pattern) before it actually calls
+  // SystemNavigator.pop() - so a stray back press never exits/relaunches
+  // the app by accident.
+  Future<void> _handleBack() async {
+    if (_index != 0) {
+      _selectTab(0);
+      return;
+    }
+
+    final now = DateTime.now();
+    if (_lastBackPressAt == null ||
+        now.difference(_lastBackPressAt!) > const Duration(seconds: 2)) {
+      _lastBackPressAt = now;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Press back again to exit'),
+            duration: Duration(seconds: 2)),
+      );
+      return;
+    }
+
+    SystemNavigator.pop();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: [
-          _ExamsTab(user: widget.user),
-          const DashboardScreen(),
-          const CourseCatalogScreen(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.quiz_outlined), selectedIcon: Icon(Icons.quiz), label: 'Exams'),
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Courses'),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        body: FadeTransition(
+          opacity: CurvedAnimation(
+              parent: _tabFadeController, curve: Curves.easeOut),
+          child: IndexedStack(
+            index: _index,
+            children: [
+              _ExamsTab(user: widget.user),
+              const DashboardScreen(),
+              const CourseCatalogScreen(),
+            ],
+          ),
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: _selectTab,
+          destinations: const [
+            NavigationDestination(
+                icon: Icon(Icons.quiz_outlined),
+                selectedIcon: Icon(Icons.quiz),
+                label: 'Exams'),
+            NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                selectedIcon: Icon(Icons.dashboard),
+                label: 'Dashboard'),
+            NavigationDestination(
+                icon: Icon(Icons.school_outlined),
+                selectedIcon: Icon(Icons.school),
+                label: 'Courses'),
+          ],
+        ),
       ),
     );
   }
@@ -62,7 +149,8 @@ class _ExamsTab extends StatefulWidget {
   State<_ExamsTab> createState() => _ExamsTabState();
 }
 
-class _ExamsTabState extends State<_ExamsTab> with SingleTickerProviderStateMixin {
+class _ExamsTabState extends State<_ExamsTab>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late Future<StudentExams> _examsFuture;
 
@@ -85,6 +173,16 @@ class _ExamsTabState extends State<_ExamsTab> with SingleTickerProviderStateMixi
   }
 
   Future<void> _logout() async {
+    final confirmed = await AppDialogs.confirm(
+      context,
+      title: 'Log out?',
+      message: "You'll need to log in again to access your exams and courses.",
+      confirmLabel: 'Log Out',
+      isDestructive: true,
+      icon: Icons.logout,
+    );
+    if (!confirmed || !mounted) return;
+
     await ApiClient.instance.logout();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -125,11 +223,13 @@ class _ExamsTabState extends State<_ExamsTab> with SingleTickerProviderStateMixi
         future: _examsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingView();
+            return const ExamListSkeleton();
           }
           if (snapshot.hasError) {
             return ErrorView(
-              message: errorMessageFor(snapshot.error!, fallback: 'Could not load your exams. Pull down to try again.'),
+              message: errorMessageFor(snapshot.error!,
+                  fallback:
+                      'Could not load your exams. Pull down to try again.'),
               onRetry: _refresh,
             );
           }
@@ -170,31 +270,21 @@ class _AvailableList extends StatelessWidget {
             ? '${exam.attempts} attempt${exam.attempts == 1 ? '' : 's'} so far'
             : '${exam.attempts}/${exam.maxAttempts} attempts used';
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            title: Text(exam.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${exam.subjectName} · ${exam.questionCount} questions · ${exam.duration} min'),
-                  const SizedBox(height: 4),
-                  Text(attemptsLabel),
-                  if (exam.deadline != null)
-                    Text('Deadline: ${DateFormat.yMMMd().add_jm().format(exam.deadline!.toLocal())}'),
-                ],
-              ),
-            ),
-            trailing: exam.difficulty != null ? _DifficultyChip(difficulty: exam.difficulty!) : null,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ExamTakingScreen(assessmentId: exam.assessmentId)),
-              );
-            },
+        return _ExamCard(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (_) =>
+                    ExamTakingScreen(assessmentId: exam.assessmentId)),
           ),
+          leadingIcon: Icons.play_circle_outline,
+          title: exam.title,
+          difficulty: exam.difficulty,
+          rows: [
+            '${exam.subjectName} · ${exam.questionCount} questions · ${exam.duration} min',
+            attemptsLabel,
+            if (exam.deadline != null)
+              'Deadline ${DateFormat.yMMMd().add_jm().format(exam.deadline!.toLocal())}',
+          ],
         );
       },
     );
@@ -215,24 +305,14 @@ class _ScheduledList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final exam = items[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            title: Text(exam.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${exam.subjectName} · ${exam.questionCount} questions · ${exam.duration} min'),
-                  const SizedBox(height: 4),
-                  Text('Opens: ${DateFormat.yMMMd().add_jm().format(exam.startDate.toLocal())}'),
-                ],
-              ),
-            ),
-            trailing: exam.difficulty != null ? _DifficultyChip(difficulty: exam.difficulty!) : null,
-          ),
+        return _ExamCard(
+          leadingIcon: Icons.schedule_outlined,
+          title: exam.title,
+          difficulty: exam.difficulty,
+          rows: [
+            '${exam.subjectName} · ${exam.questionCount} questions · ${exam.duration} min',
+            'Opens ${DateFormat.yMMMd().add_jm().format(exam.startDate.toLocal())}',
+          ],
         );
       },
     );
@@ -253,48 +333,131 @@ class _CompletedList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final exam = items[index];
-        final percent = exam.totalMarks == 0 ? 0 : (exam.score / exam.totalMarks * 100).round();
-        final minutes = exam.timeSpentSeconds == null ? null : (exam.timeSpentSeconds! / 60).round();
+        final percent = exam.totalMarks == 0
+            ? 0
+            : (exam.score / exam.totalMarks * 100).round();
+        final minutes = exam.timeSpentSeconds == null
+            ? null
+            : (exam.timeSpentSeconds! / 60).round();
+        final colors = Theme.of(context).colorScheme;
+        final scoreColor =
+            percent >= 50 ? Theme.of(context).success : colors.error;
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            title: Text(exam.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(exam.subjectName),
-                  const SizedBox(height: 4),
-                  Text('Submitted: ${DateFormat.yMMMd().add_jm().format(exam.submittedAt.toLocal())}'),
-                  if (minutes != null) Text('Time spent: $minutes min'),
-                ],
+        return _ExamCard(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (_) => ResultsScreen(attemptId: exam.attemptId)),
+          ),
+          leadingIcon: Icons.check_circle_outline,
+          title: exam.title,
+          rows: [
+            exam.subjectName,
+            'Submitted ${DateFormat.yMMMd().add_jm().format(exam.submittedAt.toLocal())}',
+            if (minutes != null) 'Time spent $minutes min',
+          ],
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$percent%',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: scoreColor, fontWeight: FontWeight.w800),
               ),
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '$percent%',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                Text('${exam.score}/${exam.totalMarks}', style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ResultsScreen(attemptId: exam.attemptId)),
-              );
-            },
+              Text('${exam.score}/${exam.totalMarks}',
+                  style: Theme.of(context).textTheme.bodySmall),
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+/// Shared modern list-item shape for all 3 exam tabs - a leading icon badge,
+/// title + stacked metadata rows, an optional difficulty chip, and an
+/// optional trailing slot (used for the completed tab's score) - replaces
+/// the earlier plain Card+ListTile look with real visual hierarchy.
+class _ExamCard extends StatelessWidget {
+  final VoidCallback? onTap;
+  final IconData leadingIcon;
+  final String title;
+  final String? difficulty;
+  final List<String> rows;
+  final Widget? trailing;
+
+  const _ExamCard({
+    this.onTap,
+    required this.leadingIcon,
+    required this.title,
+    this.difficulty,
+    required this.rows,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Card(
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(leadingIcon, color: colors.primary, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                              child: Text(title,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium)),
+                          if (difficulty != null) ...[
+                            const SizedBox(width: 8),
+                            _DifficultyChip(difficulty: difficulty!),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      for (final row in rows)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(row,
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ),
+                    ],
+                  ),
+                ),
+                if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+                if (onTap != null && trailing == null) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right,
+                      color: colors.onSurfaceVariant, size: 20),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -306,8 +469,9 @@ class _DifficultyChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Chip(
-      label: Text(difficulty, style: const TextStyle(fontSize: 12)),
+      label: Text(difficulty),
       padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }

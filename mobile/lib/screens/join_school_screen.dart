@@ -4,7 +4,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/user.dart';
 import '../services/api_client.dart';
-import 'home_screen.dart';
+import '../widgets/async_state_views.dart';
+import 'login_screen.dart';
 
 /// Mirrors the web app's app/join two-step flow: verify a school invite
 /// code, then fill in name/email/password to create a school-provisioned
@@ -23,6 +24,7 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
   bool _loading = false;
   String? _errorText;
   VerifiedSchool? _school;
+  JoinSchoolResult? _result;
 
   final _codeController = TextEditingController();
   final _firstNameController = TextEditingController();
@@ -51,7 +53,8 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
       _errorText = null;
     });
     try {
-      final school = await ApiClient.instance.verifySchoolCode(_codeController.text.trim());
+      final school = await ApiClient.instance
+          .verifySchoolCode(_codeController.text.trim());
       setState(() {
         _school = school;
         _step = 2;
@@ -59,7 +62,8 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
     } on ApiException catch (e) {
       setState(() => _errorText = e.message);
     } catch (_) {
-      setState(() => _errorText = 'Could not reach TYP. Check your connection and try again.');
+      setState(() => _errorText =
+          'Could not reach TYP. Check your connection and try again.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -76,7 +80,7 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
       _errorText = null;
     });
     try {
-      final user = await ApiClient.instance.joinSchool(
+      final result = await ApiClient.instance.joinSchool(
         schoolCode: _codeController.text.trim(),
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -86,13 +90,18 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
         subscribeNewsletter: _subscribeNewsletter,
       );
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
-      );
+      // No token is issued anymore - joining always lands "pending" until a
+      // school admin approves it, so this shows a confirmation step instead
+      // of navigating straight into HomeScreen the way it used to.
+      setState(() {
+        _result = result;
+        _step = 3;
+      });
     } on ApiException catch (e) {
       setState(() => _errorText = e.message);
     } catch (_) {
-      setState(() => _errorText = 'Could not reach TYP. Check your connection and try again.');
+      setState(() => _errorText =
+          'Could not reach TYP. Check your connection and try again.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -110,6 +119,16 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_step == 3 && _result != null) {
+      return _PendingApprovalStep(
+        result: _result!,
+        onDone: () => Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Join Your School')),
       body: SafeArea(
@@ -119,15 +138,7 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (_errorText != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(_errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                ),
+                ErrorBanner(message: _errorText!),
                 const SizedBox(height: 16),
               ],
               if (_step == 1)
@@ -141,11 +152,14 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
                   passwordController: _passwordController,
                   confirmPasswordController: _confirmPasswordController,
                   obscurePassword: _obscurePassword,
-                  onToggleObscurePassword: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onToggleObscurePassword: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   agreeTerms: _agreeTerms,
-                  onAgreeTermsChanged: (v) => setState(() => _agreeTerms = v ?? false),
+                  onAgreeTermsChanged: (v) =>
+                      setState(() => _agreeTerms = v ?? false),
                   subscribeNewsletter: _subscribeNewsletter,
-                  onSubscribeNewsletterChanged: (v) => setState(() => _subscribeNewsletter = v ?? false),
+                  onSubscribeNewsletterChanged: (v) =>
+                      setState(() => _subscribeNewsletter = v ?? false),
                   onOpenTerms: () => _openLegalPage('/terms'),
                   onOpenPrivacy: () => _openLegalPage('/privacy'),
                 ),
@@ -153,7 +167,9 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
               if (_step == 1)
                 ElevatedButton(
                   onPressed: _loading ? null : _verifyCode,
-                  child: _loading ? const _ButtonSpinner() : const Text('Verify Code'),
+                  child: _loading
+                      ? const _ButtonSpinner()
+                      : const Text('Verify Code'),
                 )
               else
                 Row(
@@ -171,7 +187,9 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: (_loading || !_agreeTerms) ? null : _submit,
-                        child: _loading ? const _ButtonSpinner() : const Text('Complete Registration'),
+                        child: _loading
+                            ? const _ButtonSpinner()
+                            : const Text('Complete Registration'),
                       ),
                     ),
                   ],
@@ -182,7 +200,6 @@ class _JoinSchoolScreenState extends State<JoinSchoolScreen> {
       ),
     );
   }
-
 }
 
 class _DetailsStep extends StatelessWidget {
@@ -226,19 +243,23 @@ class _DetailsStep extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
-              Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary),
+              Icon(Icons.check_circle,
+                  color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(school.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    Text('${school.town}, ${school.region}', style: Theme.of(context).textTheme.bodySmall),
+                    Text(school.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text('${school.town}, ${school.region}',
+                        style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
               ),
@@ -277,7 +298,9 @@ class _DetailsStep extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Create Password *',
             suffixIcon: IconButton(
-              icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                  obscurePassword ? Icons.visibility_off : Icons.visibility),
+              tooltip: obscurePassword ? 'Show password' : 'Hide password',
               onPressed: onToggleObscurePassword,
             ),
           ),
@@ -302,19 +325,25 @@ class _DetailsStep extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 12),
                 child: RichText(
                   text: TextSpan(
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface),
                     children: [
                       const TextSpan(text: 'I agree to the '),
                       TextSpan(
                         text: 'Terms of Service',
-                        style: TextStyle(color: Theme.of(context).colorScheme.primary, decoration: TextDecoration.underline),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline),
                         recognizer: TapGestureRecognizer()..onTap = onOpenTerms,
                       ),
                       const TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
-                        style: TextStyle(color: Theme.of(context).colorScheme.primary, decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()..onTap = onOpenPrivacy,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = onOpenPrivacy,
                       ),
                     ],
                   ),
@@ -323,23 +352,28 @@ class _DetailsStep extends StatelessWidget {
             ),
           ],
         ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Checkbox(value: subscribeNewsletter, onChanged: onSubscribeNewsletterChanged),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: GestureDetector(
-                  onTap: () => onSubscribeNewsletterChanged(!subscribeNewsletter),
-                  child: Text(
-                    'Send me marketing emails and feature updates (optional)',
-                    style: Theme.of(context).textTheme.bodySmall,
+        MergeSemantics(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Checkbox(
+                  value: subscribeNewsletter,
+                  onChanged: onSubscribeNewsletterChanged),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: GestureDetector(
+                    onTap: () =>
+                        onSubscribeNewsletterChanged(!subscribeNewsletter),
+                    child: Text(
+                      'Send me marketing emails and feature updates (optional)',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -352,23 +386,84 @@ class _CodeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Center(
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(18)),
+            child: Icon(Icons.key_outlined, color: colors.primary, size: 30),
+          ),
+        ),
+        const SizedBox(height: 20),
         Text(
           'Enter the school code provided by your school',
+          textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         TextField(
           controller: controller,
           textCapitalization: TextCapitalization.characters,
           textAlign: TextAlign.center,
           maxLength: 20,
           style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
-          decoration: const InputDecoration(labelText: 'School Code *', hintText: 'e.g., ACH-001'),
+          decoration: const InputDecoration(
+              labelText: 'School Code', hintText: 'e.g., ACH-001'),
         ),
       ],
+    );
+  }
+}
+
+/// Shown after a successful join submission - mirrors app/join/page.tsx's
+/// new step-3 state. There's no token/account to land in yet, just a
+/// confirmation that the request is sitting in the school's approval queue.
+class _PendingApprovalStep extends StatelessWidget {
+  final JoinSchoolResult result;
+  final VoidCallback onDone;
+  const _PendingApprovalStep({required this.result, required this.onDone});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.hourglass_top,
+                    size: 56, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(height: 20),
+                Text(
+                  'Request submitted',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '${result.message}\n\nYou\'ll be able to log in once ${result.schoolName} approves your request.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 28),
+                ElevatedButton(
+                    onPressed: onDone, child: const Text('Back to Log In')),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

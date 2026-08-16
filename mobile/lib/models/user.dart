@@ -44,6 +44,22 @@ class VerifiedSchool {
       );
 }
 
+/// Mirrors POST /api/mobile/auth/join's response as of 2026-08-16 - joining
+/// no longer auto-logs the student in. It now always lands in a pending
+/// state until a school admin approves it from their own review queue, so
+/// there's no token/user here at all, just a confirmation to show.
+class JoinSchoolResult {
+  final String schoolName;
+  final String message;
+
+  const JoinSchoolResult({required this.schoolName, required this.message});
+
+  factory JoinSchoolResult.fromJson(Map<String, dynamic> json) => JoinSchoolResult(
+        schoolName: json['schoolName'] as String,
+        message: json['message'] as String,
+      );
+}
+
 /// Mirrors GET /api/mobile/me's response. Not required for v1 but built
 /// alongside the other models since the endpoint already exists.
 class StudentProfile {
@@ -53,6 +69,10 @@ class StudentProfile {
   final String enrollmentType;
   final String? schoolName;
   final String? className;
+  /// Non-null while a self-service account deletion is pending (set by
+  /// POST /api/mobile/account/delete) - same 30-day-grace-period field the
+  /// web Settings page reads off the User row.
+  final DateTime? scheduledDeletionAt;
 
   const StudentProfile({
     required this.id,
@@ -61,6 +81,7 @@ class StudentProfile {
     required this.enrollmentType,
     this.schoolName,
     this.className,
+    this.scheduledDeletionAt,
   });
 
   factory StudentProfile.fromJson(Map<String, dynamic> json) => StudentProfile(
@@ -70,5 +91,7 @@ class StudentProfile {
         enrollmentType: json['enrollmentType'] as String,
         schoolName: json['schoolName'] as String?,
         className: json['className'] as String?,
+        scheduledDeletionAt:
+            json['scheduledDeletionAt'] != null ? DateTime.parse(json['scheduledDeletionAt'] as String) : null,
       );
 }
