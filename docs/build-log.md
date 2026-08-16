@@ -997,6 +997,13 @@ Fixed sites, by pattern:
 - **Verified live against the real Neon DB with real seeded schools/admins, not just typechecked**: a temp script (`npx tsx`) confirmed all of - join creates `pending` not `active`; a wrong school's admin is correctly rejected from approving (`Not authorized`, tenant-scoping proven, not assumed); the correct admin's approval sets `active` and a double-approve is correctly rejected (`already been resolved`); reject genuinely hard-deletes the `User` row (confirmed via a post-reject lookup returning `null`). Used the real live `ACH-001`/`WES-001` seeded schools rather than creating throwaway ones. All test rows cleaned up afterward, scratch script deleted.
 - `npx tsc --noEmit` clean throughout.
 
+**Built 2026-08-16 — mobile API routes for self-service account deletion, closing the gap found by a full parity audit of the whole session's web work.** Found via `ListAgents`/`SendMessage` round-trip with the mobile session, not assumed: their in-progress uncommitted mobile files were confirmed to be an unrelated visual-restyle pass, and account deletion was confirmed as a real, untracked gap - nobody had built it, on either side.
+- `POST /api/mobile/account/delete` and `POST /api/mobile/account/delete/cancel` (new) wrap the exact same `lib/account-deletion.ts` functions the web Settings pages already call - `requestAccountDeletion`/`cancelAccountDeletion` - same `authenticateMobileRequest` pattern as every other mobile route, no new business logic duplicated.
+- `GET /api/mobile/me` gained a `scheduledDeletionAt` field so the client can show the same "pending deletion, cancel here" state the web Settings page shows.
+- Deliberately backend-only this pass - the actual Flutter delete-account screen is handed to the mobile session next (real destructive-action UI, correctly not something to build without them), now with real, live-tested endpoints to call instead of nothing.
+- Verified live (not just typechecked): a temp script called the actual route handlers directly with a real signed mobile JWT - no-token correctly 401s, a real delete request returns the scheduled date and is reflected in `/me`, cancel correctly clears it and `/me` reflects that too. Test row cleaned up after.
+- `npx tsc --noEmit` clean.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

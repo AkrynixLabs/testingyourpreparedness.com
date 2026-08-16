@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-16
 
+- **Account deletion now has real backend support on mobile too**, not just web — the API side is done and tested; the actual "delete my account" screen in the app itself is the mobile team's next task.
+
 - **Joining a school by code now needs real approval from that school's admin, closing a real security gap.** Previously, anyone who knew or correctly guessed a school's code (which turned out to be genuinely guessable - short, partly derived from the school's own name) could join instantly with zero notice to the school. Now it creates a pending request instead: the school gets a real email and a review queue on their Students page (Approve/Reject), and the new account can't log in at all until approved. Web side is done and verified against the live database; the matching mobile app screens are handed off to the mobile team as a fast-follow.
 
 - **Mobile app splash screen now stays on screen for a proper ~3 seconds instead of flashing by instantly.** The earlier fix only slowed down the icon's own zoom/fade animation, but the splash was still being dismissed the moment the app's first screen started rendering, which happens almost immediately. Now the app deliberately holds the splash up for a minimum 3 seconds (or however long the login-check takes, if that's longer) before showing the login or home screen. Can't be visually confirmed in this environment (no phone/emulator available here) - worth a quick look on a real device to make sure the timing feels right.

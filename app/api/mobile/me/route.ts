@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
   const student = await prisma.student.findUnique({
     where: { userId: authUser.id },
-    include: { school: { select: { name: true } }, class: { select: { displayName: true } } },
+    include: { school: { select: { name: true } }, class: { select: { displayName: true } }, user: true },
   })
   if (!student) {
     return NextResponse.json({ error: "Student profile not found." }, { status: 404 })
@@ -23,5 +23,8 @@ export async function GET(request: Request) {
     enrollmentType: student.enrollmentType,
     schoolName: student.school?.name ?? null,
     className: student.class?.displayName ?? null,
+    // Added 2026-08-16 alongside mobile account deletion - null unless a
+    // deletion is currently pending, same field the web Settings page reads.
+    scheduledDeletionAt: student.user.scheduledDeletionAt,
   })
 }
