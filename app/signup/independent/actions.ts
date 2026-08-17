@@ -4,8 +4,7 @@ import bcrypt from "bcryptjs"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Role, type BillingCycle } from "@/lib/generated/prisma/client"
-import { initializeTransaction } from "@/lib/payments/paystack"
-import { generatePaymentId } from "@/lib/payments/ids"
+import { initializeSubscriptionCheckoutForStudent } from "@/lib/student/subscription"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
@@ -129,7 +128,7 @@ export async function initializeStudentCheckout(input: InitializeStudentCheckout
   await enforceRateLimit("signup")
 
   const session = await auth()
-  const student = await prisma.student.findUnique({ where: { id: input.studentId }, include: { user: true, subscription: true } })
+  const student = await prisma.student.findUnique({ where: { id: input.studentId }, include: { subscription: true } })
   if (!student) throw new Error("Student not found.")
 
   if (session?.user) {
@@ -139,33 +138,11 @@ export async function initializeStudentCheckout(input: InitializeStudentCheckout
     throw new Error("Not authorized")
   }
 
-  const plan = await prisma.subscriptionPlan.findUnique({ where: { id: input.planId } })
-  if (!plan || plan.audience !== "independent") throw new Error("Invalid plan.")
-
-  const amountGhs =
-    input.billingCycle === "yearly" ? plan.yearlyPrice : input.billingCycle === "term" ? plan.termPrice : plan.monthlyPrice
-  if (!amountGhs) throw new Error(`This plan doesn't support ${input.billingCycle} billing.`)
-
-  const paymentId = generatePaymentId()
-  await prisma.payment.create({
-    data: {
-      id: paymentId,
-      amount: amountGhs,
-      status: "pending",
-      type: "new",
-      method: "card",
-      paystackReference: paymentId,
-    },
-  })
-
   const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
-  const { authorizationUrl } = await initializeTransaction({
-    email: student.user.email,
-    amountGhs,
-    reference: paymentId,
-    callbackUrl: `${appUrl}/signup/independent/checkout/callback`,
-    metadata: { studentId: student.id, planId: plan.id, billingCycle: input.billingCycle },
-  })
-
-  return { authorizationUrl }
+  return initializeSubscriptionCheckoutForStudent(
+    input.studentId,
+    input.planId,
+    input.billingCycle,
+    `${appUrl}/signup/independent/checkout/callback`
+  )
 }

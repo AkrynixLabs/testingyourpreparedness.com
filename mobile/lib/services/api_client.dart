@@ -7,6 +7,7 @@ import '../models/dashboard.dart';
 import '../models/exam.dart';
 import '../models/exam_attempt.dart';
 import '../models/result_detail.dart';
+import '../models/subscription.dart';
 import '../models/user.dart';
 import '../screens/login_screen.dart';
 import 'navigation_service.dart';
@@ -278,6 +279,41 @@ class ApiClient {
     final body = await _authorizedRequest(
       'GET',
       '/api/mobile/courses/purchase/verify?reference=${Uri.encodeQueryComponent(reference)}',
+      fallback: 'Could not confirm your payment.',
+    );
+    return body['status'] as String;
+  }
+
+  /// Mirrors app/student/settings/page.tsx's subscriptionInfo - throws a 400
+  /// ApiException for a school-provisioned student (no personal billing),
+  /// which UpgradePlanScreen shows as a dedicated message rather than a
+  /// generic error.
+  Future<SubscriptionInfo> getSubscriptionInfo() async {
+    final body = await _authorizedRequest(
+      'GET',
+      '/api/mobile/subscription',
+      fallback: 'Could not load your subscription.',
+    );
+    return SubscriptionInfo.fromJson(body);
+  }
+
+  Future<SubscriptionCheckoutInit> initializeSubscriptionCheckout({
+    required String planId,
+    required String billingCycle,
+  }) async {
+    final body = await _authorizedRequest(
+      'POST',
+      '/api/mobile/subscription/checkout',
+      body: {'planId': planId, 'billingCycle': billingCycle},
+      fallback: 'Could not start checkout.',
+    );
+    return SubscriptionCheckoutInit.fromJson(body);
+  }
+
+  Future<String> verifySubscriptionCheckout(String reference) async {
+    final body = await _authorizedRequest(
+      'GET',
+      '/api/mobile/subscription/verify?reference=${Uri.encodeQueryComponent(reference)}',
       fallback: 'Could not confirm your payment.',
     );
     return body['status'] as String;

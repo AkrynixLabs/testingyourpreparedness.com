@@ -5,17 +5,15 @@ import 'package:intl/intl.dart';
 import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
-import '../services/push_notification_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
 import '../widgets/skeleton.dart';
 import 'course_catalog_screen.dart';
 import 'dashboard_screen.dart';
 import 'exam_taking_screen.dart';
-import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
+import 'upgrade_plan_screen.dart';
 
 /// Top-level shell once logged in - a bottom nav across the exam-prep loop
 /// (v1's original scope), the dashboard (added 2026-08-15, closing the
@@ -113,9 +111,10 @@ class _HomeScreenState extends State<HomeScreen>
           child: IndexedStack(
             index: _index,
             children: [
-              _ExamsTab(user: widget.user),
               const DashboardScreen(),
+              _ExamsTab(user: widget.user),
               const CourseCatalogScreen(),
+              const ProfileScreen(),
             ],
           ),
         ),
@@ -124,17 +123,21 @@ class _HomeScreenState extends State<HomeScreen>
           onDestinationSelected: _selectTab,
           destinations: const [
             NavigationDestination(
-                icon: Icon(Icons.quiz_outlined),
-                selectedIcon: Icon(Icons.quiz),
-                label: 'Exams'),
-            NavigationDestination(
                 icon: Icon(Icons.dashboard_outlined),
                 selectedIcon: Icon(Icons.dashboard),
                 label: 'Dashboard'),
             NavigationDestination(
+                icon: Icon(Icons.quiz_outlined),
+                selectedIcon: Icon(Icons.quiz),
+                label: 'Exams'),
+            NavigationDestination(
                 icon: Icon(Icons.school_outlined),
                 selectedIcon: Icon(Icons.school),
                 label: 'Courses'),
+            NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: 'Profile'),
           ],
         ),
       ),
@@ -173,26 +176,6 @@ class _ExamsTabState extends State<_ExamsTab>
     await _examsFuture;
   }
 
-  Future<void> _logout() async {
-    final confirmed = await AppDialogs.confirm(
-      context,
-      title: 'Log out?',
-      message: "You'll need to log in again to access your exams and courses.",
-      confirmLabel: 'Log Out',
-      isDestructive: true,
-      icon: Icons.logout,
-    );
-    if (!confirmed || !mounted) return;
-
-    await PushNotificationService.instance.unregisterCurrentDevice();
-    await ApiClient.instance.logout();
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -200,16 +183,11 @@ class _ExamsTabState extends State<_ExamsTab>
         title: Text('Hi, ${widget.user.name.split(' ').first}'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline),
-            tooltip: 'Profile',
+            icon: const Icon(Icons.workspace_premium_outlined),
+            tooltip: 'Upgrade Plan',
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              MaterialPageRoute(builder: (_) => const UpgradePlanScreen()),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log out',
-            onPressed: _logout,
           ),
         ],
         bottom: TabBar(
