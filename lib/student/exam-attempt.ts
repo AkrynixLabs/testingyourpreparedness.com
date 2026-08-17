@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import type { Student } from "@/lib/generated/prisma/client"
+import { checkAndAwardAchievements } from "./achievements"
+import { sendPushToStudentBestEffort } from "@/lib/push/fcm"
 
 // Extracted from app/student/exams/[id]/start/{page,actions}.tsx (unchanged
 // logic) so the mobile exam-taking flow (app/api/mobile/exams/[id]/start,
@@ -206,6 +208,24 @@ export async function submitExamAttempt(
       grade,
       timeSpentSeconds,
     },
+  })
+
+  // Fire-and-forget from the caller's perspective (return value discarded) -
+  // newly-earned badges surface next time the student visits Progress/
+  // Profile/Leaderboard, not as an immediate toast on submit. Surfacing a
+  // "badge unlocked!" moment right at submit time is a natural fast-follow,
+  // not built here to avoid touching the web + mobile result UIs in this pass.
+  await checkAndAwardAchievements(studentId)
+
+  // Mobile push - "results ready," the other half of the exam-related push
+  // scope confirmed with the user 2026-08-16 (see the assignment-notification
+  // push for the first half). Grading is synchronous/instant here, so this
+  // mostly matters for a student who isn't actively in the app right when
+  // they submit; a no-op for anyone with no registered device token.
+  await sendPushToStudentBestEffort(studentId, {
+    title: "Your results are ready",
+    body: `You scored ${Math.round(percentage)}% on ${attempt.assessment.title}.`,
+    data: { type: "results_ready", attemptId: attempt.id },
   })
 
   return { ok: true, attemptId: attempt.id }

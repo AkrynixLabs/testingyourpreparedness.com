@@ -12,6 +12,7 @@ import {
   User,
   GraduationCap,
   PlaySquare,
+  Trophy,
 } from "lucide-react"
 
 type StudentNavCounts = {
@@ -26,6 +27,7 @@ function buildNavigation(counts: StudentNavCounts): NavGroup[] {
         { title: "Dashboard", href: "/student", icon: LayoutDashboard },
         { title: "Available Exams", href: "/student/exams", icon: ClipboardList, badge: formatCount(counts.availableExams) },
         { title: "My Results", href: "/student/results", icon: Award },
+        { title: "Leaderboard", href: "/student/leaderboard", icon: Trophy },
         { title: "Progress", href: "/student/progress", icon: TrendingUp },
         { title: "Study Materials", href: "/student/materials", icon: BookOpen },
       ],
