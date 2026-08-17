@@ -40,6 +40,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-17
 
+- **You can now download course lessons on mobile to read later without a connection.** Article-type lessons only (video lessons stay online-only - they're links to an outside video host, not files stored here, so there's nothing to download). Tap the download icon on any reading lesson while you have a connection; there's a new "Downloaded Lessons" screen (Settings, or from inside a course) to see what you've saved and remove things to free up space. Downloads stay private to your own copy of the app - no sharing/exporting, since course content is something you paid for and the tutor gets paid based on real enrollments, not copies floating around.
 - **Tutors can now upload real video files for lessons, not just paste a YouTube/Vimeo link.** Backed by Mux, a real video-hosting service - upload happens straight from the tutor's browser, and students get proper streaming playback once it's done processing (usually a few minutes).
 
 - **Course-scoped virtual sessions are here: tutors can schedule live sessions for everyone enrolled in a course.** Either a native in-app video call, or a link to Zoom/Google Meet/whatever the tutor prefers - tutor's choice per session. Students see upcoming sessions on the course page and join with one click.

@@ -9,6 +9,7 @@ import '../services/theme_controller.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
 import 'login_screen.dart';
+import 'offline_library_screen.dart';
 
 /// Mirrors the web app's app/student/settings - Log Out and the Danger Zone
 /// (self-service account deletion) live here, not on ProfileScreen, per the
@@ -156,6 +157,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 const _AppearanceSection(),
                 const SizedBox(height: 24),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.download_done_outlined),
+                    title: const Text('Downloaded Lessons'),
+                    subtitle: const Text('Manage what\'s available offline'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const OfflineLibraryScreen()),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.logout),
