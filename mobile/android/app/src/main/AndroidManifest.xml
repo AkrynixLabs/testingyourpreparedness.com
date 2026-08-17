@@ -9,6 +9,12 @@
          on Android - without this the plugin can't reliably detect
          connectivity transitions. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Required on Android 13+ (API 33+) for PushNotificationService's
+         FirebaseMessaging.instance.requestPermission() call to have any
+         effect at all - added 2026-08-16 for push notifications. Without
+         this declared, the runtime permission prompt never appears and
+         notifications are silently blocked on newer Android versions. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="TYP"
         android:name="${applicationName}"

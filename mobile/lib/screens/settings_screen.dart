@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/push_notification_service.dart';
 import '../services/theme_controller.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
@@ -70,6 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (!confirmed || !mounted) return;
 
+    await PushNotificationService.instance.unregisterCurrentDevice();
     await ApiClient.instance.logout();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(

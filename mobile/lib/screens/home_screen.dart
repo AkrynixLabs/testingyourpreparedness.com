@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/exam.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
+import '../services/push_notification_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
@@ -183,6 +184,7 @@ class _ExamsTabState extends State<_ExamsTab>
     );
     if (!confirmed || !mounted) return;
 
+    await PushNotificationService.instance.unregisterCurrentDevice();
     await ApiClient.instance.logout();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(

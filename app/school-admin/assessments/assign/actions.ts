@@ -5,6 +5,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { assignmentNotificationEmail } from "@/lib/email/templates"
+import { sendPushToStudentBestEffort } from "@/lib/push/fcm"
 
 export type AssignAssessmentInput = {
   assessmentId: string
@@ -111,6 +112,15 @@ export async function createAssessmentAssignment(input: AssignAssessmentInput) {
         endDate,
       })
       await sendEmailBestEffort({ to: s.user.email, subject, html })
+      // Mobile push, same trigger/audience as the email above - scope
+      // confirmed with the user 2026-08-16 as "exam-related only" for v1
+      // (new exam assigned, results ready - see submitExamAttempt for the
+      // other half). No-ops for a student with no registered device token.
+      await sendPushToStudentBestEffort(s.id, {
+        title: "New exam assigned",
+        body: `${assessment.title} is now available - due ${endDate.toLocaleDateString("en-GB")}.`,
+        data: { type: "exam_assigned", assessmentId: assessment.id },
+      })
     }
   }
 

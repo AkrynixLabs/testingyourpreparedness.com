@@ -281,6 +281,7 @@ model Student {
   courseEnrollments   Enrollment[]
   coursePurchases     CoursePurchase[]
   courseReviews       CourseReview[]
+  deviceTokens        DeviceToken[]
 
   @@index([schoolId])
   @@index([classId])
@@ -609,6 +610,26 @@ model StudentAchievement {
   earnedAt      DateTime    @default(now())
 
   @@id([studentId, achievementId])
+}
+
+// Mobile-only for now (v1 push scope is student-only, matching the rest of
+// the mobile app) - one row per installed app instance a student is signed
+// into, not per student, since the same account can be signed into multiple
+// devices. Registered by POST /api/mobile/push/register on login/launch,
+// removed on logout via POST /api/mobile/push/unregister. A token is
+// re-issued by FCM occasionally (app reinstall, token rotation) - the
+// register route upserts on the token itself so a rotated token from the
+// same device doesn't create a duplicate stale row.
+model DeviceToken {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String // "android" | "ios", informational only - FCM itself is platform-agnostic to send to
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
 }
 
 // ---------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -6,6 +8,7 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/api_client.dart' show ApiClient, ApiException;
 import 'services/navigation_service.dart';
+import 'services/push_notification_service.dart';
 import 'services/theme_controller.dart';
 import 'services/token_storage.dart';
 import 'theme/app_theme.dart';
@@ -131,6 +134,10 @@ class _AuthGateState extends State<AuthGate> {
     FlutterNativeSplash.remove();
 
     if (user != null) {
+      // Fire-and-forget - registering for push shouldn't delay getting the
+      // student into HomeScreen, and a failure here (see
+      // PushNotificationService's own doc comment) must never block login.
+      unawaited(PushNotificationService.instance.initAndRegister());
       _goToHome(user);
     } else {
       _goToLogin();
