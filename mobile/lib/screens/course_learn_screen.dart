@@ -7,6 +7,7 @@ import '../models/offline_lesson.dart';
 import '../services/api_client.dart';
 import '../services/offline_library.dart';
 import '../widgets/async_state_views.dart';
+import '../widgets/mux_video_player.dart';
 import 'offline_library_screen.dart';
 
 /// Mirrors app/student/courses/[id]/learn/lesson-viewer.tsx at the behavior
@@ -198,6 +199,9 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (activeLesson.type == 'video' &&
+                            activeLesson.isMuxVideo) ...[
+                          _MuxLessonVideo(lesson: activeLesson),
+                        ] else if (activeLesson.type == 'video' &&
                             activeLesson.videoUrl != null) ...[
                           Container(
                             width: double.infinity,
@@ -333,6 +337,51 @@ class _OfflineFallbackView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Platform-hosted (Mux) lesson video, added 2026-08-17 alongside web's Mux
+/// integration - branches on `muxStatus` since Mux's transcoding is async
+/// (the webhook, not this screen, is the source of truth for "ready").
+class _MuxLessonVideo extends StatelessWidget {
+  final LearnLesson lesson;
+  const _MuxLessonVideo({required this.lesson});
+
+  @override
+  Widget build(BuildContext context) {
+    if (lesson.isMuxReady) {
+      return MuxVideoPlayer(hlsUrl: lesson.muxHlsUrl!);
+    }
+
+    final colors = Theme.of(context).colorScheme;
+    final errored = lesson.muxStatus == 'errored';
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          color: (errored ? colors.error : colors.primary).withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: (errored ? colors.error : colors.primary).withValues(alpha: 0.18)),
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(errored ? Icons.error_outline : Icons.hourglass_top,
+                size: 34, color: errored ? colors.error : colors.primary),
+            const SizedBox(height: 10),
+            Text(
+              errored
+                  ? "This video couldn't be processed. Let the tutor know."
+                  : "This video is still processing - check back shortly.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

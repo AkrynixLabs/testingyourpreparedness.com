@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/course.dart';
 import '../services/api_client.dart';
@@ -149,6 +150,23 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
       setState(() => _enrollError = 'Something went wrong. Please try again.');
     } finally {
       if (mounted) setState(() => _enrolling = false);
+    }
+  }
+
+  Future<void> _joinSession(CourseVirtualSession session) async {
+    final url = session.joinUrl;
+    if (url == null) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    // Opened externally, same as web's own "Upcoming Sessions" Join button
+    // (a plain target="_blank" link, not an embedded call UI) - matches
+    // course-detail-purchase-view.tsx's exact behavior rather than adding a
+    // native Daily call embed, which wasn't decided/scoped here.
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open this session link.')),
+      );
     }
   }
 
@@ -361,6 +379,93 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     ),
                   ),
                 ),
+                if (course.virtualSessions.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Upcoming Sessions',
+                              style: Theme.of(context).textTheme.headlineSmall),
+                          const SizedBox(height: 12),
+                          for (final session in course.virtualSessions)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: colors.outlineVariant),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: colors.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Icon(Icons.videocam_outlined,
+                                          size: 18, color: colors.primary),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(session.title,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w600, fontSize: 13),
+                                              overflow: TextOverflow.ellipsis),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${DateFormat.yMMMd().add_jm().format(session.scheduledAt)} · ${session.durationMinutes} min',
+                                            style: Theme.of(context).textTheme.bodySmall,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    if (course.isEnrolled && session.joinUrl != null)
+                                      ElevatedButton.icon(
+                                        onPressed: () => _joinSession(session),
+                                        icon: const Icon(Icons.open_in_new, size: 16),
+                                        label: const Text('Join'),
+                                      )
+                                    else
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: colors.surfaceContainerHighest,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.lock_outline,
+                                                size: 12, color: colors.onSurfaceVariant),
+                                            const SizedBox(width: 4),
+                                            Text('Enrolled only',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Card(
                   child: Padding(

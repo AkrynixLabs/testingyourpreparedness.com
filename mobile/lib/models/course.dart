@@ -105,6 +105,46 @@ class MyCourseReview {
       MyCourseReview(rating: json['rating'] as int, comment: json['comment'] as String);
 }
 
+// Course-scoped group session (every enrolled student can join, not a 1:1
+// tutor/student booking) - mirrors lib/student/courses.ts's CourseDetail.virtualSessions.
+// dailyRoomUrl/externalMeetingUrl are only meaningful once enrolled - the
+// server returns them regardless, same "gate in the view" pattern the web
+// app already uses for reviews/myReview.
+class CourseVirtualSession {
+  final String id;
+  final String title;
+  final String? description;
+  final DateTime scheduledAt;
+  final int durationMinutes;
+  final String mode;
+  final String? dailyRoomUrl;
+  final String? externalMeetingUrl;
+
+  const CourseVirtualSession({
+    required this.id,
+    required this.title,
+    this.description,
+    required this.scheduledAt,
+    required this.durationMinutes,
+    required this.mode,
+    this.dailyRoomUrl,
+    this.externalMeetingUrl,
+  });
+
+  String? get joinUrl => mode == 'daily' ? dailyRoomUrl : externalMeetingUrl;
+
+  factory CourseVirtualSession.fromJson(Map<String, dynamic> json) => CourseVirtualSession(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        description: json['description'] as String?,
+        scheduledAt: DateTime.parse(json['scheduledAt'] as String),
+        durationMinutes: json['durationMinutes'] as int,
+        mode: json['mode'] as String,
+        dailyRoomUrl: json['dailyRoomUrl'] as String?,
+        externalMeetingUrl: json['externalMeetingUrl'] as String?,
+      );
+}
+
 class CourseDetail {
   final String id;
   final String title;
@@ -120,6 +160,7 @@ class CourseDetail {
   final num? averageRating;
   final List<CourseReview> reviews;
   final MyCourseReview? myReview;
+  final List<CourseVirtualSession> virtualSessions;
 
   const CourseDetail({
     required this.id,
@@ -136,6 +177,7 @@ class CourseDetail {
     this.averageRating,
     required this.reviews,
     this.myReview,
+    this.virtualSessions = const [],
   });
 
   factory CourseDetail.fromJson(Map<String, dynamic> json) => CourseDetail(
@@ -153,6 +195,11 @@ class CourseDetail {
         averageRating: json['averageRating'] as num?,
         reviews: (json['reviews'] as List<dynamic>).map((e) => CourseReview.fromJson(e as Map<String, dynamic>)).toList(),
         myReview: json['myReview'] != null ? MyCourseReview.fromJson(json['myReview'] as Map<String, dynamic>) : null,
+        virtualSessions: json['virtualSessions'] != null
+            ? (json['virtualSessions'] as List<dynamic>)
+                .map((e) => CourseVirtualSession.fromJson(e as Map<String, dynamic>))
+                .toList()
+            : const [],
       );
 }
 
@@ -192,8 +239,26 @@ class LearnLesson {
   final String type;
   final String? videoUrl;
   final String? content;
+  // Added 2026-08-17 alongside web's Mux integration - null/non-"mux" means
+  // this is the original external-URL video path (or an article lesson).
+  final String? videoSource;
+  final String? muxPlaybackId;
+  final String? muxStatus;
 
-  const LearnLesson({required this.id, required this.title, required this.type, this.videoUrl, this.content});
+  const LearnLesson({
+    required this.id,
+    required this.title,
+    required this.type,
+    this.videoUrl,
+    this.content,
+    this.videoSource,
+    this.muxPlaybackId,
+    this.muxStatus,
+  });
+
+  bool get isMuxVideo => videoSource == 'mux';
+  bool get isMuxReady => isMuxVideo && muxStatus == 'ready' && muxPlaybackId != null;
+  String? get muxHlsUrl => isMuxReady ? 'https://stream.mux.com/$muxPlaybackId.m3u8' : null;
 
   factory LearnLesson.fromJson(Map<String, dynamic> json) => LearnLesson(
         id: json['id'] as String,
@@ -201,6 +266,9 @@ class LearnLesson {
         type: json['type'] as String,
         videoUrl: json['videoUrl'] as String?,
         content: json['content'] as String?,
+        videoSource: json['videoSource'] as String?,
+        muxPlaybackId: json['muxPlaybackId'] as String?,
+        muxStatus: json['muxStatus'] as String?,
       );
 }
 
