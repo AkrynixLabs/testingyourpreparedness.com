@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { verifyWebhookSignature } from "@/lib/payments/paystack"
 import { generateInvoiceId } from "@/lib/payments/ids"
+import { grantReferralRewardIfEligible } from "@/lib/referral-reward"
 import type { BillingCycle } from "@/lib/generated/prisma/client"
 
 // Paystack calls this after a transaction completes. This is the source of
@@ -182,6 +183,11 @@ async function handleChargeSuccess(data: {
       renewalDate: renewalDateFor(billingCycle),
     },
   })
+
+  // Referral reward: only ever fires here (a brand-new subscription, not an
+  // upgrade/renewal) and only once per student (Subscription.studentId is
+  // unique) - see lib/referral-reward.ts for the exact mechanics.
+  await grantReferralRewardIfEligible(subscription)
 
   await prisma.invoice.create({
     data: {

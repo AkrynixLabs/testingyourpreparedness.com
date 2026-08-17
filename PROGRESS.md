@@ -39,6 +39,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-16
 
+- **Independent students can now refer a friend and both get 7 free subscription days.** New "Refer a Friend" card in Settings shows a student their own shareable code; a new signup can enter it during sign-up, and once that new student actually subscribes and pays, both of them get a week added free. Scoped to independent (self-paying) students only - not schools, which don't have this kind of personal billing to reward.
+
 - **Badges are now actually earned, and there's a real leaderboard students can see.** Badges ("Perfect Score," "Top 5," etc.) existed on paper before this - the page that shows them was real, but nothing behind it ever actually gave a badge to a real student except one demo account. Now every student really earns them based on their real results. Also new: a Leaderboard page students can see for themselves (their class, and a national ranking) - previously only school/platform staff could see any ranked list at all; a student could only see a single "your rank" number, never who else was on it.
 
 - **Fixed: pressing the browser Back button right after logging in looked like it logged you out.** It never actually did - your session was fine the whole time - but landing back on the login form after a successful sign-in reads exactly like being logged out. Now Back after login takes you straight to your dashboard instead of re-showing the form.

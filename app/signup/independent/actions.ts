@@ -12,6 +12,7 @@ import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { stripTrailingSlash } from "@/lib/utils"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { welcomeEmail } from "@/lib/email/templates"
+import { generateReferralCode } from "@/lib/referral-code"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -21,6 +22,7 @@ export type RegisterIndependentStudentInput = {
   region: string
   town: string
   subscribeNewsletter: boolean
+  referralCode?: string
 }
 
 // Creates the account only - no Subscription/Payment row here. Checkout
@@ -51,6 +53,21 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
   const passwordHash = await bcrypt.hash(password, 10)
   const studentName = `${firstName} ${lastName}`
 
+  // Invalid/unrecognized codes are silently ignored rather than blocking
+  // signup - a typo in an optional field shouldn't stop someone creating an
+  // account. Only independent students have referral codes at all (they're
+  // the ones with a personal subscription the reward can extend) - a code
+  // belonging to a school-provisioned student's own account (none exists,
+  // referralCode is only ever set here) or a bad code both resolve to null.
+  let referredByStudentId: string | undefined = undefined
+  const enteredCode = asString(input.referralCode ?? "").trim().toUpperCase()
+  if (enteredCode) {
+    const referrer = await prisma.student.findUnique({ where: { referralCode: enteredCode } })
+    if (referrer) referredByStudentId = referrer.id
+  }
+
+  const referralCode = await generateReferralCode(firstName)
+
   const student = await prisma.student.create({
     data: {
       user: {
@@ -59,6 +76,8 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
       enrollmentType: "independent",
       status: "active",
       address: [town, region].filter(Boolean).join(", ") || null,
+      referralCode,
+      referredByStudent: referredByStudentId ? { connect: { id: referredByStudentId } } : undefined,
     },
   })
 

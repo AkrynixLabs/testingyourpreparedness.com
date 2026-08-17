@@ -26,6 +26,7 @@ export default async function StudentSettingsPage() {
       schoolName={student.school?.name ?? null}
       className={student.class?.displayName ?? null}
       guardian={student.guardian}
+      referralCode={student.referralCode}
     />
   )
 }

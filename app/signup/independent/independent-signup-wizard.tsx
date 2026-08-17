@@ -63,6 +63,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
     confirmPassword: "",
     region: "",
     town: "",
+    referralCode: "",
     selectedPlan: plans.find((p) => (p.monthlyPrice ?? 0) > 0)?.id ?? plans[0]?.id ?? "",
     agreeTerms: false,
     subscribeNewsletter: false,
@@ -149,6 +150,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
           password: formData.password,
           region: formData.region,
           town: formData.town,
+          referralCode: formData.referralCode,
           subscribeNewsletter: formData.subscribeNewsletter,
         })
         studentId = result.studentId
@@ -348,6 +350,19 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
                       onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+                  <Input
+                    id="referralCode"
+                    placeholder="Got a code from a friend? Enter it here"
+                    value={formData.referralCode}
+                    onChange={(e) => updateFormData("referralCode", e.target.value.toUpperCase())}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    You and your friend each get 7 free days once you subscribe.
+                  </p>
                 </div>
               </CardContent>
             </Card>

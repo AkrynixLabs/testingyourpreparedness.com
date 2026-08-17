@@ -260,6 +260,16 @@ model Student {
   status         StudentStatus  @default(active)
   createdAt      DateTime       @default(now())
 
+  // Referral system (added 2026-08-16) - only ever set for independent
+  // students (the ones with a personal Subscription a reward can extend);
+  // school-provisioned students have no billing of their own, so both stay
+  // null for them. Nullable rather than required so the unique constraint
+  // never conflicts with existing/school-provisioned rows.
+  referralCode        String?   @unique
+  referredByStudentId String?
+  referredByStudent   Student?  @relation("StudentReferrals", fields: [referredByStudentId], references: [id])
+  referredStudents    Student[] @relation("StudentReferrals")
+
   guardian            Guardian?
   examAttempts        ExamAttempt[]
   subscription        Subscription?
@@ -274,6 +284,7 @@ model Student {
 
   @@index([schoolId])
   @@index([classId])
+  @@index([referredByStudentId])
 }
 
 enum GuardianRelation {

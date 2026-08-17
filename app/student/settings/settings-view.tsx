@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle } from "lucide-react"
+import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle, Gift, Copy, Check } from "lucide-react"
 import { updateProfile, updateGuardian, updatePassword, deleteAccount, cancelDeleteAccount } from "./actions"
 import type { Guardian, GuardianRelation, User as UserModel } from "@/lib/generated/prisma/client"
 
@@ -33,14 +33,24 @@ export function StudentSettingsView({
   schoolName,
   className,
   guardian,
+  referralCode,
 }: {
   user: SafeUser
   schoolName: string | null
   className: string | null
   guardian: Guardian | null
+  referralCode: string | null
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyReferralCode = () => {
+    if (!referralCode) return
+    navigator.clipboard.writeText(referralCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const [profile, setProfile] = useState({ name: user.name, email: user.email })
   const [profileMessage, setProfileMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -254,6 +264,29 @@ export function StudentSettingsView({
               </Button>
             </CardContent>
           </Card>
+
+          {referralCode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-primary" />
+                  Refer a Friend
+                </CardTitle>
+                <CardDescription>
+                  Share your code - when a friend signs up and subscribes, you both get 7 free days.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Input readOnly value={referralCode} className="font-mono font-bold tracking-wider" />
+                  <Button variant="outline" onClick={handleCopyReferralCode}>
+                    {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Notifications Tab */}
