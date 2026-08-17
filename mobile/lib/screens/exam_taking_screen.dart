@@ -8,6 +8,7 @@ import '../services/api_client.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
 import 'results_screen.dart';
+import 'upgrade_plan_screen.dart';
 
 /// Started from HomeScreen's "Available" tab. Mirrors the web app's
 /// app/student/exams/[id]/start/exam-taking-client.tsx at the behavior
@@ -168,11 +169,23 @@ class _ExamTakingScreenState extends State<ExamTakingScreen>
               // "Go back" rather than a true retry - a start failure here is
               // typically a real eligibility answer (window closed, attempts
               // used up), not a transient fetch to blindly retry.
+              final error = snapshot.error;
+              final isFreeTierLimit =
+                  error is ApiException && error.code == 'free_tier_limit';
               return ErrorView(
-                message: errorMessageFor(snapshot.error!,
+                message: errorMessageFor(error!,
                     fallback: 'Could not start this exam.'),
                 onRetry: () => Navigator.of(context).pop(),
                 retryLabel: 'Go back',
+                secondaryAction: isFreeTierLimit
+                    ? FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                                builder: (_) => const UpgradePlanScreen())),
+                        icon: const Icon(Icons.workspace_premium_outlined),
+                        label: const Text('Upgrade Plan'),
+                      )
+                    : null,
               );
             }
             if (_exam == null || _exam!.timedOut) {

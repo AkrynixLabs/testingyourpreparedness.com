@@ -405,7 +405,10 @@ class ApiClient {
     final decoded = _decode(response);
     if (response.statusCode != 200) {
       throw ApiException(
-          response.statusCode, decoded['error'] as String? ?? fallback);
+        response.statusCode,
+        decoded['error'] as String? ?? fallback,
+        code: decoded['code'] as String?,
+      );
     }
     return decoded;
   }

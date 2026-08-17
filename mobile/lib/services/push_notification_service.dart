@@ -6,6 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../firebase_options.dart';
+import '../screens/exam_taking_screen.dart';
+import '../screens/results_screen.dart';
+import '../screens/upgrade_plan_screen.dart';
 import 'api_client.dart';
 import 'navigation_service.dart';
 
@@ -41,6 +44,15 @@ class PushNotificationService {
       }
 
       final messaging = FirebaseMessaging.instance;
+
+      // A cold start (app was fully terminated, tapped from the system
+      // tray) delivers the tapped message here rather than through
+      // onMessageOpenedApp - checked once per launch, after the listeners
+      // above are wired, so both paths funnel through the same
+      // _handleNotificationTap.
+      final initialMessage = await messaging.getInitialMessage();
+      if (initialMessage != null) _handleNotificationTap(initialMessage);
+
       final settings = await messaging.requestPermission(
           alert: true, badge: true, sound: true);
       if (settings.authorizationStatus == AuthorizationStatus.denied) return;
@@ -109,15 +121,44 @@ class PushNotificationService {
       );
     });
 
-    // Background (app backgrounded, tapped from system tray) and terminated
-    // (app was fully closed, tapped from system tray, cold-starts the app)
-    // both land here / via getInitialMessage() - deliberately just logged
-    // for now rather than deep-linking to a specific screen. A real
-    // "open the right exam/result" tap-through is a natural fast-follow,
-    // not built in this pass to keep the scope to what was actually asked
-    // for (send + receive a notification), not a full deep-linking system.
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint('[push] notification tapped, data: ${message.data}');
-    });
+    // Background tap (app was backgrounded, not terminated) - the
+    // terminated-app equivalent is handled once via getInitialMessage() in
+    // initAndRegister, above. Both funnel into the same _handleNotificationTap.
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+  }
+
+  /// Opens the screen a tapped notification is actually about, keyed off
+  /// the `type` this same class of message was sent with server-side (see
+  /// lib/push/fcm.ts's callers) - `exam_assigned` -> the exam itself,
+  /// `results_ready` -> that result, `free_tier_limit_reached` -> the
+  /// Upgrade Plan screen, so the nudge is one tap away from actually
+  /// converting rather than just informational. Uses rootNavigatorKey
+  /// (same as ApiClient's 401 redirect) since a push tap can arrive with no
+  /// screen-level BuildContext of its own to push from.
+  void _handleNotificationTap(RemoteMessage message) {
+    final type = message.data['type'];
+    final navigator = rootNavigatorKey.currentState;
+    if (navigator == null) return;
+
+    switch (type) {
+      case 'exam_assigned':
+        final assessmentId = message.data['assessmentId'] as String?;
+        if (assessmentId == null) return;
+        navigator.push(MaterialPageRoute(
+            builder: (_) => ExamTakingScreen(assessmentId: assessmentId)));
+        break;
+      case 'results_ready':
+        final attemptId = message.data['attemptId'] as String?;
+        if (attemptId == null) return;
+        navigator.push(MaterialPageRoute(
+            builder: (_) => ResultsScreen(attemptId: attemptId)));
+        break;
+      case 'free_tier_limit_reached':
+        navigator.push(
+            MaterialPageRoute(builder: (_) => const UpgradePlanScreen()));
+        break;
+      default:
+        debugPrint('[push] notification tapped, unhandled data: ${message.data}');
+    }
   }
 }

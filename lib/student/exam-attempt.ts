@@ -94,7 +94,23 @@ export type ExamStartResult =
 // ran out server-side before the caller ever asked again.
 export async function startOrResumeExam(student: Student, assessmentId: string): Promise<ExamStartResult> {
   const eligibility = await resolveExamEligibility(student, assessmentId)
-  if (!eligibility.eligible) return { ok: false, reason: eligibility.reason }
+  if (!eligibility.eligible) {
+    // Conversion nudge at the exact moment the free-tier wall actually
+    // blocks a real attempt (not on every page view) - same best-effort,
+    // exam-related push scope confirmed 2026-08-16 for the other two exam
+    // push triggers (assignment/results-ready) in this same file. Not
+    // deduplicated across repeat attempts within the same window - a
+    // free-tier student retrying after being blocked is a low-frequency,
+    // user-initiated action, not worth extra state to suppress.
+    if (eligibility.reason === "free_tier_limit") {
+      await sendPushToStudentBestEffort(student.id, {
+        title: "You've used all your free practice tests this month",
+        body: "Upgrade to Premium for unlimited practice tests and full score reports.",
+        data: { type: "free_tier_limit_reached" },
+      })
+    }
+    return { ok: false, reason: eligibility.reason }
+  }
 
   const assessment = await prisma.assessment.findUnique({
     where: { id: assessmentId },

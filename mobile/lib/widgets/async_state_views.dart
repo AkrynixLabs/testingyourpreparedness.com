@@ -78,11 +78,19 @@ class ErrorView extends StatelessWidget {
   final VoidCallback? onRetry;
   final String retryLabel;
 
+  /// Optional extra widget shown below the retry button - e.g. an "Upgrade
+  /// Plan" button when the error is a specific, actionable known case
+  /// (a `code` on the underlying ApiException) rather than a generic
+  /// failure a bare retry can fix. Null by default so every existing
+  /// ErrorView call site is unaffected.
+  final Widget? secondaryAction;
+
   const ErrorView(
       {super.key,
       required this.message,
       this.onRetry,
-      this.retryLabel = 'Try again'});
+      this.retryLabel = 'Try again',
+      this.secondaryAction});
 
   @override
   Widget build(BuildContext context) {
@@ -105,8 +113,12 @@ class ErrorView extends StatelessWidget {
             Text(message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium),
-            if (onRetry != null) ...[
+            if (secondaryAction != null) ...[
               const SizedBox(height: 20),
+              secondaryAction!,
+            ],
+            if (onRetry != null) ...[
+              SizedBox(height: secondaryAction != null ? 12 : 20),
               OutlinedButton(onPressed: onRetry, child: Text(retryLabel)),
             ],
           ],

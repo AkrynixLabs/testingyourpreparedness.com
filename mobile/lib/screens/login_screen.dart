@@ -188,8 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.mail_outline),
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty)
+                      if (value == null || value.trim().isEmpty) {
                         return 'Enter your email.';
+                      }
                       return null;
                     },
                   ),
@@ -212,8 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty)
+                      if (value == null || value.isEmpty) {
                         return 'Enter your password.';
+                      }
                       return null;
                     },
                     onFieldSubmitted: (_) => _submit(),
