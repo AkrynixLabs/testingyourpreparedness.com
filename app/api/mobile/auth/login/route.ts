@@ -35,6 +35,18 @@ export async function POST(request: Request) {
     )
   }
 
+  // Added 2026-08-17, same rule as auth.ts's web login - a self-signup
+  // account (school-code join is the only self-signup path mobile has) needs
+  // a verified email before it can log in at all. Checked before the
+  // pending-approval check below purely for parity with the web login order;
+  // in practice a joined student needs to clear both gates regardless.
+  if (!user.emailVerified) {
+    return NextResponse.json(
+      { error: "Please verify your email address before logging in.", code: "email_not_verified" },
+      { status: 403 }
+    )
+  }
+
   // Added 2026-08-16 alongside real school-code join approval - a student
   // who joined via code but hasn't been approved by their school yet must
   // not be able to log in at all, same rule as auth.ts's web login.

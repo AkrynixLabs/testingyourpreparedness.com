@@ -13,6 +13,7 @@ import { stripTrailingSlash } from "@/lib/utils"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { welcomeEmail } from "@/lib/email/templates"
 import { generateSchoolCode } from "@/lib/school-code"
+import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -97,23 +98,33 @@ export async function registerSchool(input: RegisterSchoolInput) {
               email: adminEmail,
               passwordHash,
               role: Role.school_admin,
+              // Self-signup - real email verification required before this
+              // account can log in (see prisma/schema.prisma's User model).
+              emailVerified: false,
             },
           },
         },
       },
     },
+    select: { id: true, admins: { select: { isPrimary: true, user: { select: { id: true } } } } },
   })
 
   if (input.subscribeNewsletter) {
     await subscribeToNewsletterBestEffort(adminEmail)
   }
 
+  const adminName = `${adminFirstName} ${adminLastName}`
   const { subject, html } = welcomeEmail({
-    name: `${adminFirstName} ${adminLastName}`,
+    name: adminName,
     roleLabel: "school administrator",
     dashboardPath: "/school-admin",
   })
   await sendEmailBestEffort({ to: adminEmail, subject, html })
+
+  const primaryAdminUser = school.admins.find((a) => a.isPrimary)?.user
+  if (primaryAdminUser) {
+    await sendVerificationEmailBestEffort(primaryAdminUser.id, adminEmail, adminName)
+  }
 
   return { schoolId: school.id }
 }

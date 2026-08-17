@@ -13,6 +13,7 @@ import { stripTrailingSlash } from "@/lib/utils"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { welcomeEmail } from "@/lib/email/templates"
 import { generateReferralCode } from "@/lib/referral-code"
+import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -71,7 +72,15 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
   const student = await prisma.student.create({
     data: {
       user: {
-        create: { name: studentName, email, passwordHash, role: Role.student },
+        create: {
+          name: studentName,
+          email,
+          passwordHash,
+          role: Role.student,
+          // Self-signup - real email verification required before this
+          // account can log in (see prisma/schema.prisma's User model).
+          emailVerified: false,
+        },
       },
       enrollmentType: "independent",
       status: "active",
@@ -79,6 +88,7 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
       referralCode,
       referredByStudent: referredByStudentId ? { connect: { id: referredByStudentId } } : undefined,
     },
+    select: { id: true, userId: true },
   })
 
   if (input.subscribeNewsletter) {
@@ -87,6 +97,8 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
 
   const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "student", dashboardPath: "/student" })
   await sendEmailBestEffort({ to: email, subject, html })
+
+  await sendVerificationEmailBestEffort(student.userId, email, studentName)
 
   return { studentId: student.id, email, password }
 }
@@ -103,22 +115,29 @@ export type InitializeStudentCheckoutInput = {
 // charge actually succeeded. The free plan never reaches this function -
 // the wizard skips checkout entirely when price is 0.
 //
-// Unlike initializeSchoolCheckout, there's no legitimate anonymous caller
-// here - independent-student signup auto-signs-in *before* calling this
-// (see independent-signup-wizard.tsx: signIn() happens, then checkout, with
-// an early return if sign-in fails), so a real session always exists by the
-// time this runs. A security audit 2026-08-08 (see docs/build-log.md) found
-// this action never verified the caller owns input.studentId - fixed by
-// requiring a real session for exactly this student.
+// A security audit 2026-08-08 (see docs/build-log.md) found this action
+// never verified the caller owns input.studentId - fixed by requiring a
+// real session for exactly this student. Extended 2026-08-17 (email
+// verification): a freshly-registered independent student can no longer
+// sign in immediately after registerIndependentStudent (their account
+// starts unverified), so the wizard no longer attempts signIn() before
+// calling this - it must now work unauthenticated too, for a genuinely new
+// student who has no Subscription yet. Same allowance
+// initializeSchoolCheckout already has, applied consistently rather than
+// loosening security further.
 export async function initializeStudentCheckout(input: InitializeStudentCheckoutInput) {
   await enforceRateLimit("signup")
 
   const session = await auth()
-  if (session?.user?.role !== "student") throw new Error("Not authorized")
-
-  const student = await prisma.student.findUnique({ where: { id: input.studentId }, include: { user: true } })
+  const student = await prisma.student.findUnique({ where: { id: input.studentId }, include: { user: true, subscription: true } })
   if (!student) throw new Error("Student not found.")
-  if (student.userId !== session.user.id) throw new Error("Not authorized")
+
+  if (session?.user) {
+    if (session.user.role !== "student") throw new Error("Not authorized")
+    if (student.userId !== session.user.id) throw new Error("Not authorized")
+  } else if (student.subscription) {
+    throw new Error("Not authorized")
+  }
 
   const plan = await prisma.subscriptionPlan.findUnique({ where: { id: input.planId } })
   if (!plan || plan.audience !== "independent") throw new Error("Invalid plan.")

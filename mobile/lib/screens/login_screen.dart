@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../services/api_client.dart';
+import '../services/push_notification_service.dart';
 import '../widgets/async_state_views.dart';
 import 'home_screen.dart';
 import 'join_school_screen.dart';
@@ -24,6 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _loading = false;
   String? _errorText;
+  bool _needsVerification = false;
+  bool _resending = false;
+  bool _resent = false;
 
   @override
   void initState() {
@@ -49,6 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _loading = true;
       _errorText = null;
+      _needsVerification = false;
+      _resent = false;
     });
 
     try {
@@ -56,22 +64,48 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      // Fire-and-forget, same as AuthGate's cold-start path - a login
+      // success must never be blocked or failed by push registration.
+      unawaited(PushNotificationService.instance.initAndRegister());
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => HomeScreen(user: user)),
       );
     } on ApiException catch (e) {
-      // 401 (bad credentials), 403 (non-student role, or a still-pending
-      // join request - code "pending_approval"), 429 (rate limited) - all
-      // surfaced with the server's own message text as-is, per the backend
-      // session's spec, rather than a single generic error string. The
-      // pending-approval case doesn't need special client copy since the
-      // server's own message already explains it plainly.
-      setState(() => _errorText = e.message);
+      // 401 (bad credentials), 403 (non-student role, a still-pending join
+      // request - code "pending_approval", or an unverified email - code
+      // "email_not_verified"), 429 (rate limited) - all surfaced with the
+      // server's own message text as-is, per the backend session's spec,
+      // rather than a single generic error string. Only email_not_verified
+      // gets extra client behavior (a resend button) - the others' server
+      // message already explains itself plainly.
+      setState(() {
+        _errorText = e.message;
+        _needsVerification = e.code == 'email_not_verified';
+      });
     } catch (_) {
-      setState(() => _errorText = 'Could not reach TYP. Check your connection and try again.');
+      setState(() => _errorText =
+          'Could not reach TYP. Check your connection and try again.');
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _resendVerification() async {
+    setState(() => _resending = true);
+    try {
+      await ApiClient.instance
+          .resendVerificationEmail(_emailController.text.trim());
+    } catch (_) {
+      // Best-effort - see ApiClient.resendVerificationEmail's own doc
+      // comment (always resolves the same way regardless of outcome).
+    } finally {
+      if (mounted) {
+        setState(() {
+          _resending = false;
+          _resent = true;
+        });
+      }
     }
   }
 
@@ -104,7 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.shield_moon_outlined, color: Colors.white, size: 34),
+                      child: const Icon(Icons.shield_moon_outlined,
+                          color: Colors.white, size: 34),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -117,11 +152,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     'Log in to continue your exam prep',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                   const SizedBox(height: 36),
                   if (_errorText != null) ...[
                     ErrorBanner(message: _errorText!),
+                    if (_needsVerification) ...[
+                      const SizedBox(height: 8),
+                      Center(
+                        child: _resent
+                            ? Text(
+                                'Verification email sent - check your inbox.',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              )
+                            : TextButton(
+                                onPressed:
+                                    _resending ? null : _resendVerification,
+                                child: Text(_resending
+                                    ? 'Sending...'
+                                    : 'Resend verification email'),
+                              ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                   ],
                   TextFormField(
@@ -133,7 +188,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.mail_outline),
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) return 'Enter your email.';
+                      if (value == null || value.trim().isEmpty)
+                        return 'Enter your email.';
                       return null;
                     },
                   ),
@@ -145,13 +201,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                        tooltip: _obscurePassword ? 'Show password' : 'Hide password',
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined),
+                        tooltip: _obscurePassword
+                            ? 'Show password'
+                            : 'Hide password',
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Enter your password.';
+                      if (value == null || value.isEmpty)
+                        return 'Enter your password.';
                       return null;
                     },
                     onFieldSubmitted: (_) => _submit(),
@@ -163,7 +225,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
                           )
                         : const Text('Log In'),
                   ),
@@ -173,7 +236,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(child: Divider(color: colors.outline)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('or', style: Theme.of(context).textTheme.bodySmall),
+                        child: Text('or',
+                            style: Theme.of(context).textTheme.bodySmall),
                       ),
                       Expanded(child: Divider(color: colors.outline)),
                     ],
@@ -183,7 +247,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _loading
                         ? null
                         : () => Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const JoinSchoolScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const JoinSchoolScreen()),
                             ),
                     icon: const Icon(Icons.key_outlined, size: 18),
                     label: const Text('Join your school with an invite code'),
@@ -203,4 +268,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

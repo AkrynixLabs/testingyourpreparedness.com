@@ -2,8 +2,6 @@
 
 import { useState, useTransition } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -51,10 +49,10 @@ function planPriceAndCycle(plan: SubscriptionPlan): { price: number; cycle: Bill
 const cycleLabel: Record<string, string> = { monthly: "month", term: "term", yearly: "year" }
 
 export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }) {
-  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [step, setStep] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [accountCreated, setAccountCreated] = useState<{ email: string } | null>(null)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -161,23 +159,25 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
         return
       }
 
-      const signInResult = await signIn("credentials", { email, password, redirect: false })
-      if (signInResult?.error) {
-        setError("Account created, but automatic sign-in failed. Please log in manually.")
-        router.push("/login")
-        return
-      }
-
+      // No auto-sign-in - the account now needs a verified email before
+      // login works at all (see prisma/schema.prisma's User model), so
+      // signing in immediately here would just fail.
       const selectedPlan = plans.find((p) => p.id === formData.selectedPlan)
       const { price, cycle } = selectedPlan ? planPriceAndCycle(selectedPlan) : { price: 0, cycle: null }
 
       if (!selectedPlan || price === 0 || !cycle) {
-        // Free plan (or nothing selectable) - no checkout needed.
-        router.push("/student")
+        // Free plan (or nothing selectable) - no checkout needed, show the
+        // "check your email" confirmation instead of navigating into
+        // /student (which would just bounce back to /login unauthenticated).
+        setAccountCreated({ email })
         return
       }
 
       try {
+        // initializeStudentCheckout now works unauthenticated for a
+        // genuinely new student (see its own doc comment) - Paystack's
+        // redirect happens regardless of the verification-email gate, since
+        // checkout and login are independent concerns.
         const { authorizationUrl } = await initializeStudentCheckout({
           studentId,
           planId: selectedPlan.id,
@@ -186,9 +186,35 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
         window.location.href = authorizationUrl
       } catch (err) {
         console.error("Checkout could not be started:", err)
-        router.push("/student")
+        setAccountCreated({ email })
       }
     })
+  }
+
+  if (accountCreated) {
+    return (
+      <div className="marketing relative isolate min-h-screen flex flex-col overflow-hidden bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+        <CustomCursor />
+        <div className="absolute inset-0 bg-grain" />
+        <main className="flex-1 flex items-center justify-center p-4 relative">
+          <div className="max-w-md text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-1">
+              Your account is created. We&apos;ve sent a verification link to <strong>{accountCreated.email}</strong>.
+            </p>
+            <p className="text-sm text-muted-foreground mb-8">
+              Click the link to verify your address, then log in - the link expires in 48 hours.
+            </p>
+            <Link href="/login">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (

@@ -19,6 +19,17 @@ class PendingApprovalError extends CredentialsSignin {
   code = "pending_approval"
 }
 
+// Added 2026-08-17, ahead of a real public launch - a self-signup account
+// (school registration, independent student, tutor, school-code join) can't
+// log in until it clicks its emailed verification link (see
+// prisma/schema.prisma's User.emailVerified). Admin-provisioned accounts
+// (content admin, school-added student, an accepted Invitation) are created
+// with emailVerified already true and never hit this - see that schema
+// comment for the full reasoning.
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified"
+}
+
 // Deliberately NOT using @auth/prisma-adapter: CLAUDE.md's decision is
 // Auth.js against our own Postgres `User` table (already shaped for the
 // 4-role model), not Auth.js's own Account/Session/VerificationToken schema
@@ -55,8 +66,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!passwordsMatch) return null
 
         // Checked only after the password is confirmed correct - revealing
-        // "this account is pending approval" to someone who hasn't proven
-        // they own it would leak account existence/state for free.
+        // "this account isn't verified/is pending" to someone who hasn't
+        // proven they own it would leak account existence/state for free.
+        if (!user.emailVerified) {
+          throw new EmailNotVerifiedError()
+        }
+
         if (user.role === "student") {
           const student = await prisma.student.findUnique({ where: { userId: user.id }, select: { status: true } })
           if (student?.status === "pending") {

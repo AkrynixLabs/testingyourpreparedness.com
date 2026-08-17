@@ -61,8 +61,8 @@ export default function SchoolRegistrationSuccessPage() {
                       Check Your Email
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      We&apos;ve sent a confirmation email to your registered address. 
-                      Please verify your email within 24 hours.
+                      We&apos;ve sent a confirmation email to your registered address.
+                      Please verify your email within 48 hours - you won&apos;t be able to log in until you do.
                     </p>
                   </div>
                 </div>

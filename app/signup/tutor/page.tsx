@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,11 +9,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CustomCursor } from "@/components/custom-cursor"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Mail } from "lucide-react"
 import { registerTutor } from "./actions"
 
 export default function TutorSignupPage() {
-  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,6 +25,7 @@ export default function TutorSignupPage() {
   })
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [accountCreated, setAccountCreated] = useState<{ email: string } | null>(null)
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -53,18 +51,41 @@ export default function TutorSignupPage() {
         subscribeNewsletter: formData.subscribeNewsletter,
       })
 
-      const signInResult = await signIn("credentials", { email, password: formData.password, redirect: false })
-      if (signInResult?.error) {
-        setError("Account created, but automatic sign-in failed. Please log in manually.")
-        router.push("/login")
-        return
-      }
-      router.push("/tutor")
+      // No auto-sign-in - the account now needs a verified email before
+      // login works at all (see prisma/schema.prisma's User model), so
+      // signing in immediately here would just fail.
+      setAccountCreated({ email })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account.")
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (accountCreated) {
+    return (
+      <div className="marketing relative isolate min-h-screen flex flex-col overflow-hidden bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+        <CustomCursor />
+        <div className="absolute inset-0 bg-grain" />
+        <main className="flex-1 flex items-center justify-center p-4 relative">
+          <div className="max-w-md text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-1">
+              Your tutor account is created. We&apos;ve sent a verification link to <strong>{accountCreated.email}</strong>.
+            </p>
+            <p className="text-sm text-muted-foreground mb-8">
+              Click the link to verify your address, then log in - the link expires in 48 hours.
+            </p>
+            <Link href="/login">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (

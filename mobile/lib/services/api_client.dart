@@ -18,6 +18,7 @@ import 'token_storage.dart';
 class ApiException implements Exception {
   final int statusCode;
   final String message;
+
   /// The server's own machine-readable `code` field, when it sends one
   /// (e.g. `"pending_approval"` from a 403 on login) - lets callers branch
   /// on a specific known error rather than string-matching `message`.
@@ -57,7 +58,8 @@ class ApiClient {
   // off one stale token - only the first one actually navigates.
   bool _handlingUnauthorized = false;
 
-  Future<AppUser> login({required String email, required String password}) async {
+  Future<AppUser> login(
+      {required String email, required String password}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/mobile/auth/login'),
       headers: {'Content-Type': 'application/json'},
@@ -78,8 +80,22 @@ class ApiClient {
 
     await TokenStorage.instance.saveToken(body['token'] as String);
     final user = AppUser.fromJson(body['user'] as Map<String, dynamic>);
-    await TokenStorage.instance.saveCachedUser(id: user.id, name: user.name, email: user.email);
+    await TokenStorage.instance
+        .saveCachedUser(id: user.id, name: user.name, email: user.email);
     return user;
+  }
+
+  /// Reachable from LoginScreen's "email_not_verified" error state - no
+  /// token exists yet at this point, so not routed through
+  /// _authorizedRequest. Always resolves the same way regardless of whether
+  /// the address exists or is already verified (matches the web action's
+  /// account-enumeration-safe shape).
+  Future<void> resendVerificationEmail(String email) async {
+    await http.post(
+      Uri.parse('$baseUrl/api/mobile/auth/resend-verification'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
   }
 
   /// Step 1 of the school-code join flow - looks up the school so the UI
@@ -94,7 +110,8 @@ class ApiClient {
     );
     final body = _decode(response);
     if (response.statusCode != 200) {
-      throw ApiException(response.statusCode, body['error'] as String? ?? 'Invalid invite code.');
+      throw ApiException(response.statusCode,
+          body['error'] as String? ?? 'Invalid invite code.');
     }
     return VerifiedSchool.fromJson(body);
   }
@@ -128,24 +145,28 @@ class ApiClient {
     );
     final body = _decode(response);
     if (response.statusCode != 200) {
-      throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not create your account.');
+      throw ApiException(response.statusCode,
+          body['error'] as String? ?? 'Could not create your account.');
     }
 
     return JoinSchoolResult.fromJson(body);
   }
 
   Future<StudentExams> getExams() async {
-    final body = await _authorizedRequest('GET', '/api/mobile/exams', fallback: 'Could not load exams.');
+    final body = await _authorizedRequest('GET', '/api/mobile/exams',
+        fallback: 'Could not load exams.');
     return StudentExams.fromJson(body);
   }
 
   Future<StudentProfile> getProfile() async {
-    final body = await _authorizedRequest('GET', '/api/mobile/me', fallback: 'Could not load profile.');
+    final body = await _authorizedRequest('GET', '/api/mobile/me',
+        fallback: 'Could not load profile.');
     return StudentProfile.fromJson(body);
   }
 
   Future<StudentDashboard> getDashboard() async {
-    final body = await _authorizedRequest('GET', '/api/mobile/dashboard', fallback: 'Could not load your dashboard.');
+    final body = await _authorizedRequest('GET', '/api/mobile/dashboard',
+        fallback: 'Could not load your dashboard.');
     return StudentDashboard.fromJson(body);
   }
 
@@ -167,7 +188,9 @@ class ApiClient {
   /// never surfaces anything mid-exam, not the redirect side effect itself.
   Future<void> recordTabSwitch(String attemptId) async {
     try {
-      await _authorizedRequest('POST', '/api/mobile/attempts/$attemptId/tab-switch', fallback: 'Tab switch not recorded.');
+      await _authorizedRequest(
+          'POST', '/api/mobile/attempts/$attemptId/tab-switch',
+          fallback: 'Tab switch not recorded.');
     } catch (_) {
       // Silent by design - see doc comment above.
     }
@@ -188,28 +211,41 @@ class ApiClient {
   }
 
   Future<ResultDetail> getResult(String attemptId) async {
-    final body = await _authorizedRequest('GET', '/api/mobile/results/$attemptId', fallback: 'Could not load your result.');
+    final body = await _authorizedRequest(
+        'GET', '/api/mobile/results/$attemptId',
+        fallback: 'Could not load your result.');
     return ResultDetail.fromJson(body);
   }
 
   Future<List<CourseCatalogRow>> getCourses() async {
-    final body = await _authorizedRequest('GET', '/api/mobile/courses', fallback: 'Could not load courses.');
-    return (body['courses'] as List<dynamic>).map((e) => CourseCatalogRow.fromJson(e as Map<String, dynamic>)).toList();
+    final body = await _authorizedRequest('GET', '/api/mobile/courses',
+        fallback: 'Could not load courses.');
+    return (body['courses'] as List<dynamic>)
+        .map((e) => CourseCatalogRow.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<MyCourseRow>> getMyCourses() async {
-    final body = await _authorizedRequest('GET', '/api/mobile/courses/my', fallback: 'Could not load your courses.');
-    return (body['courses'] as List<dynamic>).map((e) => MyCourseRow.fromJson(e as Map<String, dynamic>)).toList();
+    final body = await _authorizedRequest('GET', '/api/mobile/courses/my',
+        fallback: 'Could not load your courses.');
+    return (body['courses'] as List<dynamic>)
+        .map((e) => MyCourseRow.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<CourseDetail> getCourseDetail(String courseId) async {
-    final body = await _authorizedRequest('GET', '/api/mobile/courses/$courseId', fallback: 'Could not load this course.');
+    final body = await _authorizedRequest(
+        'GET', '/api/mobile/courses/$courseId',
+        fallback: 'Could not load this course.');
     return CourseDetail.fromJson(body);
   }
 
   /// Upsert, not a one-time submission - matches submitCourseReviewForStudent's
   /// own contract (a student can revise their rating/comment later).
-  Future<void> submitCourseReview({required String courseId, required int rating, required String comment}) async {
+  Future<void> submitCourseReview(
+      {required String courseId,
+      required int rating,
+      required String comment}) async {
     await _authorizedRequest(
       'POST',
       '/api/mobile/courses/$courseId/review',
@@ -277,6 +313,35 @@ class ApiClient {
     );
   }
 
+  /// Registers/refreshes this device's FCM token against the signed-in
+  /// student - called on login and on every cold start (see
+  /// PushNotificationService), not just once, since FCM can reissue a token
+  /// (reinstall, rotation) and a stale token would otherwise silently stop
+  /// receiving push forever.
+  Future<void> registerPushToken(
+      {required String token, required String platform}) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/push/register',
+      body: {'token': token, 'platform': platform},
+      fallback: 'Could not register for notifications.',
+    );
+  }
+
+  /// Best-effort, called just before logout clears the local session - a
+  /// signed-out device shouldn't keep receiving push for the account it
+  /// just left. Not routed through the throwing _authorizedRequest failure
+  /// path in a way that could block logout itself; callers should swallow
+  /// any error here (logging out must always succeed even if this doesn't).
+  Future<void> unregisterPushToken(String token) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/push/unregister',
+      body: {'token': token},
+      fallback: 'Could not unregister this device.',
+    );
+  }
+
   Future<void> logout() => TokenStorage.instance.clearToken();
 
   /// Shared path for every authenticated call - decodes the response,
@@ -294,7 +359,8 @@ class ApiClient {
     final headers = await _authHeaders();
     final response = method == 'GET'
         ? await http.get(uri, headers: headers)
-        : await http.post(uri, headers: headers, body: body != null ? jsonEncode(body) : null);
+        : await http.post(uri,
+            headers: headers, body: body != null ? jsonEncode(body) : null);
 
     if (response.statusCode == 401) {
       await _handleUnauthorized();
@@ -302,7 +368,8 @@ class ApiClient {
 
     final decoded = _decode(response);
     if (response.statusCode != 200) {
-      throw ApiException(response.statusCode, decoded['error'] as String? ?? fallback);
+      throw ApiException(
+          response.statusCode, decoded['error'] as String? ?? fallback);
     }
     return decoded;
   }
@@ -314,7 +381,8 @@ class ApiClient {
       await TokenStorage.instance.clearToken();
       final navigator = rootNavigatorKey.currentState;
       navigator?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen(sessionExpired: true)),
+        MaterialPageRoute(
+            builder: (_) => const LoginScreen(sessionExpired: true)),
         (route) => false,
       );
     } finally {

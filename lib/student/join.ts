@@ -5,6 +5,7 @@ import { asString } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { joinRequestPendingEmail, newJoinRequestEmail } from "@/lib/email/templates"
+import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -61,9 +62,14 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   const passwordHash = await bcrypt.hash(password, 10)
   const name = `${firstName} ${lastName}`
 
-  await prisma.student.create({
+  const student = await prisma.student.create({
     data: {
-      user: { create: { name, email, passwordHash, role: Role.student } },
+      // Self-signup - real email verification required before this account
+      // can log in, same as the other 3 self-signup flows (see
+      // prisma/schema.prisma's User model). Independent of, and in addition
+      // to, the `status: "pending"` school-admin-approval gate below - both
+      // must clear before login succeeds.
+      user: { create: { name, email, passwordHash, role: Role.student, emailVerified: false } },
       enrollmentType: "school",
       school: { connect: { id: school.schoolId } },
       // No class picker in this flow - a school admin assigns the class
@@ -75,6 +81,7 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
       // request before the account can log in.
       status: "pending",
     },
+    select: { userId: true },
   })
 
   if (input.subscribeNewsletter) {
@@ -88,6 +95,8 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
 
   const adminEmail = newJoinRequestEmail({ schoolName: school.name, studentName: name, studentEmail: email })
   await sendEmailBestEffort({ to: schoolRecord.email, subject: adminEmail.subject, html: adminEmail.html })
+
+  await sendVerificationEmailBestEffort(student.userId, email, name)
 
   return { email, password, schoolName: school.name, pendingApproval: true as const }
 }

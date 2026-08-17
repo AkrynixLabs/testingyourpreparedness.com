@@ -452,7 +452,8 @@ class _PendingApprovalStep extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '${result.message}\n\nYou\'ll be able to log in once ${result.schoolName} approves your request.',
+                  '${result.message}\n\nWe\'ve also sent you a verification link by email. '
+                  'You\'ll need to verify your address AND wait for ${result.schoolName} to approve your request before you can log in.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),

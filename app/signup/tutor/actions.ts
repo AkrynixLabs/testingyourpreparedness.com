@@ -8,6 +8,7 @@ import { asString, asStringArray } from "@/lib/validation"
 import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { welcomeEmail } from "@/lib/email/templates"
+import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
 
 export type RegisterTutorInput = {
   name: string
@@ -52,9 +53,12 @@ export async function registerTutor(input: RegisterTutorInput) {
       headline: headline || null,
       expertiseAreas,
       user: {
-        create: { name, email, passwordHash, role: Role.tutor },
+        // Self-signup - real email verification required before this
+        // account can log in (see prisma/schema.prisma's User model).
+        create: { name, email, passwordHash, role: Role.tutor, emailVerified: false },
       },
     },
+    select: { id: true, userId: true },
   })
 
   if (input.subscribeNewsletter) {
@@ -63,6 +67,7 @@ export async function registerTutor(input: RegisterTutorInput) {
 
   const { subject, html } = welcomeEmail({ name, roleLabel: "tutor", dashboardPath: "/tutor" })
   await sendEmailBestEffort({ to: email, subject, html })
+  await sendVerificationEmailBestEffort(tutor.userId, email, name)
 
   return { tutorId: tutor.id, email }
 }

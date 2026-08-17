@@ -38,6 +38,22 @@ model User {
   resetToken          String?   @unique
   resetTokenExpiresAt DateTime?
 
+  // Real email/account verification (added 2026-08-17, confirmed with the
+  // user ahead of a real 3-week launch date). Defaults to true, not false -
+  // this is a live table with real existing rows, and a bare `@default(false)`
+  // would have retroactively locked every current user out on migration.
+  // Scoped to self-signup only (confirmed with the user): the 4 self-signup
+  // creation sites (registerSchool, registerIndependentStudent, registerTutor,
+  // lib/student/join.ts's createJoinedStudent) explicitly pass `false` and
+  // send a real verification email; every admin-provisioned creation site
+  // (content admin, school-added student, an accepted Invitation) leaves this
+  // at its default `true` deliberately - each of those already proves email
+  // ownership by the recipient receiving/using a real emailed temp password
+  // or invite link, so a second verification gate would be redundant.
+  emailVerified                   Boolean   @default(true)
+  emailVerificationToken          String?   @unique
+  emailVerificationTokenExpiresAt DateTime?
+
   // Self-service account deletion (added 2026-08-15) - student/tutor only.
   // A 30-day grace period between request and actual anonymization, real
   // cancel option in between (see lib/account-deletion.ts). deletedAt marks

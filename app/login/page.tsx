@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CustomCursor } from "@/components/custom-cursor"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { resendVerificationEmail } from "@/app/verify-email/actions"
 
 const ROLE_HOME: Record<string, string> = {
   super_admin: "/super-admin",
@@ -26,23 +27,38 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [needsVerification, setNeedsVerification] = useState(false)
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle")
+
+  const handleResend = async () => {
+    setResendState("sending")
+    await resendVerificationEmail(email)
+    setResendState("sent")
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setNeedsVerification(false)
+    setResendState("idle")
     setIsLoading(true)
 
     const result = await signIn("credentials", { email, password, redirect: false })
 
     if (!result || result.error) {
       setIsLoading(false)
-      setError(
-        result?.code === "rate_limited"
-          ? "Too many login attempts. Please wait a few minutes and try again."
-          : result?.code === "pending_approval"
-          ? "Your request to join your school is still pending approval from a school administrator."
-          : "Invalid email or password."
-      )
+      if (result?.code === "email_not_verified") {
+        setNeedsVerification(true)
+        setError("Please verify your email address before logging in.")
+      } else {
+        setError(
+          result?.code === "rate_limited"
+            ? "Too many login attempts. Please wait a few minutes and try again."
+            : result?.code === "pending_approval"
+            ? "Your request to join your school is still pending approval from a school administrator."
+            : "Invalid email or password."
+        )
+      }
       return
     }
 
@@ -88,9 +104,25 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
-                <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive text-center" role="alert">
-                  {error}
-                </p>
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive text-center" role="alert">
+                  <p>{error}</p>
+                  {needsVerification && (
+                    <div className="mt-2">
+                      {resendState === "sent" ? (
+                        <p className="text-xs">Verification email sent - check your inbox.</p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleResend}
+                          disabled={resendState === "sending"}
+                          className="text-xs font-medium underline underline-offset-2 disabled:opacity-60"
+                        >
+                          {resendState === "sending" ? "Sending..." : "Resend verification email"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
               <div className="space-y-2">

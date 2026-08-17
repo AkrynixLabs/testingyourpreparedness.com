@@ -26,6 +26,10 @@ const LIMITS = {
   login: { limit: 5, window: "5 m" as const },
   signup: { limit: 5, window: "1 h" as const },
   "forgot-password": { limit: 3, window: "15 m" as const },
+  // Same abuse shape as forgot-password (repeated requests double as an
+  // email-enumeration/spam vector) - added 2026-08-17 for the "Resend
+  // verification email" action.
+  "verify-email": { limit: 3, window: "15 m" as const },
   contact: { limit: 5, window: "1 h" as const },
   newsletter: { limit: 5, window: "1 h" as const },
 } satisfies Record<string, { limit: number; window: `${number} ${"s" | "m" | "h"}` }>

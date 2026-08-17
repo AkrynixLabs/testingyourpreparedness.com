@@ -92,6 +92,19 @@ export function passwordResetEmail(resetToken: string) {
   }
 }
 
+export function verifyEmailAddressEmail(input: { name: string; token: string }) {
+  const url = `${appUrl()}/verify-email?token=${input.token}`
+  return {
+    subject: "Verify your TYP account",
+    html: wrapper(`
+      ${heading("Verify your email address")}
+      <p style="margin:0 0 20px 0;">Hi ${input.name}, welcome to TYP. Confirm this is really your email address to finish setting up your account - this link expires in 48 hours.</p>
+      ${button("Verify Email", url)}
+      <p style="margin:20px 0 0 0; font-size:13px; color:#7A88A0;">If you didn't create a TYP account, you can safely ignore this email.</p>
+    `),
+  }
+}
+
 export function schoolAdminInviteEmail(schoolName: string, token: string) {
   const url = `${appUrl()}/invite/accept?token=${token}`
   return {
