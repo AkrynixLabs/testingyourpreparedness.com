@@ -11,9 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Plus, Trash2, GripVertical } from "lucide-react"
 import { createCourse } from "../actions"
+import { VideoLessonInput } from "@/components/video-lesson-input"
 import type { LessonType } from "@/lib/generated/prisma/client"
 
-type LessonDraft = { title: string; type: LessonType; videoUrl: string; content: string }
+type LessonDraft = {
+  title: string
+  type: LessonType
+  videoUrl: string
+  content: string
+  videoSource?: "external" | "mux"
+  muxUploadId?: string
+}
 type ModuleDraft = { title: string; lessons: LessonDraft[] }
 
 function emptyLesson(): LessonDraft {
@@ -182,11 +190,9 @@ export function CreateCourseForm() {
                       )}
                     </div>
                     {lesson.type === "video" ? (
-                      <Input
-                        placeholder="Video URL (YouTube, Vimeo, etc.) *"
-                        required
-                        value={lesson.videoUrl}
-                        onChange={(e) => updateLesson(moduleIndex, lessonIndex, { videoUrl: e.target.value })}
+                      <VideoLessonInput
+                        value={{ videoUrl: lesson.videoUrl, videoSource: lesson.videoSource, muxUploadId: lesson.muxUploadId }}
+                        onChange={(v) => updateLesson(moduleIndex, lessonIndex, v)}
                       />
                     ) : (
                       <Textarea

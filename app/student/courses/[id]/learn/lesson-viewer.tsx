@@ -2,11 +2,21 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import MuxPlayer from "@mux/mux-player-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { PlayCircle, FileText, ArrowLeft, ExternalLink } from "lucide-react"
+import { PlayCircle, FileText, ArrowLeft, ExternalLink, Loader2 } from "lucide-react"
 
-type Lesson = { id: string; title: string; type: string; videoUrl: string | null; content: string | null }
+type Lesson = {
+  id: string
+  title: string
+  type: string
+  videoUrl: string | null
+  content: string | null
+  videoSource: string | null
+  muxPlaybackId: string | null
+  muxStatus: string | null
+}
 type Module = { id: string; title: string; lessons: Lesson[] }
 
 export function LessonViewer({ course }: { course: { id: string; title: string; modules: Module[] } }) {
@@ -28,7 +38,21 @@ export function LessonViewer({ course }: { course: { id: string; title: string; 
             {activeLesson ? (
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">{activeLesson.title}</h2>
-                {activeLesson.type === "video" && activeLesson.videoUrl ? (
+                {activeLesson.type === "video" && activeLesson.videoSource === "mux" ? (
+                  activeLesson.muxStatus === "ready" && activeLesson.muxPlaybackId ? (
+                    <MuxPlayer
+                      playbackId={activeLesson.muxPlaybackId}
+                      streamType="on-demand"
+                      metadata={{ video_title: activeLesson.title }}
+                      style={{ width: "100%", aspectRatio: "16/9", borderRadius: "0.5rem" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-8 justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Video is still processing - check back in a few minutes.
+                    </div>
+                  )
+                ) : activeLesson.type === "video" && activeLesson.videoUrl ? (
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       This lesson's video is hosted externally.

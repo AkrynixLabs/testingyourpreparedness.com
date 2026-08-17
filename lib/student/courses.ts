@@ -74,6 +74,16 @@ export type CourseDetail = {
   averageRating: number | null
   reviews: { id: string; studentName: string; rating: number; comment: string | null; createdAt: Date; isMine: boolean }[]
   myReview: { rating: number; comment: string } | null
+  virtualSessions: {
+    id: string
+    title: string
+    description: string | null
+    scheduledAt: Date
+    durationMinutes: number
+    mode: string
+    dailyRoomUrl: string | null
+    externalMeetingUrl: string | null
+  }[]
 }
 
 // Returns null for "removed or nonexistent" - a flagged course is still
@@ -87,6 +97,10 @@ export async function getCourseDetail(courseId: string, studentId: string | null
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       _count: { select: { enrollments: true } },
       reviews: { include: { student: { include: { user: true } } }, orderBy: { createdAt: "desc" } },
+      virtualSessions: {
+        where: { status: { not: "cancelled" }, scheduledAt: { gte: new Date() } },
+        orderBy: { scheduledAt: "asc" },
+      },
     },
   })
   if (!course || course.status === "removed") return null
@@ -125,6 +139,21 @@ export async function getCourseDetail(courseId: string, studentId: string | null
       isMine: r.studentId === studentId,
     })),
     myReview: myReview ? { rating: myReview.rating, comment: myReview.comment ?? "" } : null,
+    // Join details (dailyRoomUrl/externalMeetingUrl) are only meaningful to
+    // an enrolled student - included for everyone here since the page-level
+    // `isEnrolled` flag already gates whether the UI shows a join button at
+    // all, matching this function's existing "return full data, gate in the
+    // view" pattern for reviews/myReview above.
+    virtualSessions: course.virtualSessions.map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      scheduledAt: s.scheduledAt,
+      durationMinutes: s.durationMinutes,
+      mode: s.mode,
+      dailyRoomUrl: s.dailyRoomUrl,
+      externalMeetingUrl: s.externalMeetingUrl,
+    })),
   }
 }
 
@@ -169,7 +198,16 @@ export type LearnCourse = {
   modules: {
     id: string
     title: string
-    lessons: { id: string; title: string; type: string; videoUrl: string | null; content: string | null }[]
+    lessons: {
+      id: string
+      title: string
+      type: string
+      videoUrl: string | null
+      content: string | null
+      videoSource: string | null
+      muxPlaybackId: string | null
+      muxStatus: string | null
+    }[]
   }[]
 }
 
@@ -197,7 +235,16 @@ export async function getLearnContent(courseId: string, studentId: string): Prom
     modules: course.modules.map((m) => ({
       id: m.id,
       title: m.title,
-      lessons: m.lessons.map((l) => ({ id: l.id, title: l.title, type: l.type, videoUrl: l.videoUrl, content: l.content })),
+      lessons: m.lessons.map((l) => ({
+        id: l.id,
+        title: l.title,
+        type: l.type,
+        videoUrl: l.videoUrl,
+        content: l.content,
+        videoSource: l.videoSource,
+        muxPlaybackId: l.muxPlaybackId,
+        muxStatus: l.muxStatus,
+      })),
     })),
   }
 }

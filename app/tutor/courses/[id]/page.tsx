@@ -16,6 +16,7 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
       enrollments: { include: { student: { include: { user: true } } }, orderBy: { enrolledAt: "desc" } },
       purchases: { where: { status: "completed" } },
       reviews: { select: { rating: true } },
+      virtualSessions: { where: { status: { not: "cancelled" } }, orderBy: { scheduledAt: "asc" } },
     },
   })
   if (!course || course.tutorId !== tutor.id) notFound()
@@ -46,6 +47,17 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
         totalRevenue,
         averageRating,
         reviewCount: course.reviews.length,
+        virtualSessions: course.virtualSessions.map((s) => ({
+          id: s.id,
+          title: s.title,
+          description: s.description,
+          scheduledAt: s.scheduledAt.toISOString(),
+          durationMinutes: s.durationMinutes,
+          mode: s.mode,
+          dailyRoomUrl: s.dailyRoomUrl,
+          externalMeetingUrl: s.externalMeetingUrl,
+          status: s.status,
+        })),
       }}
     />
   )

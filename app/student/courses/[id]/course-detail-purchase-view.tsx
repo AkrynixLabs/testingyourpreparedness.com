@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { PlayCircle, FileText, Users, CheckCircle2, Star } from "lucide-react"
+import { PlayCircle, FileText, Users, CheckCircle2, Star, Video, Calendar, ExternalLink, Lock } from "lucide-react"
 import { enrollInFreeCourse, initializeCoursePurchase, submitCourseReview } from "../actions"
 import { StarRatingDisplay, StarRatingInput } from "../star-rating"
 
@@ -35,6 +35,16 @@ type CourseDetail = {
   averageRating: number | null
   reviews: Review[]
   myReview: { rating: number; comment: string } | null
+  virtualSessions: {
+    id: string
+    title: string
+    description: string | null
+    scheduledAt: string
+    durationMinutes: number
+    mode: string
+    dailyRoomUrl: string | null
+    externalMeetingUrl: string | null
+  }[]
 }
 
 export function CourseDetailPurchaseView({ course }: { course: CourseDetail }) {
@@ -141,6 +151,48 @@ export function CourseDetailPurchaseView({ course }: { course: CourseDetail }) {
           {course.tutorBio && <p className="text-sm text-muted-foreground mt-2">{course.tutorBio}</p>}
         </CardContent>
       </Card>
+
+      {course.virtualSessions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Sessions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {course.virtualSessions.map((s) => {
+              const joinUrl = s.mode === "daily" ? s.dailyRoomUrl : s.externalMeetingUrl
+              return (
+                <div key={s.id} className="flex items-center justify-between gap-4 rounded-lg border p-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Video className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{s.title}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(s.scheduledAt).toLocaleString()} - {s.durationMinutes} min
+                      </p>
+                    </div>
+                  </div>
+                  {course.isEnrolled && joinUrl ? (
+                    <Button asChild size="sm" className="shrink-0">
+                      <a href={joinUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Join
+                      </a>
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary" className="shrink-0">
+                      <Lock className="h-3 w-3 mr-1" />
+                      Enrolled students only
+                    </Badge>
+                  )}
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

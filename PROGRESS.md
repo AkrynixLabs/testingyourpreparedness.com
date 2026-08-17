@@ -30,12 +30,21 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 3. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
 4. **QA sign-off**, currently in progress with a second reviewer.
 5. ~~Legal page content reviewed by a lawyer.~~ **Done** — `/terms`/`/privacy` have been through legal review; the "draft, pending review" banner was removed accordingly.
+6. **Real push-notification keys/setup, two separate parts.** (a) Create a real Firebase project, generate a service-account key, set `FIREBASE_SERVICE_ACCOUNT_JSON` in the web app's `.env` - covers the backend send side. (b) On the mobile side (not a `.env` change): register the app in that Firebase project, run `flutterfire configure` from `mobile/` to replace the current placeholder `firebase_options.dart` with real values (also drops `google-services.json`/`GoogleService-Info.plist` in), then rebuild and reinstall the app - the currently-installed app has the placeholder and stays inert until rebuilt with real config.
 
 ---
 
 ## Log
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
+
+### 2026-08-17
+
+- **Tutors can now upload real video files for lessons, not just paste a YouTube/Vimeo link.** Backed by Mux, a real video-hosting service - upload happens straight from the tutor's browser, and students get proper streaming playback once it's done processing (usually a few minutes).
+
+- **Course-scoped virtual sessions are here: tutors can schedule live sessions for everyone enrolled in a course.** Either a native in-app video call, or a link to Zoom/Google Meet/whatever the tutor prefers - tutor's choice per session. Students see upcoming sessions on the course page and join with one click.
+
+- Both closed the last two items from the "what would make this an instant hit" feature list. Mobile app support for playing Mux videos and joining sessions is the next piece, handed to the mobile team.
 
 ### 2026-08-16
 

@@ -884,10 +884,11 @@ model Course {
   thumbnailUrl String?
   publishedAt  DateTime     @default(now())
 
-  modules     Module[]
-  enrollments Enrollment[]
-  purchases   CoursePurchase[]
-  reviews     CourseReview[]
+  modules         Module[]
+  enrollments     Enrollment[]
+  purchases       CoursePurchase[]
+  reviews         CourseReview[]
+  virtualSessions VirtualSession[]
 
   @@index([tutorId])
   @@index([status])
@@ -933,6 +934,17 @@ enum LessonType {
   article
 }
 
+enum VideoSource {
+  external // tutor pastes a link (YouTube/Vimeo/etc.) - original model, still supported
+  mux // platform-hosted, uploaded through Mux (added 2026-08-17)
+}
+
+enum MuxAssetStatus {
+  preparing // upload received, Mux is transcoding - not yet playable
+  ready
+  errored
+}
+
 model Lesson {
   id       String     @id @default(cuid())
   moduleId String
@@ -940,10 +952,58 @@ model Lesson {
   title    String
   order    Int
   type     LessonType
-  videoUrl String? // set when type = video - external host (YouTube/Vimeo/etc.), tutor pastes the link; no Vercel Blob video upload, see CLAUDE.md
+  videoUrl String? // set when type = video AND videoSource = external - tutor-pasted link
   content  String? // set when type = article - markdown
 
+  // Mux-hosted video (added 2026-08-17, tutor's choice per lesson - external
+  // URLs are still fully supported, this is an additional option not a
+  // replacement). muxUploadId is known immediately (set when the tutor
+  // requests an upload URL, before the file even finishes uploading);
+  // muxAssetId/muxPlaybackId are filled in later by the Mux webhook once
+  // transcoding finishes, matched back to this row via muxUploadId.
+  videoSource   VideoSource?    // null for article lessons and external-URL video lessons
+  muxUploadId   String?         @unique
+  muxAssetId    String?         @unique
+  muxPlaybackId String?
+  muxStatus     MuxAssetStatus?
+
   @@index([moduleId])
+}
+
+enum VirtualSessionMode {
+  daily // native in-app call via Daily.co
+  external_link // tutor pastes a Zoom/Google Meet/etc. link, same pattern as external video URLs
+}
+
+enum VirtualSessionStatus {
+  scheduled
+  live
+  ended
+  cancelled
+}
+
+// Course-scoped group sessions (added 2026-08-17, confirmed with the user) -
+// every student enrolled in the course can join, matching how course
+// marketplace access already works (per-course Enrollment, no fixed
+// roster) rather than a separate 1:1 tutor/student booking model.
+model VirtualSession {
+  id                 String                @id @default(cuid())
+  courseId           String
+  course             Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title              String
+  description        String?
+  scheduledAt        DateTime
+  durationMinutes    Int
+  mode               VirtualSessionMode
+  dailyRoomName      String?               @unique
+  dailyRoomUrl       String?
+  externalMeetingUrl String?
+  status             VirtualSessionStatus  @default(scheduled)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  @@index([courseId])
+  @@index([scheduledAt])
 }
 
 model Enrollment {

@@ -18,9 +18,18 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Trash2, PlayCircle, FileText, Users, Wallet, Star } from "lucide-react"
 import { addModule } from "../actions"
+import { VideoLessonInput } from "@/components/video-lesson-input"
+import { VirtualSessionsSection, type VirtualSessionRow } from "./virtual-sessions-section"
 import type { LessonType } from "@/lib/generated/prisma/client"
 
-type LessonDraft = { title: string; type: LessonType; videoUrl: string; content: string }
+type LessonDraft = {
+  title: string
+  type: LessonType
+  videoUrl: string
+  content: string
+  videoSource?: "external" | "mux"
+  muxUploadId?: string
+}
 function emptyLesson(): LessonDraft {
   return { title: "", type: "video", videoUrl: "", content: "" }
 }
@@ -37,6 +46,7 @@ type CourseDetail = {
   totalRevenue: number
   averageRating: number | null
   reviewCount: number
+  virtualSessions: VirtualSessionRow[]
 }
 
 export function CourseDetailView({ course }: { course: CourseDetail }) {
@@ -129,6 +139,8 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
         </CardContent>
       </Card>
 
+      <VirtualSessionsSection courseId={course.id} sessions={course.virtualSessions} />
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Curriculum</CardTitle>
@@ -179,11 +191,9 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
                         )}
                       </div>
                       {lesson.type === "video" ? (
-                        <Input
-                          placeholder="Video URL *"
-                          required
-                          value={lesson.videoUrl}
-                          onChange={(e) => updateLesson(index, { videoUrl: e.target.value })}
+                        <VideoLessonInput
+                          value={{ videoUrl: lesson.videoUrl, videoSource: lesson.videoSource, muxUploadId: lesson.muxUploadId }}
+                          onChange={(v) => updateLesson(index, v)}
                         />
                       ) : (
                         <Textarea

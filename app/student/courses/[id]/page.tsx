@@ -21,6 +21,7 @@ export default async function StudentCourseDetailPage({ params }: { params: Prom
       course={{
         ...course,
         reviews: course.reviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
+        virtualSessions: course.virtualSessions.map((s) => ({ ...s, scheduledAt: s.scheduledAt.toISOString() })),
       }}
     />
   )
