@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
@@ -10,14 +10,13 @@ import { Reveal } from "@/components/reveal"
 import { CustomCursor } from "@/components/custom-cursor"
 import { HeroImageSlider } from "@/components/hero-image-slider"
 import { ExamDemoDashboard } from "@/components/exam-demo-dashboard"
+import { PricingToggle } from "@/components/pricing-toggle"
 import { prisma } from "@/lib/prisma"
-import { planPriceAndPeriod } from "@/lib/pricing"
 import {
   BookOpen,
   Users,
   GraduationCap,
   ArrowRight,
-  School,
   Target,
   TrendingUp,
   Stethoscope,
@@ -29,7 +28,6 @@ import {
   Trophy,
   ShieldCheck,
   Smartphone,
-  Check,
 } from "lucide-react"
 
 const colorClasses = {
@@ -284,7 +282,7 @@ export default async function LandingPage() {
                   Confidence
                 </span>
               </h1>
-              <p className="font-sans text-base md:text-lg font-medium text-foreground max-w-2xl mx-auto mb-8 text-pretty drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
+              <p className="font-sans text-sm md:text-lg font-medium text-foreground max-w-2xl mx-auto mb-8 text-pretty drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
                 TYP is a home for Ghanaian students getting ready for what&apos;s next, whether that&apos;s BECE, WASSCE, a nursing entrance exam, or university admission. Practice with real, examiner style questions, see exactly where you stand, and walk into exam day feeling ready instead of anxious.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -369,16 +367,16 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {features.map((feature, i) => (
                 <Reveal key={feature.title} delay={(i % 4) * 80}>
                   <Card className="h-full border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                    <CardContent className="p-5">
-                      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${colorClasses[feature.color].bg}`}>
-                        <feature.icon className={`h-5 w-5 ${colorClasses[feature.color].text}`} />
+                    <CardContent className="p-3 sm:p-5">
+                      <div className={`mb-2 sm:mb-3 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg ${colorClasses[feature.color].bg}`}>
+                        <feature.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colorClasses[feature.color].text}`} />
                       </div>
-                      <h3 className="font-sans text-base font-semibold mb-1.5">{feature.title}</h3>
-                      <p className="font-sans text-sm text-muted-foreground text-pretty">{feature.description}</p>
+                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5">{feature.title}</h3>
+                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </Reveal>
@@ -399,29 +397,29 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
               {programs.map((program, i) => (
                 <Reveal key={program.name} delay={i * 80}>
                   <Card
                     data-cursor="big"
-                    className={`group relative flex h-full min-h-[12rem] flex-col justify-end overflow-hidden border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${colorClasses[program.color].bg}`}
+                    className={`group relative flex h-full min-h-[9rem] sm:min-h-[12rem] flex-col justify-end overflow-hidden border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${colorClasses[program.color].bg}`}
                   >
                     <program.icon
                       aria-hidden
                       strokeWidth={0.75}
-                      className={`pointer-events-none absolute -right-4 -bottom-4 h-28 w-28 opacity-[0.14] transition-transform duration-300 group-hover:scale-110 ${colorClasses[program.color].text}`}
+                      className={`pointer-events-none absolute -right-4 -bottom-4 h-20 w-20 sm:h-28 sm:w-28 opacity-[0.14] transition-transform duration-300 group-hover:scale-110 ${colorClasses[program.color].text}`}
                     />
-                    <CardContent className="relative p-5">
+                    <CardContent className="relative p-3 sm:p-5">
                       {program.tag && (
-                        <span className="mb-2 inline-flex items-center rounded-full bg-card px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary ring-1 ring-border">
+                        <span className="mb-2 inline-flex items-center rounded-full bg-card px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide text-primary ring-1 ring-border">
                           {program.tag}
                         </span>
                       )}
-                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-card transition-transform duration-300 group-hover:scale-110">
-                        <program.icon className={`h-5 w-5 ${colorClasses[program.color].text}`} />
+                      <div className="mb-2 sm:mb-3 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-card transition-transform duration-300 group-hover:scale-110">
+                        <program.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colorClasses[program.color].text}`} />
                       </div>
-                      <h3 className="font-sans text-base font-semibold mb-1.5">{program.name}</h3>
-                      <p className="font-sans text-sm text-muted-foreground text-pretty">{program.description}</p>
+                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5">{program.name}</h3>
+                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty">{program.description}</p>
                     </CardContent>
                   </Card>
                 </Reveal>
@@ -441,119 +439,7 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            {/* School Plans */}
-            <div className="mb-10">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <School className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <h3 className="font-sans text-lg font-semibold">School Plans</h3>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                {schoolPlans.map((plan, i) => {
-                  const { price, period } = planPriceAndPeriod(plan)
-                  const planFeatures = plan.features as string[]
-                  return (
-                    <Reveal key={plan.id} delay={i * 80}>
-                      <Card className={`relative h-full border-border shadow-sm ${plan.popular ? "border-primary ring-1 ring-primary" : ""}`}>
-                        {plan.popular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[11px] font-medium rounded-full">
-                            Most Popular
-                          </div>
-                        )}
-                        <CardHeader className="p-5 pb-0">
-                          <CardTitle className="text-base">{plan.name}</CardTitle>
-                          <CardDescription className="text-xs">
-                            {plan.studentLimit ? `Up to ${plan.studentLimit} students` : "Unlimited students"}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-5">
-                          <div className="mb-4">
-                            <span className="text-2xl font-semibold">
-                              {plan.currency} {price}
-                            </span>
-                            {period && <span className="text-sm text-muted-foreground">/{period}</span>}
-                          </div>
-                          <ul className="space-y-2 mb-4">
-                            {planFeatures.map((feature, j) => (
-                              <li key={j} className="flex items-start gap-2 text-xs">
-                                <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <Button size="sm" className="w-full" variant={plan.popular ? "default" : "outline"} asChild>
-                            <Link href="/signup/school">Get Started</Link>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </Reveal>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Student Plans */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <GraduationCap className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <h3 className="font-sans text-lg font-semibold">Student Plans</h3>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {studentPlans.map((plan, i) => {
-                  const { price, period } = planPriceAndPeriod(plan)
-                  const planFeatures = plan.features as string[]
-                  return (
-                    <Reveal key={plan.id} delay={i * 80}>
-                      <Card className={`relative h-full border-border shadow-sm ${plan.popular ? "border-primary ring-1 ring-primary" : ""}`}>
-                        {plan.popular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[11px] font-medium rounded-full">
-                            Best Value
-                          </div>
-                        )}
-                        <CardHeader className="p-5 pb-0">
-                          <CardTitle className="text-base">{plan.name}</CardTitle>
-                          {period && (
-                            <CardDescription className="text-xs">
-                              Billed {period === "month" ? "monthly" : period === "term" ? "per term" : "annually"}
-                            </CardDescription>
-                          )}
-                        </CardHeader>
-                        <CardContent className="p-5">
-                          <div className="mb-4">
-                            {price === 0 ? (
-                              <span className="text-2xl font-semibold">Free</span>
-                            ) : (
-                              <>
-                                <span className="text-2xl font-semibold">
-                                  {plan.currency} {price}
-                                </span>
-                                <span className="text-sm text-muted-foreground">/{period}</span>
-                              </>
-                            )}
-                          </div>
-                          <ul className="space-y-2 mb-4">
-                            {planFeatures.map((feature, j) => (
-                              <li key={j} className="flex items-start gap-2 text-xs">
-                                <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <Button size="sm" className="w-full" variant={price === 0 ? "outline" : "default"} asChild>
-                            <Link href="/signup/student">{price === 0 ? "Sign Up Free" : "Subscribe"}</Link>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </Reveal>
-                  )
-                })}
-              </div>
-            </div>
+            <PricingToggle schoolPlans={schoolPlans} studentPlans={studentPlans} />
 
             <p className="text-center text-sm text-muted-foreground mt-8">
               Need a custom plan for your institution?{" "}

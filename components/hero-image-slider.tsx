@@ -25,7 +25,10 @@ export function HeroImageSlider({
   const total = images.length
 
   return (
-    <div className="absolute inset-0 overflow-hidden [transform:translateZ(0)]" aria-hidden>
+    <div
+      className="absolute inset-x-0 top-0 h-[420px] overflow-hidden [transform:translateZ(0)] sm:h-[520px] md:inset-0 md:h-auto"
+      aria-hidden
+    >
       {images.map((image, i) => {
         let offset = i - active
         if (offset > total / 2) offset -= total

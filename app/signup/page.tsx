@@ -65,7 +65,7 @@ const roleOptions: {
 
 export default function SignupPage() {
   return (
-    <div className="marketing relative isolate h-screen flex flex-col overflow-hidden bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="marketing relative isolate min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground bg-gradient-to-br from-background via-background to-primary/5">
       <CustomCursor />
       <div className="absolute inset-0 bg-grain" />
       <div
@@ -84,7 +84,7 @@ export default function SignupPage() {
         </Link>
       </header>
 
-      <main className="flex-1 min-h-0 flex items-center justify-center px-4 pb-4 relative overflow-hidden">
+      <main className="flex-1 flex items-center justify-center px-4 py-6 relative">
         <div className="w-full max-w-5xl">
           <div className="text-center mb-6">
             <Link href="/" className="inline-flex items-center justify-center mb-3">
@@ -124,14 +124,14 @@ export default function SignupPage() {
                       <CardDescription className="text-sm">{option.description}</CardDescription>
                     </CardHeader>
                     <CardContent className="mt-auto px-6">
-                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
                         {option.features.map((feature) => (
-                          <span key={feature} className="inline-flex items-center gap-1.5">
-                            <Check className={`h-3.5 w-3.5 shrink-0 ${colorClasses[option.color].text}`} />
-                            {feature}
-                          </span>
+                          <li key={feature} className="flex items-center gap-1.5">
+                            <Check className={`h-3 w-3 shrink-0 ${colorClasses[option.color].text}`} />
+                            <span className="leading-snug">{feature}</span>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </CardContent>
                   </Link>
                 </Card>

@@ -700,7 +700,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   <RadioGroup
                     value={formData.billingCycle}
                     onValueChange={(v) => updateFormData("billingCycle", v)}
-                    className="flex gap-4"
+                    className="flex flex-wrap gap-x-4 gap-y-2"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="monthly" id="monthly" />
