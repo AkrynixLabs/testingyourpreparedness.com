@@ -284,7 +284,7 @@ export function StudentProgressView({
                   <div className="space-y-4 py-2">
                     {error && <p className="text-sm text-destructive">{error}</p>}
                     <div className="space-y-2">
-                      <Label htmlFor="goal">Goal</Label>
+                      <Label htmlFor="goal">Goal *</Label>
                       <Input
                         id="goal"
                         placeholder="e.g., Complete 5 Math practice exams"
@@ -307,7 +307,7 @@ export function StudentProgressView({
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="total">Target</Label>
+                        <Label htmlFor="total">Target *</Label>
                         <Input
                           id="total"
                           type="number"

@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { Role } from "@/lib/generated/prisma/client"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { joinRequestPendingEmail, newJoinRequestEmail } from "@/lib/email/templates"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -32,6 +35,8 @@ export type JoinedStudentInput = {
   lastName: string
   email: string
   password: string
+  agreeTerms: boolean
+  subscribeNewsletter: boolean
 }
 
 export async function createJoinedStudent(input: JoinedStudentInput) {
@@ -48,22 +53,41 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   if (!firstName || !lastName) throw new Error("Name is required.")
   if (!email) throw new Error("Email is required.")
   if (password.length < 8) throw new Error("Password must be at least 8 characters.")
+  if (!input.agreeTerms) throw new Error("You must agree to the Terms of Service and Privacy Policy.")
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
 
   const passwordHash = await bcrypt.hash(password, 10)
+  const name = `${firstName} ${lastName}`
 
   await prisma.student.create({
     data: {
-      user: { create: { name: `${firstName} ${lastName}`, email, passwordHash, role: Role.student } },
+      user: { create: { name, email, passwordHash, role: Role.student } },
       enrollmentType: "school",
       school: { connect: { id: school.schoolId } },
       // No class picker in this flow - a school admin assigns the class
       // afterwards, same as any other student added directly by a school.
-      status: "active",
+      // Decided/built 2026-08-16: starts "pending", not "active" - a school
+      // code is a short, guessable string (see lib/student/join-approval.ts's
+      // own note), so joining used to give instant, unnoticed access to
+      // anyone who knew or guessed it. A school admin must now approve the
+      // request before the account can log in.
+      status: "pending",
     },
   })
 
-  return { email, password, schoolName: school.name }
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(email)
+  }
+
+  const schoolRecord = await prisma.school.findUniqueOrThrow({ where: { id: school.schoolId }, select: { email: true } })
+
+  const pendingEmail = joinRequestPendingEmail({ name, schoolName: school.name })
+  await sendEmailBestEffort({ to: email, subject: pendingEmail.subject, html: pendingEmail.html })
+
+  const adminEmail = newJoinRequestEmail({ schoolName: school.name, studentName: name, studentEmail: email })
+  await sendEmailBestEffort({ to: schoolRecord.email, subject: adminEmail.subject, html: adminEmail.html })
+
+  return { email, password, schoolName: school.name, pendingApproval: true as const }
 }

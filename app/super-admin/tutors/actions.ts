@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma"
 import type { TutorStatus } from "@/lib/generated/prisma/client"
 import { flagCourse, unflagCourse } from "../courses/actions"
 import { TUTOR_SUSPENSION_CASCADE_REASON } from "../courses/constants"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { accountStatusChangedEmail } from "@/lib/email/templates"
 
 async function requireSuperAdmin() {
   const session = await auth()
@@ -33,6 +35,13 @@ export async function setTutorStatus(tutorId: string, status: TutorStatus) {
       details: { type: "tutor", tutorId, status },
     },
   })
+
+  const { subject, html } = accountStatusChangedEmail({
+    name: tutor.user.name,
+    roleLabel: "tutor",
+    active: status === "active",
+  })
+  await sendEmailBestEffort({ to: tutor.user.email, subject, html })
 
   // Decided 2026-08-08: suspending a tutor cascades to their courses - flag
   // every currently-published one (reversible, not the stronger "removed")

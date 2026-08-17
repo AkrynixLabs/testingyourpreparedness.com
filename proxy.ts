@@ -21,6 +21,16 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
   const session = req.auth
 
+  if (pathname === "/login" && session?.user) {
+    // Already signed in - most commonly reached by pressing the browser's
+    // Back button after logging in (router.push left /login in history).
+    // Without this, Back appears to "log the user out" even though the
+    // session cookie is still valid - it just re-shows the login form.
+    // Bounce straight back to their own dashboard instead.
+    const ownHome = ROLE_HOME[session.user.role] ?? "/"
+    return NextResponse.redirect(new URL(ownHome, req.url))
+  }
+
   const matchedPrefix = PROTECTED_PREFIXES.find(([, prefix]) => pathname.startsWith(prefix))
 
   if (!matchedPrefix) {
@@ -54,5 +64,6 @@ export const config = {
     "/school-admin/:path*",
     "/student/:path*",
     "/tutor/:path*",
+    "/login",
   ],
 }

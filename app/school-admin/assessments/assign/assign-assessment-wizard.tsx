@@ -444,7 +444,7 @@ export function AssignAssessmentWizard({
               <CardContent className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Start Date</Label>
+                    <Label>Start Date *</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -482,7 +482,7 @@ export function AssignAssessmentWizard({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>End Date</Label>
+                    <Label>End Date *</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button

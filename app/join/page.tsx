@@ -2,19 +2,17 @@
 
 import { useState, useTransition } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Checkbox } from "@/components/ui/checkbox"
 import { CustomCursor } from "@/components/custom-cursor"
 import { ArrowLeft, ArrowRight, School, CheckCircle2, AlertCircle, Lock, User, Mail } from "lucide-react"
 import { verifySchoolCode, registerJoinedStudent, type VerifiedSchool } from "./actions"
 
 export default function JoinSchoolPage() {
-  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [step, setStep] = useState(1)
   const [error, setError] = useState("")
@@ -26,9 +24,15 @@ export default function JoinSchoolPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    agreeTerms: false,
+    subscribeNewsletter: false,
   })
 
   const updateFormData = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const updateCheckbox = (field: "agreeTerms" | "subscribeNewsletter", value: boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -49,21 +53,21 @@ export default function JoinSchoolPage() {
     setError("")
     startTransition(async () => {
       try {
-        const { email, password } = await registerJoinedStudent({
+        // Decided/built 2026-08-16: joining no longer auto-signs-in, since
+        // the account starts "pending" and can't actually log in yet - a
+        // school admin has to approve it first (see
+        // lib/student/join-approval.ts). Previously this called signIn()
+        // immediately and redirected straight to /student.
+        await registerJoinedStudent({
           schoolCode: formData.inviteCode,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
+          agreeTerms: formData.agreeTerms,
+          subscribeNewsletter: formData.subscribeNewsletter,
         })
-
-        const result = await signIn("credentials", { email, password, redirect: false })
-        if (result?.error) {
-          setError("Account created, but automatic sign-in failed. Please log in manually.")
-          router.push("/login")
-          return
-        }
-        router.push("/student")
+        setStep(3)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to create account.")
       }
@@ -94,7 +98,11 @@ export default function JoinSchoolPage() {
             </Link>
             <h1 className="text-2xl font-bold mb-2">Join Your School</h1>
             <p className="text-muted-foreground">
-              {step === 1 ? "Enter the school code provided by your school" : "Complete your account setup"}
+              {step === 1
+                ? "Enter the school code provided by your school"
+                : step === 2
+                ? "Complete your account setup"
+                : "Request submitted"}
             </p>
           </div>
 
@@ -250,6 +258,36 @@ export default function JoinSchoolPage() {
                     />
                   </div>
 
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="agreeTerms"
+                        checked={formData.agreeTerms}
+                        onCheckedChange={(checked) => updateCheckbox("agreeTerms", checked as boolean)}
+                      />
+                      <label htmlFor="agreeTerms" className="text-sm text-muted-foreground">
+                        I agree to the{" "}
+                        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                      </label>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="subscribeNewsletter"
+                        checked={formData.subscribeNewsletter}
+                        onCheckedChange={(checked) => updateCheckbox("subscribeNewsletter", checked as boolean)}
+                      />
+                      <label htmlFor="subscribeNewsletter" className="text-sm text-muted-foreground">
+                        Send me marketing emails and feature updates (optional)
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="flex gap-3 pt-4">
                     <Button
                       variant="outline"
@@ -270,6 +308,7 @@ export default function JoinSchoolPage() {
                         !formData.email ||
                         !formData.password ||
                         formData.password !== formData.confirmPassword ||
+                        !formData.agreeTerms ||
                         isPending
                       }
                     >
@@ -281,12 +320,35 @@ export default function JoinSchoolPage() {
             </>
           )}
 
-          <div className="mt-8 text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
-            <Link href="/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
-          </div>
+          {step === 3 && school && (
+            <Card>
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <CheckCircle2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg mb-1">Request submitted</h2>
+                  <p className="text-sm text-muted-foreground">
+                    We&apos;ve sent your request to join <strong>{school.name}</strong> to a school administrator for
+                    approval. You&apos;ll get an email as soon as a decision is made - usually within a day or two.
+                    You won&apos;t be able to log in until then.
+                  </p>
+                </div>
+                <Button asChild className="w-full">
+                  <Link href="/">Back to Home</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {step !== 3 && (
+            <div className="mt-8 text-center text-sm">
+              <span className="text-muted-foreground">Already have an account? </span>
+              <Link href="/login" className="text-primary font-medium hover:underline">
+                Sign in
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </div>

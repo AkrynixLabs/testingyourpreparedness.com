@@ -91,16 +91,16 @@ export function CreateCourseForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Title *</Label>
             <Input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description *</Label>
             <Textarea id="description" required rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">Category *</Label>
               <Input
                 id="category"
                 required
@@ -110,7 +110,7 @@ export function CreateCourseForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price (GHS)</Label>
+              <Label htmlFor="price">Price (GHS) *</Label>
               <Input id="price" type="number" min={0} required value={price} onChange={(e) => setPrice(e.target.value)} />
             </div>
           </div>
@@ -131,7 +131,7 @@ export function CreateCourseForm() {
               <div className="flex items-start gap-2">
                 <GripVertical className="h-5 w-5 mt-2 text-muted-foreground shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <Label>Module {moduleIndex + 1} Title</Label>
+                  <Label>Module {moduleIndex + 1} Title *</Label>
                   <Input
                     required
                     value={module.title}
@@ -152,7 +152,7 @@ export function CreateCourseForm() {
                   <div key={lessonIndex} className="rounded-lg border p-3 space-y-3 bg-muted/30">
                     <div className="flex items-center justify-between gap-2">
                       <Input
-                        placeholder={`Lesson ${lessonIndex + 1} title`}
+                        placeholder={`Lesson ${lessonIndex + 1} title *`}
                         required
                         value={lesson.title}
                         onChange={(e) => updateLesson(moduleIndex, lessonIndex, { title: e.target.value })}
@@ -183,14 +183,14 @@ export function CreateCourseForm() {
                     </div>
                     {lesson.type === "video" ? (
                       <Input
-                        placeholder="Video URL (YouTube, Vimeo, etc.)"
+                        placeholder="Video URL (YouTube, Vimeo, etc.) *"
                         required
                         value={lesson.videoUrl}
                         onChange={(e) => updateLesson(moduleIndex, lessonIndex, { videoUrl: e.target.value })}
                       />
                     ) : (
                       <Textarea
-                        placeholder="Article content (markdown)"
+                        placeholder="Article content (markdown) *"
                         required
                         rows={3}
                         value={lesson.content}

@@ -71,6 +71,7 @@ class _CoursePurchaseWebviewScreenState extends State<CoursePurchaseWebviewScree
           title: const Text('Checkout'),
           leading: IconButton(
             icon: const Icon(Icons.close),
+            tooltip: 'Close checkout',
             onPressed: () => _resolve(null),
           ),
         ),

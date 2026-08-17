@@ -177,11 +177,11 @@ export function SettingsView({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Full Name *</Label>
                   <Input id="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -273,7 +273,7 @@ export function SettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword">Current Password *</Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
@@ -294,7 +294,7 @@ export function SettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">New Password *</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
@@ -315,7 +315,7 @@ export function SettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"

@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { passwordChangedEmail } from "@/lib/email/templates"
 
 export async function updateProfile(input: { name: string; email: string }) {
   const session = await auth()
@@ -52,6 +54,9 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
     where: { id: session.user.id },
     data: { passwordHash },
   })
+
+  const { subject, html } = passwordChangedEmail({ name: user.name })
+  await sendEmailBestEffort({ to: user.email, subject, html })
 }
 
 export async function updatePlatformFeePercent(platformFeePercent: number) {

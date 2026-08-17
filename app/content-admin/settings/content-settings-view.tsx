@@ -136,7 +136,7 @@ export function ContentSettingsView({ user }: { user: SafeUser }) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
                     value={profile.name}
@@ -144,7 +144,7 @@ export function ContentSettingsView({ user }: { user: SafeUser }) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -365,7 +365,7 @@ export function ContentSettingsView({ user }: { user: SafeUser }) {
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword">Current Password *</Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
@@ -386,7 +386,7 @@ export function ContentSettingsView({ user }: { user: SafeUser }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">New Password *</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
@@ -407,7 +407,7 @@ export function ContentSettingsView({ user }: { user: SafeUser }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"

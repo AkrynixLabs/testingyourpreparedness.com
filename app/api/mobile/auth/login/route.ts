@@ -35,6 +35,17 @@ export async function POST(request: Request) {
     )
   }
 
+  // Added 2026-08-16 alongside real school-code join approval - a student
+  // who joined via code but hasn't been approved by their school yet must
+  // not be able to log in at all, same rule as auth.ts's web login.
+  const student = await prisma.student.findUnique({ where: { userId: user.id }, select: { status: true } })
+  if (student?.status === "pending") {
+    return NextResponse.json(
+      { error: "Your request to join your school is still pending approval.", code: "pending_approval" },
+      { status: 403 }
+    )
+  }
+
   const token = await signMobileToken({ id: user.id, email: user.email, name: user.name, role: user.role })
 
   return NextResponse.json({

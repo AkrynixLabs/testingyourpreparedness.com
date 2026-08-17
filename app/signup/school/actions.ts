@@ -8,6 +8,11 @@ import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { stripTrailingSlash } from "@/lib/utils"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
+import { generateSchoolCode } from "@/lib/school-code"
 
 export type RegisterSchoolInput = {
   schoolName: string
@@ -25,6 +30,7 @@ export type RegisterSchoolInput = {
   adminEmail: string
   adminPhone: string
   adminPassword: string
+  subscribeNewsletter: boolean
 }
 
 // Creates the School (in its existing `pending` verification state) and the
@@ -98,6 +104,17 @@ export async function registerSchool(input: RegisterSchoolInput) {
     },
   })
 
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(adminEmail)
+  }
+
+  const { subject, html } = welcomeEmail({
+    name: `${adminFirstName} ${adminLastName}`,
+    roleLabel: "school administrator",
+    dashboardPath: "/school-admin",
+  })
+  await sendEmailBestEffort({ to: adminEmail, subject, html })
+
   return { schoolId: school.id }
 }
 
@@ -166,7 +183,7 @@ export async function initializeSchoolCheckout(input: InitializeCheckoutInput) {
     },
   })
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
   const { authorizationUrl } = await initializeTransaction({
     email: school.email,
     amountGhs,
@@ -178,18 +195,3 @@ export async function initializeSchoolCheckout(input: InitializeCheckoutInput) {
   return { authorizationUrl }
 }
 
-async function generateSchoolCode(schoolName: string) {
-  const prefix = schoolName
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 4) || "SCH"
-
-  for (let i = 0; i < 20; i++) {
-    const candidate = `${prefix}-${String(Math.floor(Math.random() * 900) + 100)}`
-    const exists = await prisma.school.findUnique({ where: { code: candidate } })
-    if (!exists) return candidate
-  }
-  throw new Error("Could not generate a unique school code, please try again.")
-}

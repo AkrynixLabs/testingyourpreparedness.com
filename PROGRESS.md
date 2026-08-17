@@ -29,7 +29,7 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 2. **A real end-to-end payment test on the live site.** Everything's been verified "downstream of a real API call" so far — the next real milestone is one actual live checkout completing start to finish.
 3. **Content authoring at real scale.** The biggest gap, and the one thing engineering can't solve. Worth starting now, in parallel with everything else.
 4. **QA sign-off**, currently in progress with a second reviewer.
-5. **Legal page content reviewed by a lawyer.** Real draft text now exists (product-accurate, covers what's actually collected/how payments work/Ghana's Data Protection Act) — still needs actual legal review before real users sign up on the strength of it.
+5. ~~Legal page content reviewed by a lawyer.~~ **Done** — `/terms`/`/privacy` have been through legal review; the "draft, pending review" banner was removed accordingly.
 
 ---
 
@@ -37,8 +37,68 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
+### 2026-08-16
+
+- **Fixed: pressing the browser Back button right after logging in looked like it logged you out.** It never actually did - your session was fine the whole time - but landing back on the login form after a successful sign-in reads exactly like being logged out. Now Back after login takes you straight to your dashboard instead of re-showing the form.
+
+- **Added a reusable confirmation dialog component on web, and used it to fix a real gap: signing out had zero confirmation.** Clicking "Sign out" fired immediately with no "are you sure?" - a single misclick logged you out. Now shows a confirm dialog first, same pattern already used for account deletion elsewhere in the app, and available for other pages to reuse going forward.
+
+- **"Add School" now actually adds a school** — a super admin creating a school directly gets a real form on its own page (name, location, primary administrator), activated immediately with no plan/payment step, instead of being sent to the public school-signup page meant for schools signing themselves up.
+- **Legal review and production email-key setup are both confirmed done** — closing out two of the standing launch-readiness items.
+
+- **Account deletion now has real backend support on mobile too**, not just web — the API side is done and tested; the actual "delete my account" screen in the app itself is the mobile team's next task.
+
+- **Joining a school by code now needs real approval from that school's admin, closing a real security gap.** Previously, anyone who knew or correctly guessed a school's code (which turned out to be genuinely guessable - short, partly derived from the school's own name) could join instantly with zero notice to the school. Now it creates a pending request instead: the school gets a real email and a review queue on their Students page (Approve/Reject), and the new account can't log in at all until approved. Web side is done and verified against the live database; the matching mobile app screens are handed off to the mobile team as a fast-follow.
+
+- **Mobile app splash screen now stays on screen for a proper ~3 seconds instead of flashing by instantly.** The earlier fix only slowed down the icon's own zoom/fade animation, but the splash was still being dismissed the moment the app's first screen started rendering, which happens almost immediately. Now the app deliberately holds the splash up for a minimum 3 seconds (or however long the login-check takes, if that's longer) before showing the login or home screen. Can't be visually confirmed in this environment (no phone/emulator available here) - worth a quick look on a real device to make sure the timing feels right.
+
+- **The mobile app got a full visual redesign**, covering every single screen - real matching fonts, and much richer styling on buttons, cards, navigation, and pop-up dialogs, replacing the plain default look it had before.
+
+- **Mobile account deletion is now actually reachable in the app**, not just supported on the backend - it lives on a new dedicated Settings screen alongside Log Out, moved there from the Profile screen at your own request so account actions have one clear home.
+
+- **Mobile now asks "are you sure?" before logging out or deleting your account**, closing a real gap where those actions could fire with a single accidental tap and zero confirmation - one reusable confirmation-dialog design now used everywhere this matters (also submitting an exam, and course-payment results).
+
+- **Fixed a real, user-reported bug: pressing the phone's back button could log you out.** Turned out to be two separate problems. The back button had nowhere sensible to go on some screens, so it was quitting the app outright - now it steps back properly and only exits after two back presses in a row. And separately, if the app's connection blinked for even a moment right as it reopened, it was wrongly treating that the same as an expired login and signing you out for real - now it only signs you out when your login is actually no longer valid.
+
+- **Pull-to-refresh now works consistently everywhere it should on mobile** — a few screens (course details, profile, settings) were missing the swipe-down-to-refresh gesture that most of the app already had.
+
+- **Mobile now shows a real "you're offline" banner when the phone loses signal**, instead of just silently failing whatever you happened to be doing. The Settings screen also now shows the actual app version installed, useful for support/bug reports.
+
+- **A real accessibility pass on mobile**: a few icon-only buttons (like the eye icon that shows/hides your password) had no label at all for screen-reader users - fixed. A couple of buttons that were too small to comfortably tap (the star-rating picker, the exam question-number palette) were made easier to hit. And every text color combination the app actually uses was checked against accessibility contrast standards - all pass comfortably.
+
+- **Fixed the exact bug the user reported: on the assessment review screen (and a few others - course details, my courses, profile, settings, watching a lesson), the bottom of the content could get cut off by the phone's own on-screen navigation bar**, so the last item wasn't fully visible or tappable. Now there's always enough space at the bottom, calculated from the actual device rather than a fixed guess.
+
+- **Mobile now defaults to a light/white look, and you can actually change it.** The app previously had no real setting for this at all - it silently matched whatever your phone's system dark-mode setting was, which is why the last build looked dark with no way to change it from inside the app. There's now a real Light/Dark/System switch on the Settings screen, and it remembers your choice.
+
+- **Fixed a real bug that would have made any future build of the app unusable on a real phone.** If someone built the app without remembering a specific extra command-line flag, it would silently connect to "localhost" instead of the real server - meaning nothing in the app would work, with no clear error explaining why. The app now defaults to the real live server automatically; the extra flag is only needed for local development instead of every real build.
+
+- **Final polish pass on mobile before this build**: subtle vibration feedback on things like switching tabs, confirming an action, picking a star rating, and submitting an exam - the small touches that make an app feel responsive. Switching between the Exams/Dashboard/Courses tabs now fades smoothly instead of cutting instantly. And instead of a bare spinning circle while things load, the Exams, Dashboard, and Courses screens now show a shimmering outline of what's about to appear - a common touch in polished apps that makes loading feel faster even though it isn't.
+
 ### 2026-08-15
 
+- **Fixed: logging in as a tutor was landing on the homepage instead of the tutor dashboard.** A real bug, not related to anything shipped today — the login page had its own list of "which dashboard does each role go to" and had simply never been updated when the Tutor role was added. One-line fix.
+
+- **Students and tutors can now actually delete their own account.** Settings → Security → Danger Zone. It's not instant — a 30-day grace period, with a real confirmation email and a real "cancel this" option the whole time, then a final email once it actually happens. Under the hood this anonymizes rather than erases everything outright (courses a tutor made stay up for their students, purchase records stay intact for accounting) - your personal info (name, email, password) is what actually gets wiped. A tutor with an active course has to remove/unpublish it first. Verified against the real database with real test accounts before shipping, not just typechecked.
+
+- **The "password changed" email now also covers the forgot-password reset flow**, not just changing it from Settings while logged in — the reset-via-emailed-link path was missed in the earlier pass, caught by the user asking directly whether it was covered.
+
+- **6 more account-notification emails added**, closing a broader audit: suspending/reactivating a content admin or tutor, suspending/approving a school, flagging or removing a tutor's course (with the real reason), a content admin's question/assessment being rejected (with the reason), and a "your password was changed" security notice on every role's own settings page. Previously all silent. Purchase-receipt emails and approval-confirmation emails were found too but deliberately held back for a separate, more careful pass — not forgotten, just not done yet.
+
+- **All the automated emails (password reset, invites, welcome, assignment notices, etc.) now actually look like they're from TYP** — real logo, real brand blue, proper layout, matching the new Brevo template's look instead of the old plain black-and-white notices.
+- **Two accounts-affected-silently gaps closed**: removing a content admin's account, or removing a school administrator's access, both now send a real notification email — previously the person just found out by failing to log in, with no explanation anywhere.
+
+- **A real, on-brand email template is ready for Brevo broadcasts** (`docs/email-templates/brevo-broadcast-template.html`) — paste it straight into Brevo's campaign editor. Uses the real TYP logo and brand blue, tested against real email-client quirks (Outlook included), with the parts you'd actually change per send clearly marked.
+
+- **New accounts now get a real welcome email** — school admins, independent students, tutors, and students joining via school code all get a "Welcome to TYP" confirmation right after signing up. Previously nobody got one at all (caught because a real tutor signup produced silence).
+
+- **The required-field asterisks now match on mobile too** — login and the "join your school" screen were missing them even though the equivalent web forms already had them. Fixed directly rather than left as a gap.
+
+- **Every required field, on every real form across the whole app, now shows a `*`** — not just signup. Went through content-admin, school-admin, super-admin, student, and tutor forms one by one and marked anything the backend actually treats as mandatory, including a couple that were missed even on the already-shipped signup/contact forms (the contact form's "I am a..." and "Subject" dropdowns were required but unmarked).
+
+- **Every signup form now has a "send me marketing updates" checkbox and a real Terms/Privacy agreement checkbox** — website and mobile app both. The newsletter checkbox is new everywhere; the terms checkbox already existed on the school and independent-student signup forms but was completely missing from tutor signup and the "join your school" flow (web and mobile) — all now have it, with real links to the actual legal pages, and you can't submit without agreeing.
+
+- **Students can now leave and edit course reviews from the mobile app**, not just read them — the review feature itself already existed on the website, this closes the mobile-only gap. Same rule as the website: only tutors see an average star rating on their own course, not the actual comments; no one else (super admin included) has a review-moderation view.
+- **The mobile app has now been installed and run on a real phone via a real CI build** — confirmed working end-to-end, not just passing automated checks. This closes the last open question about whether the app's build/signing pipeline actually works outside a dev sandbox. Still no Google Play or Apple App Store listing — that's a separate, later step.
 - **Signup forms now block you from skipping required fields.** Previously the multi-step school and independent-student signup wizards let you click "Continue" past a step with blank required fields — you'd only find out something was missing (or, worse, hit a raw error) at the very end. Now each step checks itself and won't let you move on until the required fields are filled, with the empty ones highlighted. The backend side of every signup/join form was also hardened so a malformed submission fails with a clear message instead of crashing.
 
 - **Fixed the mobile app's icon and splash screen** — they were showing a leftover placeholder logo from an earlier design pass instead of TYP's real shield-and-checkmark mark. The app name itself ("TYP") was already correct and didn't need changing.

@@ -96,6 +96,15 @@ class CourseReview {
       );
 }
 
+class MyCourseReview {
+  final int rating;
+  final String comment;
+  const MyCourseReview({required this.rating, required this.comment});
+
+  factory MyCourseReview.fromJson(Map<String, dynamic> json) =>
+      MyCourseReview(rating: json['rating'] as int, comment: json['comment'] as String);
+}
+
 class CourseDetail {
   final String id;
   final String title;
@@ -110,6 +119,7 @@ class CourseDetail {
   final bool isEnrolled;
   final num? averageRating;
   final List<CourseReview> reviews;
+  final MyCourseReview? myReview;
 
   const CourseDetail({
     required this.id,
@@ -125,6 +135,7 @@ class CourseDetail {
     required this.isEnrolled,
     this.averageRating,
     required this.reviews,
+    this.myReview,
   });
 
   factory CourseDetail.fromJson(Map<String, dynamic> json) => CourseDetail(
@@ -141,6 +152,7 @@ class CourseDetail {
         isEnrolled: json['isEnrolled'] as bool,
         averageRating: json['averageRating'] as num?,
         reviews: (json['reviews'] as List<dynamic>).map((e) => CourseReview.fromJson(e as Map<String, dynamic>)).toList(),
+        myReview: json['myReview'] != null ? MyCourseReview.fromJson(json['myReview'] as Map<String, dynamic>) : null,
       );
 }
 

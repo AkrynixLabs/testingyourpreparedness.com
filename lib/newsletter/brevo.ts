@@ -55,3 +55,16 @@ export async function subscribeToNewsletter(email: string): Promise<SubscribeToN
   const body = await response.json().catch(() => null)
   throw new Error(body?.message ? `Brevo: ${body.message}` : `Brevo request failed (${response.status}).`)
 }
+
+// Best-effort subscribe: logs and swallows any error (missing key, Brevo API
+// failure) instead of throwing - same pattern as lib/email/resend.ts's
+// sendEmailBestEffort. Used at account signup, where checking a "send me
+// marketing updates" box is a nice-to-have on top of an already-real account
+// creation - a misconfigured/down Brevo must never block registration.
+export async function subscribeToNewsletterBestEffort(email: string): Promise<void> {
+  try {
+    await subscribeToNewsletter(email)
+  } catch (err) {
+    console.error("[newsletter] best-effort subscribe failed:", err instanceof Error ? err.message : err)
+  }
+}

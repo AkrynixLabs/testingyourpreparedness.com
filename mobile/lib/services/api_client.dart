@@ -18,7 +18,11 @@ import 'token_storage.dart';
 class ApiException implements Exception {
   final int statusCode;
   final String message;
-  ApiException(this.statusCode, this.message);
+  /// The server's own machine-readable `code` field, when it sends one
+  /// (e.g. `"pending_approval"` from a 403 on login) - lets callers branch
+  /// on a specific known error rather than string-matching `message`.
+  final String? code;
+  ApiException(this.statusCode, this.message, {this.code});
 
   @override
   String toString() => message;
@@ -29,19 +33,23 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   /// Configurable at build/run time via `--dart-define=API_BASE_URL=...`
-  /// (e.g. `flutter run --dart-define=API_BASE_URL=https://typ.example.com`
-  /// once a real deployment exists) rather than hardcoded, so pointing this
-  /// app at staging/production never needs a code change. Defaults to this
-  /// Next.js app's local dev port for local development.
+  /// rather than hardcoded, so pointing this app at a different environment
+  /// never needs a code change. Defaults to the real, live deployment - a
+  /// plain `flutter build apk --release` with no extra flags produces a
+  /// working app, not one silently pointed at localhost (a real bug this
+  /// project shipped with until 2026-08-16: `localhost` on a real device
+  /// means the device itself, so every API call would just fail to
+  /// connect, with no obvious error explaining why).
   ///
-  /// Note for local testing on an Android emulator specifically: `localhost`
-  /// resolves to the emulator itself, not the host machine running the
-  /// Next.js dev server - use `--dart-define=API_BASE_URL=http://10.0.2.2:3000`
-  /// there instead (Android emulator's documented alias for the host loopback).
-  /// iOS simulator and a real device on the same network don't need this.
+  /// For local development against a Next.js dev server instead, override
+  /// this explicitly:
+  /// - Real device / iOS simulator on the same network: `--dart-define=API_BASE_URL=http://<your-machine-LAN-IP>:3000`
+  /// - Android emulator specifically: `--dart-define=API_BASE_URL=http://10.0.2.2:3000`
+  ///   (the emulator's documented alias for the host's own loopback - plain
+  ///   `localhost` there resolves to the emulator itself, not the host).
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
+    defaultValue: 'https://testingyourpreparedness.com',
   );
 
   // Guards against a redirect-to-login storm when several in-flight calls
@@ -61,11 +69,17 @@ class ApiClient {
     // the global logout-redirect (we're already on the login screen).
     final body = _decode(response);
     if (response.statusCode != 200) {
-      throw ApiException(response.statusCode, body['error'] as String? ?? 'Login failed.');
+      throw ApiException(
+        response.statusCode,
+        body['error'] as String? ?? 'Login failed.',
+        code: body['code'] as String?,
+      );
     }
 
     await TokenStorage.instance.saveToken(body['token'] as String);
-    return AppUser.fromJson(body['user'] as Map<String, dynamic>);
+    final user = AppUser.fromJson(body['user'] as Map<String, dynamic>);
+    await TokenStorage.instance.saveCachedUser(id: user.id, name: user.name, email: user.email);
+    return user;
   }
 
   /// Step 1 of the school-code join flow - looks up the school so the UI
@@ -85,14 +99,19 @@ class ApiClient {
     return VerifiedSchool.fromJson(body);
   }
 
-  /// Step 2 - creates the account and signs the student straight in (same
-  /// response shape as login), mirroring app/join's web flow.
-  Future<AppUser> joinSchool({
+  /// Step 2 - creates the account. `agreeTerms` is required server-side
+  /// (matches the web join page's disabled-until-checked submit button).
+  /// Updated 2026-08-16: no longer signs the student in - joining now
+  /// always lands "pending" until a school admin approves it, so this
+  /// returns a confirmation message instead of a token/user.
+  Future<JoinSchoolResult> joinSchool({
     required String schoolCode,
     required String firstName,
     required String lastName,
     required String email,
     required String password,
+    required bool agreeTerms,
+    required bool subscribeNewsletter,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/mobile/auth/join'),
@@ -103,6 +122,8 @@ class ApiClient {
         'lastName': lastName,
         'email': email,
         'password': password,
+        'agreeTerms': agreeTerms,
+        'subscribeNewsletter': subscribeNewsletter,
       }),
     );
     final body = _decode(response);
@@ -110,8 +131,7 @@ class ApiClient {
       throw ApiException(response.statusCode, body['error'] as String? ?? 'Could not create your account.');
     }
 
-    await TokenStorage.instance.saveToken(body['token'] as String);
-    return AppUser.fromJson(body['user'] as Map<String, dynamic>);
+    return JoinSchoolResult.fromJson(body);
   }
 
   Future<StudentExams> getExams() async {
@@ -187,6 +207,17 @@ class ApiClient {
     return CourseDetail.fromJson(body);
   }
 
+  /// Upsert, not a one-time submission - matches submitCourseReviewForStudent's
+  /// own contract (a student can revise their rating/comment later).
+  Future<void> submitCourseReview({required String courseId, required int rating, required String comment}) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/courses/$courseId/review',
+      body: {'rating': rating, 'comment': comment},
+      fallback: 'Failed to submit review.',
+    );
+  }
+
   /// Returns `alreadyEnrolled` so a redundant tap (e.g. a double-submit)
   /// doesn't need to be treated as an error by the caller.
   Future<bool> enrollInFreeCourse(String courseId) async {
@@ -223,6 +254,27 @@ class ApiClient {
       fallback: 'Could not load this course\'s lessons.',
     );
     return LearnCourse.fromJson(body);
+  }
+
+  /// Mirrors the web Settings page's "Delete My Account" action - same
+  /// 30-day grace period, same confirmation email, via the shared
+  /// lib/account-deletion.ts function underneath. Returns the scheduled
+  /// deletion date so the caller can update its UI without a second fetch.
+  Future<DateTime> requestAccountDeletion() async {
+    final body = await _authorizedRequest(
+      'POST',
+      '/api/mobile/account/delete',
+      fallback: 'Could not schedule account deletion.',
+    );
+    return DateTime.parse(body['scheduledDeletionAt'] as String);
+  }
+
+  Future<void> cancelAccountDeletion() async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/account/delete/cancel',
+      fallback: 'Could not cancel account deletion.',
+    );
   }
 
   Future<void> logout() => TokenStorage.instance.clearToken();

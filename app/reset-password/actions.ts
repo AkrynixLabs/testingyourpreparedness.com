@@ -2,6 +2,8 @@
 
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { passwordChangedEmail } from "@/lib/email/templates"
 
 export async function resetPassword(token: string, newPassword: string) {
   if (!token) throw new Error("Missing reset token.")
@@ -17,4 +19,10 @@ export async function resetPassword(token: string, newPassword: string) {
     where: { id: user.id },
     data: { passwordHash, resetToken: null, resetTokenExpiresAt: null },
   })
+
+  // Same security-confirmation email as the logged-in settings-page password
+  // change - arguably more important here, since this is the flow an
+  // unauthorized reset would actually go through.
+  const { subject, html } = passwordChangedEmail({ name: user.name })
+  await sendEmailBestEffort({ to: user.email, subject, html })
 }

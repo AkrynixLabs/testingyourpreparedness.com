@@ -11,8 +11,19 @@ import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock } from "lucide-react"
-import { updateProfile, updateGuardian, updatePassword } from "./actions"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle } from "lucide-react"
+import { updateProfile, updateGuardian, updatePassword, deleteAccount, cancelDeleteAccount } from "./actions"
 import type { Guardian, GuardianRelation, User as UserModel } from "@/lib/generated/prisma/client"
 
 type SafeUser = Omit<UserModel, "passwordHash">
@@ -47,7 +58,35 @@ export function StudentSettingsView({
   const [passwordForm, setPasswordForm] = useState({ current: "", next: "", confirm: "" })
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
+  const [scheduledDeletionAt, setScheduledDeletionAt] = useState(user.scheduledDeletionAt)
+  const [deleteMessage, setDeleteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
   const initials = user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+
+  const handleDeleteAccount = () => {
+    setDeleteMessage(null)
+    startTransition(async () => {
+      try {
+        const { scheduledDeletionAt: date } = await deleteAccount()
+        setScheduledDeletionAt(date)
+      } catch (err) {
+        setDeleteMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to schedule account deletion." })
+      }
+    })
+  }
+
+  const handleCancelDeleteAccount = () => {
+    setDeleteMessage(null)
+    startTransition(async () => {
+      try {
+        await cancelDeleteAccount()
+        setScheduledDeletionAt(null)
+        setDeleteMessage({ type: "success", text: "Account deletion cancelled." })
+      } catch (err) {
+        setDeleteMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to cancel account deletion." })
+      }
+    })
+  }
 
   const handleSaveProfile = () => {
     setProfileMessage(null)
@@ -141,12 +180,12 @@ export function StudentSettingsView({
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input id="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email Address *</Label>
                 <Input id="email" type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} />
               </div>
 
@@ -181,11 +220,11 @@ export function StudentSettingsView({
               )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="guardianName">Guardian Name</Label>
+                  <Label htmlFor="guardianName">Guardian Name *</Label>
                   <Input id="guardianName" value={guardianForm.name} onChange={(e) => setGuardianForm({ ...guardianForm, name: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="guardianPhone">Guardian Phone</Label>
+                  <Label htmlFor="guardianPhone">Guardian Phone *</Label>
                   <Input id="guardianPhone" value={guardianForm.phone} onChange={(e) => setGuardianForm({ ...guardianForm, phone: e.target.value })} />
                 </div>
               </div>
@@ -329,7 +368,7 @@ export function StudentSettingsView({
                 </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword">Current Password *</Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
@@ -349,7 +388,7 @@ export function StudentSettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">New Password *</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
@@ -369,7 +408,7 @@ export function StudentSettingsView({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -395,6 +434,67 @@ export function StudentSettingsView({
                   nothing to list or revoke here.
                 </AlertDescription>
               </Alert>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>Permanently delete your account and personal information.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {deleteMessage && (
+                <p className={`text-sm ${deleteMessage.type === "success" ? "text-green-600" : "text-destructive"}`}>
+                  {deleteMessage.text}
+                </p>
+              )}
+              {scheduledDeletionAt ? (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Your account is scheduled for deletion on{" "}
+                    <strong>{new Date(scheduledDeletionAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</strong>.
+                    You can still cancel this before then.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Deleting your account gives you a 30-day window to change your mind. After that, your name, email,
+                  and password are permanently removed and you won&apos;t be able to log in again.
+                </p>
+              )}
+              {scheduledDeletionAt ? (
+                <Button variant="outline" onClick={handleCancelDeleteAccount} disabled={isPending}>
+                  {isPending ? "Cancelling..." : "Cancel Deletion"}
+                </Button>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isPending}>
+                      Delete My Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This schedules your account for deletion in 30 days. You&apos;ll get a confirmation email now
+                        and can cancel any time before then from this page. After 30 days, your name, email, and
+                        password are permanently removed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete My Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

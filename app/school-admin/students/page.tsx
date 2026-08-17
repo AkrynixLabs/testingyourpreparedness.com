@@ -5,6 +5,7 @@ import { Plus } from "lucide-react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { StudentsTable } from "./students-table"
+import { PendingJoinRequests } from "./pending-join-requests"
 
 export default async function StudentsPage() {
   const session = await auth()
@@ -57,10 +58,16 @@ export default async function StudentsPage() {
     }
   })
 
-  const totalStudents = withAvgScore.length
-  const form3Count = withAvgScore.filter((s) => s.class?.form === 3).length
-  const form2Count = withAvgScore.filter((s) => s.class?.form === 2).length
-  const scored = withAvgScore.filter((s) => s.avgScore !== null)
+  // Pending join requests (school-code self-join, added 2026-08-16) aren't
+  // real roster members yet - kept out of the stats/table below and shown
+  // in their own approve/reject queue instead.
+  const pendingRequests = withAvgScore.filter((s) => s.status === "pending")
+  const rosterStudents = withAvgScore.filter((s) => s.status !== "pending")
+
+  const totalStudents = rosterStudents.length
+  const form3Count = rosterStudents.filter((s) => s.class?.form === 3).length
+  const form2Count = rosterStudents.filter((s) => s.class?.form === 2).length
+  const scored = rosterStudents.filter((s) => s.avgScore !== null)
   const avgScore =
     scored.length > 0
       ? Math.round(scored.reduce((acc, s) => acc + (s.avgScore ?? 0), 0) / scored.length)
@@ -117,7 +124,9 @@ export default async function StudentsPage() {
         </Card>
       </div>
 
-      <StudentsTable students={withAvgScore} classes={classes} />
+      {pendingRequests.length > 0 && <PendingJoinRequests requests={pendingRequests} />}
+
+      <StudentsTable students={rosterStudents} classes={classes} />
     </div>
   )
 }

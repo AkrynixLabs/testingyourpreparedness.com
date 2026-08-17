@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/exam_attempt.dart';
 import '../services/api_client.dart';
+import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
 import 'results_screen.dart';
 
@@ -21,7 +23,8 @@ class ExamTakingScreen extends StatefulWidget {
   State<ExamTakingScreen> createState() => _ExamTakingScreenState();
 }
 
-class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBindingObserver {
+class _ExamTakingScreenState extends State<ExamTakingScreen>
+    with WidgetsBindingObserver {
   late Future<ExamStart> _startFuture;
   ExamStart? _exam;
   int _currentIndex = 0;
@@ -52,7 +55,8 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_exam == null || _exam!.timedOut) return;
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       ApiClient.instance.recordTabSwitch(_exam!.attemptId);
     }
   }
@@ -68,7 +72,8 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => ResultsScreen(attemptId: result.attemptId)),
+          MaterialPageRoute(
+              builder: (_) => ResultsScreen(attemptId: result.attemptId)),
         );
       });
       return result;
@@ -105,40 +110,42 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
         flaggedQuestionIds: _flagged.toList(),
       );
       if (!mounted) return;
+      HapticFeedback.mediumImpact();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => ResultsScreen(attemptId: attemptId)),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       setState(() => _submitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not submit. Check your connection and try again.')),
+        const SnackBar(
+            content:
+                Text('Could not submit. Check your connection and try again.')),
       );
     }
   }
 
   Future<void> _confirmSubmit() async {
-    final unanswered = _exam!.questions.where((q) => !_answers.containsKey(q.id)).length;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Submit exam?'),
-        content: Text(
-          unanswered == 0
-              ? 'You\'ve answered every question. Submit now?'
-              : 'You have $unanswered unanswered question${unanswered == 1 ? '' : 's'}. Submit anyway?',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Submit')),
-        ],
-      ),
+    final unanswered =
+        _exam!.questions.where((q) => !_answers.containsKey(q.id)).length;
+    final confirmed = await AppDialogs.confirm(
+      context,
+      title: 'Submit exam?',
+      message: unanswered == 0
+          ? 'You\'ve answered every question. Submit now?'
+          : 'You have $unanswered unanswered question${unanswered == 1 ? '' : 's'}. Submit anyway?',
+      confirmLabel: 'Submit',
+      isDestructive: unanswered > 0,
+      icon: unanswered > 0
+          ? Icons.warning_amber_rounded
+          : Icons.check_circle_outline,
     );
-    if (confirmed == true) _submit();
+    if (confirmed) _submit();
   }
 
   String _formatTime(int seconds) {
@@ -162,7 +169,8 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
               // typically a real eligibility answer (window closed, attempts
               // used up), not a transient fetch to blindly retry.
               return ErrorView(
-                message: errorMessageFor(snapshot.error!, fallback: 'Could not start this exam.'),
+                message: errorMessageFor(snapshot.error!,
+                    fallback: 'Could not start this exam.'),
                 onRetry: () => Navigator.of(context).pop(),
                 retryLabel: 'Go back',
               );
@@ -187,17 +195,44 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
                       Expanded(
                         child: Text(
                           exam.title ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: Theme.of(context).textTheme.titleMedium,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Icon(Icons.timer_outlined, size: 18, color: lowTime ? Theme.of(context).colorScheme.error : null),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatTime(_remainingSeconds),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: lowTime ? Theme.of(context).colorScheme.error : null,
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: lowTime
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .error
+                                  .withValues(alpha: 0.12)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_outlined,
+                                size: 16,
+                                color: lowTime
+                                    ? Theme.of(context).colorScheme.error
+                                    : null),
+                            const SizedBox(width: 5),
+                            Text(
+                              _formatTime(_remainingSeconds),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: lowTime
+                                    ? Theme.of(context).colorScheme.error
+                                    : null,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -223,38 +258,69 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 8),
-                        Text(question.text, style: Theme.of(context).textTheme.titleMedium),
+                        Text(question.text,
+                            style: Theme.of(context).textTheme.titleMedium),
                         const SizedBox(height: 16),
                         RadioGroup<int>(
                           groupValue: _answers[question.id],
-                          onChanged: (value) => setState(() => _answers[question.id] = value!),
+                          onChanged: (value) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _answers[question.id] = value!);
+                          },
                           child: Column(
-                            children: List.generate(question.options.length, (i) {
+                            children:
+                                List.generate(question.options.length, (i) {
                               final selected = _answers[question.id] == i;
-                              return Card(
+                              final colors = Theme.of(context).colorScheme;
+                              return Container(
                                 margin: const EdgeInsets.only(bottom: 10),
-                                color: selected ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08) : null,
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? colors.primary.withValues(alpha: 0.08)
+                                      : colors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                      color: selected
+                                          ? colors.primary
+                                          : colors.outline,
+                                      width: selected ? 1.5 : 1),
+                                ),
                                 child: RadioListTile<int>(
                                   value: i,
-                                  title: Text(question.options[i]),
+                                  title: Text(
+                                    question.options[i],
+                                    style: TextStyle(
+                                        fontWeight: selected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal),
+                                  ),
                                 ),
                               );
                             }),
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: () => setState(() {
-                            if (_flagged.contains(question.id)) {
-                              _flagged.remove(question.id);
-                            } else {
-                              _flagged.add(question.id);
-                            }
-                          }),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              if (_flagged.contains(question.id)) {
+                                _flagged.remove(question.id);
+                              } else {
+                                _flagged.add(question.id);
+                              }
+                            });
+                          },
                           icon: Icon(
-                            _flagged.contains(question.id) ? Icons.flag : Icons.outlined_flag,
-                            color: _flagged.contains(question.id) ? Theme.of(context).colorScheme.error : null,
+                            _flagged.contains(question.id)
+                                ? Icons.flag
+                                : Icons.outlined_flag,
+                            color: _flagged.contains(question.id)
+                                ? Theme.of(context).colorScheme.error
+                                : null,
                           ),
-                          label: Text(_flagged.contains(question.id) ? 'Flagged for review' : 'Flag for review'),
+                          label: Text(_flagged.contains(question.id)
+                              ? 'Flagged for review'
+                              : 'Flag for review'),
                         ),
                       ],
                     ),
@@ -266,7 +332,9 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _currentIndex == 0 ? null : () => setState(() => _currentIndex -= 1),
+                          onPressed: _currentIndex == 0
+                              ? null
+                              : () => setState(() => _currentIndex -= 1),
                           child: const Text('Previous'),
                         ),
                       ),
@@ -279,12 +347,15 @@ class _ExamTakingScreenState extends State<ExamTakingScreen> with WidgetsBinding
                                     ? const SizedBox(
                                         height: 18,
                                         width: 18,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white),
                                       )
                                     : const Text('Submit'),
                               )
                             : ElevatedButton(
-                                onPressed: () => setState(() => _currentIndex += 1),
+                                onPressed: () =>
+                                    setState(() => _currentIndex += 1),
                                 child: const Text('Next'),
                               ),
                       ),
@@ -343,20 +414,32 @@ class _QuestionPalette extends StatelessWidget {
 
           return InkWell(
             onTap: () => onTap(i),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(22),
+            // The visible circle stays 36x36 for the palette's density, but
+            // the actual tap target is expanded to fill the full 44-height
+            // row (accessibility pass, 2026-08-16) - closer to the 48dp
+            // recommended minimum than the bare visible circle was.
             child: Container(
-              width: 36,
+              width: 44,
+              height: 44,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: scheme.outline.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                '${i + 1}',
-                style: TextStyle(
-                  color: active ? scheme.onPrimary : null,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+              child: Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: background,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: active ? scheme.primary : scheme.outline),
+                ),
+                child: Text(
+                  '${i + 1}',
+                  style: TextStyle(
+                    color: active ? scheme.onPrimary : null,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),

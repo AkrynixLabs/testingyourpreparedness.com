@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -59,6 +60,7 @@ export function DashboardShell({
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -186,13 +188,25 @@ export function DashboardShell({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setLogoutConfirmOpen(true)
+                }}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <ConfirmDialog
+            open={logoutConfirmOpen}
+            onOpenChange={setLogoutConfirmOpen}
+            title="Sign out?"
+            description="You'll need to log in again to access your dashboard."
+            confirmLabel="Sign Out"
+            variant="destructive"
+            onConfirm={() => signOut({ callbackUrl: "/login" })}
+          />
         </div>
       </aside>
 

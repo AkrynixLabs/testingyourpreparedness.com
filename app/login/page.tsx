@@ -16,6 +16,7 @@ const ROLE_HOME: Record<string, string> = {
   content_admin: "/content-admin",
   school_admin: "/school-admin",
   student: "/student",
+  tutor: "/tutor",
 }
 
 export default function LoginPage() {
@@ -38,6 +39,8 @@ export default function LoginPage() {
       setError(
         result?.code === "rate_limited"
           ? "Too many login attempts. Please wait a few minutes and try again."
+          : result?.code === "pending_approval"
+          ? "Your request to join your school is still pending approval from a school administrator."
           : "Invalid email or password."
       )
       return
@@ -46,7 +49,9 @@ export default function LoginPage() {
     const sessionResponse = await fetch("/api/auth/session")
     const session = await sessionResponse.json()
     const role = session?.user?.role as string | undefined
-    router.push((role && ROLE_HOME[role]) || "/")
+    // replace, not push - a successful login shouldn't leave /login sitting
+    // in browser history, or pressing Back would re-show the login form.
+    router.replace((role && ROLE_HOME[role]) || "/")
   }
 
   return (
@@ -89,7 +94,7 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -102,7 +107,7 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                     Forgot password?
                   </Link>

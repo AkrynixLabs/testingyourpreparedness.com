@@ -23,13 +23,20 @@ dependencies:
   # not an embedded player), since lesson videos can be any external host
   # (YouTube, Vimeo, a raw file) a single video-embed package can't all play.
   url_launcher: ^6.3.1
+  # Also used at runtime (not just its build-time codegen CLI) by main.dart's
+  # preserve()/remove() calls, which hold the native splash on screen for a
+  # minimum duration - moved out of dev_dependencies since a dev-only
+  # package can't be imported into app code shipped in a release build.
+  flutter_native_splash: ^2.4.3
+  google_fonts: ^8.2.1
+  package_info_plus: ^9.0.1
+  connectivity_plus: ^7.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.1
-  flutter_native_splash: ^2.4.3
 
 flutter:
   uses-material-design: true

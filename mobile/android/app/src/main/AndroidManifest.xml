@@ -4,6 +4,11 @@
          real device, not just the new webview - flutter analyze/test never
          caught it since neither exercises Android's actual permission model. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required by connectivity_plus (added 2026-08-16 for the app-wide
+         "you're offline" banner) to report real connectivity state changes
+         on Android - without this the plugin can't reliably detect
+         connectivity transitions. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:label="TYP"
         android:name="${applicationName}"

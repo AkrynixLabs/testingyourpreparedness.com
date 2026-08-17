@@ -6,6 +6,9 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { listBanks, resolveAccountNumber, createSubaccount, type Bank } from "@/lib/payments/paystack"
 import { getPlatformFeePercent } from "@/lib/platform-settings"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { passwordChangedEmail } from "@/lib/email/templates"
+import { requestAccountDeletion, cancelAccountDeletion } from "@/lib/account-deletion"
 
 async function requireTutorSession() {
   const session = await auth()
@@ -55,6 +58,22 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
 
   const passwordHash = await bcrypt.hash(input.newPassword, 10)
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash } })
+
+  const { subject, html } = passwordChangedEmail({ name: dbUser.name })
+  await sendEmailBestEffort({ to: dbUser.email, subject, html })
+}
+
+export async function deleteAccount() {
+  const user = await requireTutorSession()
+  const { scheduledDeletionAt } = await requestAccountDeletion(user.id)
+  revalidatePath("/tutor/settings")
+  return { scheduledDeletionAt }
+}
+
+export async function cancelDeleteAccount() {
+  const user = await requireTutorSession()
+  await cancelAccountDeletion(user.id)
+  revalidatePath("/tutor/settings")
 }
 
 // Populates the bank picker on the Payouts tab. Paystack owns the canonical

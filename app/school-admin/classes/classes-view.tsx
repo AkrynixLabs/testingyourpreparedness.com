@@ -167,7 +167,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
               {addError && <p className="text-sm text-destructive">{addError}</p>}
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="form">Form/Level</Label>
+                  <Label htmlFor="form">Form/Level *</Label>
                   <Select value={newClass.form} onValueChange={(value) => setNewClass({ ...newClass, form: value })}>
                     <SelectTrigger id="form">
                       <SelectValue placeholder="Select form" />
@@ -180,7 +180,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="section">Section</Label>
+                  <Label htmlFor="section">Section *</Label>
                   <Input
                     id="section"
                     placeholder="e.g., C"
@@ -200,7 +200,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="academicYear">Academic Year</Label>
+                <Label htmlFor="academicYear">Academic Year *</Label>
                 <Input
                   id="academicYear"
                   placeholder="e.g., 2026/2027"

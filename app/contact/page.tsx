@@ -192,7 +192,7 @@ export default function ContactPage() {
                         )}
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name</Label>
+                            <Label htmlFor="firstName">First Name *</Label>
                             <Input
                               id="firstName"
                               placeholder="Your first name"
@@ -202,7 +202,7 @@ export default function ContactPage() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name</Label>
+                            <Label htmlFor="lastName">Last Name *</Label>
                             <Input
                               id="lastName"
                               placeholder="Your last name"
@@ -213,7 +213,7 @@ export default function ContactPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
+                          <Label htmlFor="email">Email *</Label>
                           <Input
                             id="email"
                             type="email"
@@ -225,7 +225,7 @@ export default function ContactPage() {
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-2">
-                            <Label htmlFor="role">I am a...</Label>
+                            <Label htmlFor="role">I am a... *</Label>
                             <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select your role" />
@@ -240,7 +240,7 @@ export default function ContactPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="subject">Subject</Label>
+                            <Label htmlFor="subject">Subject *</Label>
                             <Select value={form.subject} onValueChange={(value) => setForm({ ...form, subject: value })}>
                               <SelectTrigger>
                                 <SelectValue placeholder="What is this about?" />
@@ -256,7 +256,7 @@ export default function ContactPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="message">Message</Label>
+                          <Label htmlFor="message">Message *</Label>
                           <Textarea
                             id="message"
                             placeholder="How can we help you?"

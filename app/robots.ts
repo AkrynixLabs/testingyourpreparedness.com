@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
+import { stripTrailingSlash } from "@/lib/utils"
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://testingyourpreparedness.com"
+const siteUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "https://testingyourpreparedness.com")
 
 const disallowedPaths = [
   "/api/",

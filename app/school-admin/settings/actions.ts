@@ -7,7 +7,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import type { EducationLevel } from "@/lib/generated/prisma/client"
 import { sendEmailBestEffort } from "@/lib/email/resend"
-import { schoolAdminInviteEmail } from "@/lib/email/templates"
+import { schoolAdminInviteEmail, removedAsSchoolAdminEmail, passwordChangedEmail } from "@/lib/email/templates"
 
 const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
@@ -121,12 +121,19 @@ export async function removeAdmin(schoolAdminId: string) {
   if (session?.user?.role !== "school_admin") throw new Error("Not authorized")
   const { schoolId } = await resolveSchoolAdmin(session.user.id)
 
-  const target = await prisma.schoolAdmin.findUnique({ where: { id: schoolAdminId } })
+  const target = await prisma.schoolAdmin.findUnique({
+    where: { id: schoolAdminId },
+    include: { user: true, school: { select: { name: true } } },
+  })
   if (!target || target.schoolId !== schoolId) throw new Error("Not authorized")
   if (target.isPrimary) throw new Error("The primary admin can't be removed.")
   if (target.userId === session.user.id) throw new Error("You can't remove yourself.")
 
   await prisma.schoolAdmin.delete({ where: { id: schoolAdminId } })
+
+  const { subject, html } = removedAsSchoolAdminEmail({ name: target.user.name, schoolName: target.school.name })
+  await sendEmailBestEffort({ to: target.user.email, subject, html })
+
   revalidatePath("/school-admin/settings")
 }
 
@@ -144,4 +151,7 @@ export async function updatePassword(input: { currentPassword: string; newPasswo
 
   const passwordHash = await bcrypt.hash(input.newPassword, 10)
   await prisma.user.update({ where: { id: session.user.id }, data: { passwordHash } })
+
+  const { subject, html } = passwordChangedEmail({ name: user.name })
+  await sendEmailBestEffort({ to: user.email, subject, html })
 }

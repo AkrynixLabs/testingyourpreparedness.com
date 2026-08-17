@@ -8,6 +8,10 @@ import { initializeTransaction } from "@/lib/payments/paystack"
 import { generatePaymentId } from "@/lib/payments/ids"
 import { enforceRateLimit } from "@/lib/rate-limit"
 import { asString } from "@/lib/validation"
+import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
+import { stripTrailingSlash } from "@/lib/utils"
+import { sendEmailBestEffort } from "@/lib/email/resend"
+import { welcomeEmail } from "@/lib/email/templates"
 
 export type RegisterIndependentStudentInput = {
   firstName: string
@@ -16,6 +20,7 @@ export type RegisterIndependentStudentInput = {
   password: string
   region: string
   town: string
+  subscribeNewsletter: boolean
 }
 
 // Creates the account only - no Subscription/Payment row here. Checkout
@@ -56,6 +61,13 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
       address: [town, region].filter(Boolean).join(", ") || null,
     },
   })
+
+  if (input.subscribeNewsletter) {
+    await subscribeToNewsletterBestEffort(email)
+  }
+
+  const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "student", dashboardPath: "/student" })
+  await sendEmailBestEffort({ to: email, subject, html })
 
   return { studentId: student.id, email, password }
 }
@@ -108,7 +120,7 @@ export async function initializeStudentCheckout(input: InitializeStudentCheckout
     },
   })
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
   const { authorizationUrl } = await initializeTransaction({
     email: student.user.email,
     amountGhs,
