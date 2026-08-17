@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import type { Student } from "@/lib/generated/prisma/client"
 import { checkAndAwardAchievements } from "./achievements"
 import { sendPushToStudentBestEffort } from "@/lib/push/fcm"
+import { getStudentTier, getFreeTierAttemptsUsedThisMonth, FREE_TIER_MONTHLY_ATTEMPT_LIMIT } from "./entitlement"
 
 // Extracted from app/student/exams/[id]/start/{page,actions}.tsx (unchanged
 // logic) so the mobile exam-taking flow (app/api/mobile/exams/[id]/start,
@@ -11,7 +12,9 @@ import { sendPushToStudentBestEffort } from "@/lib/push/fcm"
 // lib/reports/generate.ts. The web page/action were refactored to call
 // these too; their behavior is unchanged.
 
-export type EligibilityResult = { eligible: true; assignmentId: string | null } | { eligible: false }
+export type EligibilityResult =
+  | { eligible: true; assignmentId: string | null }
+  | { eligible: false; reason?: "free_tier_limit" }
 
 // Re-verified independent of what the exams list already filtered to - a
 // student navigating (or a mobile client calling) directly must not be able
@@ -45,13 +48,30 @@ export async function resolveExamEligibility(student: Student, assessmentId: str
     return { eligible: true, assignmentId: assignment.id }
   }
 
-  // Independent student: open access, matches ExamAttempt.assignmentId's
-  // own schema comment.
+  // Independent student: open access to every published assessment, matches
+  // ExamAttempt.assignmentId's own schema comment. What IS gated - for the
+  // first time - is submission volume for a free-tier student, per the
+  // "student-free" SubscriptionPlan's own long-standing "5 practice
+  // tests/month" promise (see lib/student/entitlement.ts).
   const assessment = await prisma.assessment.findUnique({
     where: { id: assessmentId },
     select: { status: true },
   })
   if (!assessment || assessment.status !== "published") return { eligible: false }
+
+  const tier = await getStudentTier(student)
+  if (tier === "paid") return { eligible: true, assignmentId: null }
+
+  // Resuming an already-started, not-yet-submitted attempt never consumes a
+  // new slot - only a fresh submission counts against the monthly cap.
+  const inProgress = await prisma.examAttempt.findFirst({
+    where: { studentId: student.id, assessmentId, assignmentId: null, submittedAt: null },
+  })
+  if (inProgress) return { eligible: true, assignmentId: null }
+
+  const usedThisMonth = await getFreeTierAttemptsUsedThisMonth(student.id)
+  if (usedThisMonth >= FREE_TIER_MONTHLY_ATTEMPT_LIMIT) return { eligible: false, reason: "free_tier_limit" }
+
   return { eligible: true, assignmentId: null }
 }
 
@@ -66,7 +86,7 @@ export type ExamStartResult =
       timedOut: false
     }
   | { ok: true; timedOut: true; attemptId: string }
-  | { ok: false }
+  | { ok: false; reason?: "free_tier_limit" }
 
 // Finds or creates an in-progress attempt (never resets the clock or counts
 // as a new attempt against maxAttempts on a page refresh / app relaunch),
@@ -74,7 +94,7 @@ export type ExamStartResult =
 // ran out server-side before the caller ever asked again.
 export async function startOrResumeExam(student: Student, assessmentId: string): Promise<ExamStartResult> {
   const eligibility = await resolveExamEligibility(student, assessmentId)
-  if (!eligibility.eligible) return { ok: false }
+  if (!eligibility.eligible) return { ok: false, reason: eligibility.reason }
 
   const assessment = await prisma.assessment.findUnique({
     where: { id: assessmentId },

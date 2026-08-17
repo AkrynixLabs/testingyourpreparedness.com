@@ -22,11 +22,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle, Gift, Copy, Check } from "lucide-react"
+import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle, Gift, Copy, Check, CreditCard, CheckCircle2 } from "lucide-react"
 import { updateProfile, updateGuardian, updatePassword, deleteAccount, cancelDeleteAccount } from "./actions"
-import type { Guardian, GuardianRelation, User as UserModel } from "@/lib/generated/prisma/client"
+import { initializeStudentCheckout } from "@/app/signup/independent/actions"
+import type { Guardian, GuardianRelation, User as UserModel, SubscriptionPlan, BillingCycle } from "@/lib/generated/prisma/client"
 
 type SafeUser = Omit<UserModel, "passwordHash">
+
+export type SubscriptionInfo = {
+  tier: "free" | "paid"
+  planName: string
+  renewalDate: Date | null
+  plans: SubscriptionPlan[]
+}
+
+function planPriceAndCycle(plan: SubscriptionPlan): { price: number; cycle: BillingCycle | null } {
+  if (plan.monthlyPrice !== null) return { price: plan.monthlyPrice, cycle: "monthly" }
+  if (plan.termPrice !== null) return { price: plan.termPrice, cycle: "term" }
+  if (plan.yearlyPrice !== null) return { price: plan.yearlyPrice, cycle: "yearly" }
+  return { price: 0, cycle: null }
+}
+
+const cycleLabel: Record<string, string> = { monthly: "month", term: "term", yearly: "year" }
 
 export function StudentSettingsView({
   user,
@@ -34,16 +51,39 @@ export function StudentSettingsView({
   className,
   guardian,
   referralCode,
+  subscription,
+  studentId,
 }: {
   user: SafeUser
   schoolName: string | null
   className: string | null
   guardian: Guardian | null
   referralCode: string | null
+  subscription: SubscriptionInfo | null
+  studentId: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [copied, setCopied] = useState(false)
+
+  const [upgradingPlanId, setUpgradingPlanId] = useState<string | null>(null)
+  const [upgradeError, setUpgradeError] = useState<string | null>(null)
+
+  const handleUpgrade = (plan: SubscriptionPlan) => {
+    const { cycle } = planPriceAndCycle(plan)
+    if (!cycle) return
+    setUpgradeError(null)
+    setUpgradingPlanId(plan.id)
+    startTransition(async () => {
+      try {
+        const { authorizationUrl } = await initializeStudentCheckout({ studentId, planId: plan.id, billingCycle: cycle })
+        window.location.href = authorizationUrl
+      } catch (err) {
+        setUpgradeError(err instanceof Error ? err.message : "Couldn't start checkout. Try again.")
+        setUpgradingPlanId(null)
+      }
+    })
+  }
 
   const handleCopyReferralCode = () => {
     if (!referralCode) return
@@ -149,7 +189,7 @@ export function StudentSettingsView({
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+        <TabsList className={`grid w-full ${subscription ? "grid-cols-5 lg:w-[620px]" : "grid-cols-4 lg:w-[500px]"}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -166,6 +206,12 @@ export function StudentSettingsView({
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
+          {subscription && (
+            <TabsTrigger value="plan" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Plan</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Profile Tab */}
@@ -531,6 +577,61 @@ export function StudentSettingsView({
             </CardContent>
           </Card>
         </TabsContent>
+
+        {subscription && (
+          <TabsContent value="plan" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Plan</CardTitle>
+                <CardDescription>
+                  {subscription.tier === "paid"
+                    ? "You're on a paid plan with full access."
+                    : "You're on the free plan - 5 practice tests/month, basic score reports."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center gap-3 rounded-lg border p-4">
+                  {subscription.tier === "paid" ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                  ) : (
+                    <CreditCard className="h-5 w-5 text-muted-foreground shrink-0" />
+                  )}
+                  <div>
+                    <p className="font-medium">{subscription.planName}</p>
+                    {subscription.renewalDate && (
+                      <p className="text-xs text-muted-foreground">
+                        Renews {new Date(subscription.renewalDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {subscription.tier === "free" && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Upgrade for full access</p>
+                    {upgradeError && <p className="text-sm text-destructive">{upgradeError}</p>}
+                    {subscription.plans.map((plan) => {
+                      const { price, cycle } = planPriceAndCycle(plan)
+                      return (
+                        <div key={plan.id} className="flex items-center justify-between rounded-lg border p-4">
+                          <div>
+                            <p className="font-medium">{plan.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {cycle ? `GHS ${price} / ${cycleLabel[cycle]}` : "Contact us"}
+                            </p>
+                          </div>
+                          <Button onClick={() => handleUpgrade(plan)} disabled={isPending && upgradingPlanId === plan.id}>
+                            {isPending && upgradingPlanId === plan.id ? "Redirecting..." : "Upgrade"}
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

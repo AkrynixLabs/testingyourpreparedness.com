@@ -5,6 +5,7 @@ import '../models/result_detail.dart';
 import '../services/api_client.dart';
 import '../theme/app_theme.dart';
 import '../widgets/async_state_views.dart';
+import 'settings_screen.dart';
 
 /// Reached either after a real submit or directly when
 /// POST /api/mobile/exams/{id}/start reports `timedOut: true` for an
@@ -73,7 +74,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
               Text('Topic breakdown',
                   style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...result.topicBreakdown.map((t) => _TopicRow(entry: t)),
+              if (result.detailedReportsLocked)
+                const _LockedReportsNotice()
+              else
+                ...result.topicBreakdown.map((t) => _TopicRow(entry: t)),
               const SizedBox(height: 20),
               Text('Question review',
                   style: Theme.of(context).textTheme.titleMedium),
@@ -156,11 +160,13 @@ class _StatsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      ('Rank', '${result.rank} / ${result.totalStudents}'),
-      ('Percentile', '${result.percentile}th'),
-      ('Class average', '${result.classAverage}%'),
-      ('Highest score', '${result.highestScore}%'),
-      ('Lowest score', '${result.lowestScore}%'),
+      if (!result.detailedReportsLocked) ...[
+        ('Rank', '${result.rank} / ${result.totalStudents}'),
+        ('Percentile', '${result.percentile}th'),
+        ('Class average', '${result.classAverage}%'),
+        ('Highest score', '${result.highestScore}%'),
+        ('Lowest score', '${result.lowestScore}%'),
+      ],
       if (result.timeSpentSeconds != null)
         ('Time spent', '${(result.timeSpentSeconds! / 60).round()} min'),
     ];
@@ -192,6 +198,38 @@ class _StatsGrid extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class _LockedReportsNotice extends StatelessWidget {
+  const _LockedReportsNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Rank, class comparison, and topic breakdown are Premium features - the free plan includes basic score reports only.",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
+                child: const Text('Upgrade Plan'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

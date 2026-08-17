@@ -40,6 +40,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 ### 2026-08-17
 
+- **There's now a real free tier for independent (self-paying) students, with an actual limit instead of unlimited free access by accident.** While looking for leftover placeholder/seeded data across the app, found that the "Free" plan shown at signup had always promised "5 practice tests/month" and "basic score reports" but nothing ever actually enforced it — every independent student, paid or not, had unlimited access to everything. Now a free-plan student really is capped at 5 practice tests per month, with a simple score/grade (no class ranking or topic-by-topic breakdown) — and there's a real "Upgrade" button in Settings for the first time (previously the only way to ever pick a paid plan was during initial signup). Also fixed two overstated claims on the homepage ("thousands of students already trust TYP") that weren't true yet.
+
 - **The mobile app can now play uploaded lesson videos and join course virtual sessions, closing out the Mux/virtual-sessions feature end to end.** A lesson video uploaded through Mux now streams right inside the app (not just on the web); tapping "Join" on an upcoming course session opens the tutor's chosen link (native call room or Zoom/Meet/etc.), same as web.
 - **Real email verification is now live, on both web and mobile, ahead of the 3-week launch date.** Signing up (school registration, independent student, tutor, or joining a school by code) now sends a real "verify your email" link, and you can't log in until you click it - closes a real gap where anyone could sign up with a typo'd or fake email and never notice, since nothing ever confirmed it was real. Scoped to self-signup only - accounts a school or super admin creates for someone else already prove the email works the moment that person receives and uses their temp-password email, so there's no second check needed there. A "Resend verification email" option is available right on the login screen if the link expires (48 hours) or gets lost.
 - **You can now download course lessons on mobile to read later without a connection.** Article-type lessons only (video lessons stay online-only - they're links to an outside video host, not files stored here, so there's nothing to download). Tap the download icon on any reading lesson while you have a connection; there's a new "Downloaded Lessons" screen (Settings, or from inside a course) to see what you've saved and remove things to free up space. Downloads stay private to your own copy of the app - no sharing/exporting, since course content is something you paid for and the tutor gets paid based on real enrollments, not copies floating around.
@@ -47,7 +49,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 
 - **Course-scoped virtual sessions are here: tutors can schedule live sessions for everyone enrolled in a course.** Either a native in-app video call, or a link to Zoom/Google Meet/whatever the tutor prefers - tutor's choice per session. Students see upcoming sessions on the course page and join with one click.
 
-- Both closed the last two items from the "what would make this an instant hit" feature list. Mobile app support for playing Mux videos and joining sessions is the next piece, handed to the mobile team.
+- These close out the full "what would make this an instant hit" feature list (streaks/badges/leaderboard, referral, Mux/virtual-sessions, and offline downloads) on both web and mobile.
 
 ### 2026-08-16
 

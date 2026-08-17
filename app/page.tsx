@@ -142,7 +142,7 @@ const features: {
     icon: BookOpen,
     color: "chart-1",
     title: "Question Bank",
-    description: "Thousands of vetted, exam-standard questions across every track.",
+    description: "A growing bank of vetted, examiner-style BECE questions, with more tracks on the way.",
   },
   {
     icon: Target,
@@ -549,7 +549,7 @@ export default async function LandingPage() {
             <Reveal>
               <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mb-3">Ready to ace your next exam?</h2>
               <p className="font-sans text-base md:text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">
-                Thousands of students and schools already trust TYP to get better results, from BECE all the way to university entrance.
+                Built for Ghanaian students getting ready for BECE, with real examiner-style practice and honest progress tracking to help you walk in prepared.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="lg" asChild className="group text-base px-8">

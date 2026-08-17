@@ -19,6 +19,7 @@ import {
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { getResultDetail } from "@/lib/student/result-detail"
+import { getStudentTier } from "@/lib/student/entitlement"
 import { TopicBreakdownChart } from "./topic-breakdown-chart"
 
 export default async function ResultDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +29,8 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
   const student = await prisma.student.findUnique({ where: { userId: session!.user.id } })
   if (!student) notFound()
 
-  const result = await getResultDetail(id, student.id)
+  const tier = await getStudentTier(student)
+  const result = await getResultDetail(id, student.id, tier)
   if (!result) notFound()
 
   const {
@@ -39,6 +41,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
     correctAnswers,
     incorrectAnswers,
     timeSpentSeconds,
+    detailedReportsLocked,
     rank,
     totalStudents,
     percentile,
@@ -147,13 +150,27 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
                 <div className="rounded-full bg-amber-500/10 p-6 inline-block">
                   <Award className="h-12 w-12 text-amber-500" />
                 </div>
-                <div className="mt-4">
-                  <p className="text-3xl font-bold text-primary">#{rank}</p>
-                  <p className="text-sm text-muted-foreground">out of {totalStudents} students</p>
-                </div>
-                <p className="mt-2 text-sm">
-                  Top <span className="font-semibold text-emerald-600">{percentile}%</span> percentile
-                </p>
+                {detailedReportsLocked ? (
+                  <div className="mt-4 max-w-[10rem]">
+                    <p className="text-sm text-muted-foreground">
+                      Ranking is a Premium feature.{" "}
+                      <Link href="/student/settings" className="underline underline-offset-2">
+                        Upgrade
+                      </Link>{" "}
+                      to see it.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-4">
+                      <p className="text-3xl font-bold text-primary">#{rank}</p>
+                      <p className="text-sm text-muted-foreground">out of {totalStudents} students</p>
+                    </div>
+                    <p className="mt-2 text-sm">
+                      Top <span className="font-semibold text-emerald-600">{percentile}%</span> percentile
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </CardContent>
@@ -168,41 +185,54 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Your Score</span>
-                <span className="font-bold text-primary">{percentage}%</span>
+            {detailedReportsLocked ? (
+              <div className="py-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Class comparison is part of Premium&apos;s detailed score reports.
+                </p>
+                <Button asChild size="sm" className="mt-4">
+                  <Link href="/student/settings">Upgrade Plan</Link>
+                </Button>
               </div>
-              <Progress value={percentage} className="h-3" />
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Class Average</span>
-                <span className="font-medium">{classAverage}%</span>
-              </div>
-              <Progress value={classAverage} className="h-3 [&>div]:bg-muted-foreground" />
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Highest Score</span>
-                <span className="font-medium text-emerald-600">{highestScore}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Lowest Score</span>
-                <span className="font-medium text-red-600">{lowestScore}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Your Position</span>
-                <span className="font-medium">
-                  {percentage > classAverage ? (
-                    <span className="text-emerald-600">Above Average</span>
-                  ) : (
-                    <span className="text-amber-600">Below Average</span>
-                  )}
-                </span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Your Score</span>
+                    <span className="font-bold text-primary">{percentage}%</span>
+                  </div>
+                  <Progress value={percentage} className="h-3" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Class Average</span>
+                    <span className="font-medium">{classAverage}%</span>
+                  </div>
+                  <Progress value={classAverage!} className="h-3 [&>div]:bg-muted-foreground" />
+                </div>
+                <Separator />
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Highest Score</span>
+                    <span className="font-medium text-emerald-600">{highestScore}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Lowest Score</span>
+                    <span className="font-medium text-red-600">{lowestScore}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Your Position</span>
+                    <span className="font-medium">
+                      {percentage > classAverage! ? (
+                        <span className="text-emerald-600">Above Average</span>
+                      ) : (
+                        <span className="text-amber-600">Below Average</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -217,7 +247,16 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
           <CardDescription>See how you performed in each topic area</CardDescription>
         </CardHeader>
         <CardContent>
-          {topicBreakdown.length === 0 ? (
+          {detailedReportsLocked ? (
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Topic-by-topic breakdown is a Premium feature - the free plan includes basic score reports only.
+              </p>
+              <Button asChild size="sm" className="mt-4">
+                <Link href="/student/settings">Upgrade Plan</Link>
+              </Button>
+            </div>
+          ) : topicBreakdown.length === 0 ? (
             <p className="text-center text-sm text-muted-foreground py-8">No topic breakdown available.</p>
           ) : (
             <>

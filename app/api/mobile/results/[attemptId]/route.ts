@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { authenticateMobileRequest } from "@/lib/mobile-auth"
 import { getResultDetail } from "@/lib/student/result-detail"
+import { getStudentTier } from "@/lib/student/entitlement"
 
 // Full result detail (score, grade, rank/percentile, topic breakdown,
 // per-question review) - mirrors the web app's app/student/results/[id]
@@ -20,7 +21,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ atte
   }
 
   const { attemptId } = await params
-  const result = await getResultDetail(attemptId, student.id)
+  const tier = await getStudentTier(student)
+  const result = await getResultDetail(attemptId, student.id, tier)
   if (!result) {
     return NextResponse.json({ error: "Result not found." }, { status: 404 })
   }

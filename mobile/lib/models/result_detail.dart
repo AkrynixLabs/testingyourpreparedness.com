@@ -62,12 +62,18 @@ class ResultDetail {
   final int correctAnswers;
   final int incorrectAnswers;
   final int? timeSpentSeconds;
-  final int rank;
-  final int totalStudents;
-  final num percentile;
-  final num classAverage;
-  final num highestScore;
-  final num lowestScore;
+  // Added alongside the free-tier practice-plan limits (server-side in
+  // lib/student/entitlement.ts / lib/student/result-detail.ts): a free-plan
+  // student gets "basic score reports" only - rank/percentile/class
+  // comparison/topic breakdown are null and detailedReportsLocked is true,
+  // rather than the API omitting/crashing on these fields.
+  final bool detailedReportsLocked;
+  final int? rank;
+  final int? totalStudents;
+  final num? percentile;
+  final num? classAverage;
+  final num? highestScore;
+  final num? lowestScore;
   final List<TopicBreakdownEntry> topicBreakdown;
   final List<ResultQuestion> questions;
 
@@ -81,12 +87,13 @@ class ResultDetail {
     required this.correctAnswers,
     required this.incorrectAnswers,
     this.timeSpentSeconds,
-    required this.rank,
-    required this.totalStudents,
-    required this.percentile,
-    required this.classAverage,
-    required this.highestScore,
-    required this.lowestScore,
+    required this.detailedReportsLocked,
+    this.rank,
+    this.totalStudents,
+    this.percentile,
+    this.classAverage,
+    this.highestScore,
+    this.lowestScore,
     required this.topicBreakdown,
     required this.questions,
   });
@@ -101,12 +108,13 @@ class ResultDetail {
         correctAnswers: json['correctAnswers'] as int,
         incorrectAnswers: json['incorrectAnswers'] as int,
         timeSpentSeconds: json['timeSpentSeconds'] as int?,
-        rank: json['rank'] as int,
-        totalStudents: json['totalStudents'] as int,
-        percentile: json['percentile'] as num,
-        classAverage: json['classAverage'] as num,
-        highestScore: json['highestScore'] as num,
-        lowestScore: json['lowestScore'] as num,
+        detailedReportsLocked: json['detailedReportsLocked'] as bool? ?? false,
+        rank: json['rank'] as int?,
+        totalStudents: json['totalStudents'] as int?,
+        percentile: json['percentile'] as num?,
+        classAverage: json['classAverage'] as num?,
+        highestScore: json['highestScore'] as num?,
+        lowestScore: json['lowestScore'] as num?,
         topicBreakdown: (json['topicBreakdown'] as List<dynamic>)
             .map((e) => TopicBreakdownEntry.fromJson(e as Map<String, dynamic>))
             .toList(),

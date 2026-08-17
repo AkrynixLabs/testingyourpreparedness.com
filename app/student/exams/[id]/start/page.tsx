@@ -14,7 +14,7 @@ export default async function ExamStartPage({ params }: { params: Promise<{ id: 
 
   const result = await startOrResumeExam(student, assessmentId)
   if (!result.ok) {
-    redirect("/student/exams")
+    redirect(result.reason === "free_tier_limit" ? "/student/exams?blocked=free_tier_limit" : "/student/exams")
   }
 
   // The clock already ran out before the student ever loaded this page again

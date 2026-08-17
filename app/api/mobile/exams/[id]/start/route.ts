@@ -21,7 +21,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { id: assessmentId } = await params
   const result = await startOrResumeExam(student, assessmentId)
   if (!result.ok) {
-    return NextResponse.json({ error: "This exam isn't available to you right now." }, { status: 403 })
+    const error =
+      result.reason === "free_tier_limit"
+        ? "You've used all 5 free practice tests this month. Upgrade to keep practicing."
+        : "This exam isn't available to you right now."
+    return NextResponse.json({ error, code: result.reason ?? null }, { status: 403 })
   }
 
   if (result.timedOut) {
