@@ -155,13 +155,48 @@ class _ExamTakingScreenState extends State<ExamTakingScreen>
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  // Hardware/gesture back press previously popped this screen with zero
+  // warning and zero anti-cheat trail while an exam was genuinely in
+  // progress - the attempt stayed resumable server-side (no clock reset,
+  // per startOrResumeExam), but a student could silently walk away with no
+  // log at all, unlike backgrounding the app (which the lifecycle observer
+  // above already logs as a tab switch). Found during a 2026-08-18
+  // anti-cheat audit alongside the matching web gap (browser back button).
+  // Same "log it, don't block it" design as every other anti-cheat
+  // mechanism here - this only confirms + logs, it never prevents leaving.
+  Future<void> _handleBackPressed() async {
+    if (_exam == null || _exam!.timedOut || _submitting) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final confirmed = await AppDialogs.confirm(
+      context,
+      title: 'Leave this exam?',
+      message: 'Your exam is still in progress and the timer keeps running. '
+          'If you leave now, your answers so far are saved and you can '
+          'resume later, but you won\'t get extra time back.',
+      confirmLabel: 'Leave Exam',
+      isDestructive: true,
+      icon: Icons.warning_amber_rounded,
+    );
+    if (!confirmed || !mounted) return;
+    ApiClient.instance.recordTabSwitch(_exam!.attemptId);
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: FutureBuilder<ExamStart>(
-          future: _startFuture,
-          builder: (context, snapshot) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPressed();
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: FutureBuilder<ExamStart>(
+            future: _startFuture,
+            builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const LoadingView();
             }
@@ -378,6 +413,7 @@ class _ExamTakingScreenState extends State<ExamTakingScreen>
               ],
             );
           },
+          ),
         ),
       ),
     );

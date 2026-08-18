@@ -46,8 +46,13 @@ export function ExamTakingClient({
   const [flaggedQuestions, setFlaggedQuestions] = useState<Set<string>>(new Set())
   const [timeRemaining, setTimeRemaining] = useState(remainingSeconds)
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submittingRef = useRef(false)
+  // Set once the student actually confirms leaving mid-exam, so the guard
+  // effects below stop intercepting further navigation (both a genuine
+  // confirmed exit and the eventual redirect after submit go through here).
+  const leavingRef = useRef(false)
 
   const totalQuestions = questions.length
   const answeredCount = Object.keys(answers).length
@@ -59,6 +64,7 @@ export function ExamTakingClient({
     setIsSubmitting(true)
     try {
       const result = await submitExam(attemptId, answers, Array.from(flaggedQuestions))
+      leavingRef.current = true
       router.push(`/student/results/${result.attemptId}`)
     } catch {
       submittingRef.current = false
@@ -93,6 +99,51 @@ export function ExamTakingClient({
     document.addEventListener("visibilitychange", handleVisibilityChange)
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
   }, [attemptId])
+
+  // Guard against a refresh/close/typed-URL navigation while the exam is
+  // still in progress - the browser's own native "leave site?" prompt
+  // (text isn't customizable by any browser still in use). Doesn't fire for
+  // in-app client-side navigation (the popstate guard below covers that),
+  // only a real page unload.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (leavingRef.current) return
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [])
+
+  // Guard against the browser/device back button. Next.js intercepts
+  // history navigation client-side (no real page unload, so beforeunload
+  // above never fires for this) - the standard SPA technique is to push an
+  // extra history entry on mount so the first back press just pops that
+  // sentinel entry (caught here) instead of actually leaving; if the
+  // student cancels, re-push the sentinel to undo the visible back, and
+  // only navigate for real once they confirm via the dialog below.
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href)
+    const handlePopState = () => {
+      if (leavingRef.current) return
+      window.history.pushState(null, "", window.location.href)
+      setShowLeaveDialog(true)
+    }
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [])
+
+  // Confirmed leaving mid-exam - logged the same way a tab-switch is
+  // (anti-cheat is "log, don't block," per lib/student/exam-attempt.ts),
+  // since walking away from the exam screen entirely is exactly the kind of
+  // event that trail exists to capture. The attempt itself is left
+  // in-progress (resumable, same clock) - this only navigates the student
+  // away, it doesn't submit or forfeit anything.
+  const handleConfirmLeave = () => {
+    leavingRef.current = true
+    recordTabSwitch(attemptId).catch(() => {})
+    router.push("/student/exams")
+  }
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -351,6 +402,28 @@ export function ExamTakingClient({
             <AlertDialogCancel disabled={isSubmitting}>Review Answers</AlertDialogCancel>
             <AlertDialogAction onClick={handleSubmit} disabled={isSubmitting} className="bg-primary">
               {isSubmitting ? "Submitting..." : "Submit Exam"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Leave-Exam Confirmation Dialog - browser/device back button */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Leave this exam?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Your exam is still in progress and the timer keeps running. If you leave now, your answers so far are
+              saved and you can resume later, but you won&apos;t get extra time back. Are you sure you want to leave?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay in Exam</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmLeave} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Leave Exam
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

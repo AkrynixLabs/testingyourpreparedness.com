@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { authenticateMobileRequest } from "@/lib/mobile-auth"
-import { startOrResumeExam } from "@/lib/student/exam-attempt"
+import { startOrResumeExam, submitExamAttempt } from "@/lib/student/exam-attempt"
 
 // Starts a new attempt or resumes an in-progress one (mirrors the web app's
 // app/student/exams/[id]/start/page.tsx - same shared lib/student/exam-
@@ -29,6 +29,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   if (result.timedOut) {
+    // Same server-side backstop as the web app's app/student/exams/[id]/start/page.tsx:
+    // the clock already ran out before this request ever landed (app was
+    // closed/backgrounded mid-exam) - grade with whatever was never
+    // answered rather than leaving the attempt permanently un-submitted.
+    // Previously this route only returned the flag without ever calling
+    // submit, so GET /api/mobile/results/[attemptId] (which requires
+    // submittedAt to be set) 404'd for a genuinely timed-out mobile
+    // attempt - found during a 2026-08-18 anti-cheat audit, fixed here.
+    await submitExamAttempt(result.attemptId, student.id, {}, [])
     return NextResponse.json({ timedOut: true, attemptId: result.attemptId })
   }
 
