@@ -14,19 +14,24 @@ export default async function SchoolAdminLayout({
 
   // Tenant-scoped to this admin's own school, same resolution pattern as
   // every other school-admin page (never trust a client-supplied schoolId).
-  const [allStudents, classes, assignedTests] = schoolAdmin
+  const [allStudents, classes, assignedTests, flaggedAttempts] = schoolAdmin
     ? await Promise.all([
         prisma.student.count({ where: { schoolId: schoolAdmin.schoolId } }),
         prisma.class.count({ where: { schoolId: schoolAdmin.schoolId } }),
         prisma.assessmentAssignment.count({ where: { schoolId: schoolAdmin.schoolId } }),
+        // Same definition as app/school-admin/flagged-attempts's own
+        // "Flagged for Review" stat, not the looser "any tab switch" one -
+        // matches this file's existing nav-badge convention of reusing the
+        // destination page's own real count.
+        prisma.examAttempt.count({ where: { student: { schoolId: schoolAdmin.schoolId }, flaggedForReview: true } }),
       ])
-    : [0, 0, 0]
+    : [0, 0, 0, 0]
 
   return (
     <SchoolAdminShell
       userName={session?.user?.name ?? "School Admin"}
       userEmail={session?.user?.email ?? ""}
-      counts={{ allStudents, classes, assignedTests }}
+      counts={{ allStudents, classes, assignedTests, flaggedAttempts }}
     >
       {children}
     </SchoolAdminShell>

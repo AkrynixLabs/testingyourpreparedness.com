@@ -13,12 +13,14 @@ import {
   UserPlus,
   PlusCircle,
   Trophy,
+  ShieldAlert,
 } from "lucide-react"
 
 type SchoolAdminNavCounts = {
   allStudents: number
   classes: number
   assignedTests: number
+  flaggedAttempts: number
 }
 
 function buildNavigation(counts: SchoolAdminNavCounts): NavGroup[] {
@@ -43,6 +45,12 @@ function buildNavigation(counts: SchoolAdminNavCounts): NavGroup[] {
         { title: "Assigned Tests", href: "/school-admin/assessments", icon: ClipboardList, badge: formatCount(counts.assignedTests) },
         { title: "Assign New", href: "/school-admin/assessments/assign", icon: PlusCircle },
         { title: "Results", href: "/school-admin/results", icon: BarChart3 },
+        {
+          title: "Flagged Attempts",
+          href: "/school-admin/flagged-attempts",
+          icon: ShieldAlert,
+          badge: counts.flaggedAttempts > 0 ? formatCount(counts.flaggedAttempts) : undefined,
+        },
       ],
     },
     {
