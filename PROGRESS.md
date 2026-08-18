@@ -38,6 +38,12 @@ A running, plain-language snapshot for tracking "how close are we" — updated a
 
 Newest first. Each entry: what shipped, and (if relevant) what it unblocks or still needs.
 
+### 2026-08-18
+
+- **The mobile Profile page now has real Payments and Support tabs.** Payments shows a student's actual payment/purchase history (subscriptions and course purchases). Support shows the same email/phone the public website's Contact page shows, plus a real "send us a message" form that goes straight into the same admin inbox the website's contact form already uses. Also moved the "Upgrade Plan" button off the Exams page and onto the Dashboard page (a colorful new icon), and renamed the Exams page's greeting to "Exam List."
+- **Both the mobile app and the website now have a "Privacy & Legal" section** linking to the Terms of Service, Privacy Policy, and Cookie Policy — previously, a logged-in student had no way to reach any of those pages from inside the app or dashboard at all, only from the public marketing site's footer.
+- **Checked into a reported "streak isn't working" issue — turned out not to be a bug.** The streak shown on the dashboard requires an exam attempt today or yesterday to stay active; the real database currently has no exam activity in the last two days at all (the most recent is from 2 days ago), so a streak of 0 is the mathematically correct result right now, not broken logic. Confirmed web and mobile use the exact same calculation, so this wasn't a mobile-only issue either.
+
 ### 2026-08-17
 
 - **Free-plan students on mobile now get a real nudge the moment they hit their monthly practice-test limit**, not just a silent block: a push notification prompting them to upgrade, right when it matters most — and tapping it now opens the Upgrade Plan screen directly instead of just opening the app (same for exam-assigned and results-ready notifications, which previously did nothing when tapped). Also fixed a mobile app build failure (a small code-style issue unrelated to any of today's features) that was blocking the CI pipeline, and a real gap found by specifically checking web against mobile: hitting the free-test limit while starting an exam on the app used to just show an error with no way forward — it now has a real "Upgrade Plan" button, matching what the web app already did.

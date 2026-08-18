@@ -6,6 +6,7 @@ import '../models/course.dart';
 import '../models/dashboard.dart';
 import '../models/exam.dart';
 import '../models/exam_attempt.dart';
+import '../models/payment.dart';
 import '../models/result_detail.dart';
 import '../models/subscription.dart';
 import '../models/user.dart';
@@ -317,6 +318,27 @@ class ApiClient {
       fallback: 'Could not confirm your payment.',
     );
     return body['status'] as String;
+  }
+
+  Future<List<PaymentHistoryEntry>> getPaymentHistory() async {
+    final body = await _authorizedRequest(
+      'GET',
+      '/api/mobile/payments',
+      fallback: 'Could not load your payment history.',
+    );
+    return (body['payments'] as List<dynamic>)
+        .map((p) => PaymentHistoryEntry.fromJson(p as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> sendSupportMessage(
+      {required String subject, required String message}) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/support/contact',
+      body: {'subject': subject, 'message': message},
+      fallback: 'Could not send your message. Try again.',
+    );
   }
 
   Future<LearnCourse> getLearnContent(String courseId) async {

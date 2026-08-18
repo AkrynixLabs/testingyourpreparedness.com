@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/async_state_views.dart';
 import '../widgets/skeleton.dart';
 import 'results_screen.dart';
+import 'upgrade_plan_screen.dart';
 
 /// Mirrors the web app's student dashboard (app/student/page.tsx) via
 /// GET /api/mobile/dashboard - stat tiles, a 6-month performance trend,
@@ -39,7 +40,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          IconButton(
+            tooltip: 'Upgrade Plan',
+            icon: ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFFFFB300), Color(0xFFFF7043)],
+              ).createShader(bounds),
+              child: const Icon(Icons.rocket_launch, color: Colors.white),
+            ),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const UpgradePlanScreen()),
+            ),
+          ),
+        ],
+      ),
       body: FutureBuilder<StudentDashboard>(
         future: _dashboardFuture,
         builder: (context, snapshot) {

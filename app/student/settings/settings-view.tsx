@@ -22,7 +22,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle, Gift, Copy, Check, CreditCard, CheckCircle2 } from "lucide-react"
+import { User, Bell, Shield, Palette, Save, Eye, EyeOff, Mail, Clock, AlertTriangle, Gift, Copy, Check, CreditCard, CheckCircle2, Scale, FileText, ShieldCheck, Cookie, ExternalLink } from "lucide-react"
+import Link from "next/link"
 import { updateProfile, updateGuardian, updatePassword, deleteAccount, cancelDeleteAccount } from "./actions"
 import { initializeStudentCheckout } from "@/app/signup/independent/actions"
 import type { Guardian, GuardianRelation, User as UserModel, SubscriptionPlan, BillingCycle } from "@/lib/generated/prisma/client"
@@ -189,7 +190,7 @@ export function StudentSettingsView({
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className={`grid w-full ${subscription ? "grid-cols-5 lg:w-[620px]" : "grid-cols-4 lg:w-[500px]"}`}>
+        <TabsList className={`grid w-full ${subscription ? "grid-cols-6 lg:w-[740px]" : "grid-cols-5 lg:w-[620px]"}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -205,6 +206,10 @@ export function StudentSettingsView({
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
+          </TabsTrigger>
+          <TabsTrigger value="legal" className="flex items-center gap-2">
+            <Scale className="h-4 w-4" />
+            <span className="hidden sm:inline">Privacy & Legal</span>
           </TabsTrigger>
           {subscription && (
             <TabsTrigger value="plan" className="flex items-center gap-2">
@@ -574,6 +579,41 @@ export function StudentSettingsView({
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Privacy & Legal Tab - previously reachable only from the public
+            marketing footer, invisible from inside the authenticated
+            dashboard shell entirely. Links to the same real /terms, /privacy,
+            /cookies pages (still first-draft/pending-legal-review text per
+            CLAUDE.md) rather than duplicating their content here. */}
+        <TabsContent value="legal" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Privacy & Legal</CardTitle>
+              <CardDescription>Review the legal documents that govern your use of TYP</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { href: "/terms", label: "Terms of Service", icon: FileText },
+                { href: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
+                { href: "/cookies", label: "Cookie Policy", icon: Cookie },
+              ].map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">{label}</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>

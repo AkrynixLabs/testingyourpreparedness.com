@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/user.dart';
 import '../services/api_client.dart';
@@ -17,7 +18,12 @@ import 'offline_library_screen.dart';
 /// management actions, not profile display. Reuses GET /api/mobile/me for
 /// scheduledDeletionAt rather than adding a second endpoint - same data
 /// ProfileScreen already fetches, just a separate screen showing a
-/// different slice of it.
+/// different slice of it. A "Privacy & Legal" tab was added alongside the
+/// original (now "General") content - the app had zero in-app way to reach
+/// /terms, /privacy, /cookies before this; those pages already exist on the
+/// web app (see CLAUDE.md's legal-draft/legal-placeholder entries), just
+/// opened externally rather than rendered natively, same as every other
+/// legal-link precedent in this app (JoinSchoolScreen's terms checkboxes).
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -25,7 +31,9 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
   late Future<StudentProfile> _profileFuture;
   bool _deletionActionLoading = false;
   String? _deletionError;
@@ -34,8 +42,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _profileFuture = ApiClient.instance.getProfile();
     _loadAppVersion();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAppVersion() async {
@@ -133,73 +148,160 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: FutureBuilder<StudentProfile>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingView();
-          }
-          if (snapshot.hasError) {
-            return ErrorView(
-              message: errorMessageFor(snapshot.error!,
-                  fallback: 'Could not load your settings.'),
-              onRetry: _retry,
-            );
-          }
-
-          final profile = snapshot.data!;
-
-          return RefreshIndicator(
-            onRefresh: _onPullRefresh,
-            child: ListView(
-              padding: screenScrollPadding(context),
-              children: [
-                const _AppearanceSection(),
-                const SizedBox(height: 24),
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.download_done_outlined),
-                    title: const Text('Downloaded Lessons'),
-                    subtitle: const Text('Manage what\'s available offline'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const OfflineLibraryScreen()),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('Log Out'),
-                    onTap: _logout,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _DangerZone(
-                  scheduledDeletionAt: profile.scheduledDeletionAt,
-                  loading: _deletionActionLoading,
-                  error: _deletionError,
-                  onDelete: _confirmDeleteAccount,
-                  onCancel: _cancelDeleteAccount,
-                ),
-                if (_appVersion != null) ...[
-                  const SizedBox(height: 24),
-                  Center(
-                    child: Text(
-                      _appVersion!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                      semanticsLabel: 'App $_appVersion',
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          );
-        },
+      appBar: AppBar(
+        title: const Text('Settings'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'General'),
+            Tab(text: 'Privacy & Legal'),
+          ],
+        ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          FutureBuilder<StudentProfile>(
+            future: _profileFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingView();
+              }
+              if (snapshot.hasError) {
+                return ErrorView(
+                  message: errorMessageFor(snapshot.error!,
+                      fallback: 'Could not load your settings.'),
+                  onRetry: _retry,
+                );
+              }
+
+              final profile = snapshot.data!;
+
+              return RefreshIndicator(
+                onRefresh: _onPullRefresh,
+                child: ListView(
+                  padding: screenScrollPadding(context),
+                  children: [
+                    const _AppearanceSection(),
+                    const SizedBox(height: 24),
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.download_done_outlined),
+                        title: const Text('Downloaded Lessons'),
+                        subtitle:
+                            const Text('Manage what\'s available offline'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const OfflineLibraryScreen()),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: const Text('Log Out'),
+                        onTap: _logout,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _DangerZone(
+                      scheduledDeletionAt: profile.scheduledDeletionAt,
+                      loading: _deletionActionLoading,
+                      error: _deletionError,
+                      onDelete: _confirmDeleteAccount,
+                      onCancel: _cancelDeleteAccount,
+                    ),
+                    if (_appVersion != null) ...[
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Text(
+                          _appVersion!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                          semanticsLabel: 'App $_appVersion',
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+          const _PrivacyLegalTab(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Links out to the real web pages (opened externally, not rendered
+/// natively - same precedent as JoinSchoolScreen's terms links) rather than
+/// duplicating their content in Dart, since /terms and /privacy are
+/// explicitly still first-draft/pending-legal-review text that changes
+/// independently of the app (see CLAUDE.md) - a native copy would drift.
+class _PrivacyLegalTab extends StatelessWidget {
+  const _PrivacyLegalTab();
+
+  Future<void> _openLegalPage(BuildContext context, String path) async {
+    final uri = Uri.parse('${ApiClient.baseUrl}$path');
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open this page.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final links = [
+      (
+        icon: Icons.description_outlined,
+        title: 'Terms of Service',
+        path: '/terms',
+      ),
+      (
+        icon: Icons.privacy_tip_outlined,
+        title: 'Privacy Policy',
+        path: '/privacy',
+      ),
+      (
+        icon: Icons.cookie_outlined,
+        title: 'Cookie Policy',
+        path: '/cookies',
+      ),
+    ];
+
+    return ListView(
+      padding: screenScrollPadding(context),
+      children: [
+        Text(
+          'Legal documents open in your browser, since they\'re kept up to '
+          'date on the TYP website.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: Column(
+            children: [
+              for (var i = 0; i < links.length; i++)
+                Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(links[i].icon, color: colors.primary),
+                      title: Text(links[i].title),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _openLegalPage(context, links[i].path),
+                    ),
+                    if (i != links.length - 1) const Divider(height: 1),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

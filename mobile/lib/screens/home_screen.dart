@@ -13,7 +13,6 @@ import 'dashboard_screen.dart';
 import 'exam_taking_screen.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
-import 'upgrade_plan_screen.dart';
 
 /// Top-level shell once logged in - a bottom nav across the exam-prep loop
 /// (v1's original scope), the dashboard (added 2026-08-15, closing the
@@ -112,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen>
             index: _index,
             children: [
               const DashboardScreen(),
-              _ExamsTab(user: widget.user),
+              const _ExamsTab(),
               const CourseCatalogScreen(),
               const ProfileScreen(),
             ],
@@ -146,8 +145,7 @@ class _HomeScreenState extends State<HomeScreen>
 }
 
 class _ExamsTab extends StatefulWidget {
-  final AppUser user;
-  const _ExamsTab({required this.user});
+  const _ExamsTab();
 
   @override
   State<_ExamsTab> createState() => _ExamsTabState();
@@ -180,16 +178,7 @@ class _ExamsTabState extends State<_ExamsTab>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hi, ${widget.user.name.split(' ').first}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.workspace_premium_outlined),
-            tooltip: 'Upgrade Plan',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const UpgradePlanScreen()),
-            ),
-          ),
-        ],
+        title: const Text('Exam List'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
