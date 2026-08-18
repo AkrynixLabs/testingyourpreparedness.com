@@ -1,29 +1,17 @@
 "use server"
 
-import bcrypt from "bcryptjs"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { Role, type BillingCycle } from "@/lib/generated/prisma/client"
+import type { BillingCycle } from "@/lib/generated/prisma/client"
 import { initializeSubscriptionCheckoutForStudent } from "@/lib/student/subscription"
+import {
+  registerIndependentStudent as registerIndependentStudentCore,
+  type RegisterIndependentStudentInput,
+} from "@/lib/student/independent-registration"
 import { enforceRateLimit } from "@/lib/rate-limit"
-import { asString } from "@/lib/validation"
-import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { stripTrailingSlash } from "@/lib/utils"
-import { sendEmailBestEffort } from "@/lib/email/resend"
-import { welcomeEmail } from "@/lib/email/templates"
-import { generateReferralCode } from "@/lib/referral-code"
-import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
 
-export type RegisterIndependentStudentInput = {
-  firstName: string
-  lastName: string
-  email: string
-  password: string
-  region: string
-  town: string
-  subscribeNewsletter: boolean
-  referralCode?: string
-}
+export type { RegisterIndependentStudentInput } from "@/lib/student/independent-registration"
 
 // Creates the account only - no Subscription/Payment row here. Checkout
 // (initializeStudentCheckout below) is a separate step the wizard calls
@@ -33,73 +21,7 @@ export type RegisterIndependentStudentInput = {
 // regardless of subscription (see student/exams's own documented decision).
 export async function registerIndependentStudent(input: RegisterIndependentStudentInput) {
   await enforceRateLimit("signup")
-
-  const firstName = asString(input.firstName).trim()
-  const lastName = asString(input.lastName).trim()
-  const email = asString(input.email).trim().toLowerCase()
-  const region = asString(input.region).trim()
-  const town = asString(input.town).trim()
-  const password = asString(input.password)
-
-  if (!firstName || !lastName) throw new Error("Name is required.")
-  if (!email) throw new Error("Email is required.")
-  if (password.length < 8) throw new Error("Password must be at least 8 characters.")
-  if (!region) throw new Error("Region is required.")
-  if (!town) throw new Error("Town is required.")
-
-  const existing = await prisma.user.findUnique({ where: { email } })
-  if (existing) throw new Error("An account with that email already exists.")
-
-  const passwordHash = await bcrypt.hash(password, 10)
-  const studentName = `${firstName} ${lastName}`
-
-  // Invalid/unrecognized codes are silently ignored rather than blocking
-  // signup - a typo in an optional field shouldn't stop someone creating an
-  // account. Only independent students have referral codes at all (they're
-  // the ones with a personal subscription the reward can extend) - a code
-  // belonging to a school-provisioned student's own account (none exists,
-  // referralCode is only ever set here) or a bad code both resolve to null.
-  let referredByStudentId: string | undefined = undefined
-  const enteredCode = asString(input.referralCode ?? "").trim().toUpperCase()
-  if (enteredCode) {
-    const referrer = await prisma.student.findUnique({ where: { referralCode: enteredCode } })
-    if (referrer) referredByStudentId = referrer.id
-  }
-
-  const referralCode = await generateReferralCode(firstName)
-
-  const student = await prisma.student.create({
-    data: {
-      user: {
-        create: {
-          name: studentName,
-          email,
-          passwordHash,
-          role: Role.student,
-          // Self-signup - real email verification required before this
-          // account can log in (see prisma/schema.prisma's User model).
-          emailVerified: false,
-        },
-      },
-      enrollmentType: "independent",
-      status: "active",
-      address: [town, region].filter(Boolean).join(", ") || null,
-      referralCode,
-      referredByStudent: referredByStudentId ? { connect: { id: referredByStudentId } } : undefined,
-    },
-    select: { id: true, userId: true },
-  })
-
-  if (input.subscribeNewsletter) {
-    await subscribeToNewsletterBestEffort(email)
-  }
-
-  const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "student", dashboardPath: "/student" })
-  await sendEmailBestEffort({ to: email, subject, html })
-
-  await sendVerificationEmailBestEffort(student.userId, email, studentName)
-
-  return { studentId: student.id, email, password }
+  return registerIndependentStudentCore(input)
 }
 
 export type InitializeStudentCheckoutInput = {

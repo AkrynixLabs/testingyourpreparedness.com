@@ -6,6 +6,7 @@ import '../services/api_client.dart';
 import '../services/push_notification_service.dart';
 import '../widgets/async_state_views.dart';
 import 'home_screen.dart';
+import 'independent_signup_screen.dart';
 import 'join_school_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -254,6 +255,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                     icon: const Icon(Icons.key_outlined, size: 18),
                     label: const Text('Join your school with an invite code'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _loading
+                        ? null
+                        : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) => const IndependentSignupScreen()),
+                            ),
+                    icon: const Icon(Icons.person_add_alt_outlined, size: 18),
+                    label: const Text('Sign up as an independent student'),
                   ),
                   const SizedBox(height: 20),
                   Text(

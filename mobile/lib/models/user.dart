@@ -60,6 +60,19 @@ class JoinSchoolResult {
       );
 }
 
+/// Mirrors POST /api/mobile/auth/register's response - the independent-
+/// student signup follow-up to VerifiedSchool/JoinSchoolResult above. No
+/// token/user, same reasoning as JoinSchoolResult: the account starts
+/// unverified, so there's nothing to sign into yet.
+class IndependentRegistrationResult {
+  final String email;
+
+  const IndependentRegistrationResult({required this.email});
+
+  factory IndependentRegistrationResult.fromJson(Map<String, dynamic> json) =>
+      IndependentRegistrationResult(email: json['email'] as String);
+}
+
 /// Mirrors GET /api/mobile/me's response. Not required for v1 but built
 /// alongside the other models since the endpoint already exists.
 class StudentProfile {

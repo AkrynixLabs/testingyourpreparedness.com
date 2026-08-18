@@ -154,6 +154,45 @@ class ApiClient {
     return JoinSchoolResult.fromJson(body);
   }
 
+  /// Independent-student signup - account creation only, no plan/checkout
+  /// step (confirmed with the user 2026-08-18, see
+  /// lib/student/independent-registration.ts's own note for why). No token
+  /// is returned - the account starts unverified, same as joinSchool above.
+  Future<IndependentRegistrationResult> registerIndependentStudent({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String region,
+    required String town,
+    required bool agreeTerms,
+    required bool subscribeNewsletter,
+    String? referralCode,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/mobile/auth/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+        'region': region,
+        'town': town,
+        'agreeTerms': agreeTerms,
+        'subscribeNewsletter': subscribeNewsletter,
+        if (referralCode != null && referralCode.isNotEmpty) 'referralCode': referralCode,
+      }),
+    );
+    final body = _decode(response);
+    if (response.statusCode != 200) {
+      throw ApiException(response.statusCode,
+          body['error'] as String? ?? 'Could not create your account.');
+    }
+
+    return IndependentRegistrationResult.fromJson(body);
+  }
+
   Future<StudentExams> getExams() async {
     final body = await _authorizedRequest('GET', '/api/mobile/exams',
         fallback: 'Could not load exams.');
