@@ -28,7 +28,7 @@ import type { TutorProfile, User } from "@/lib/generated/prisma/client"
 type CourseRow = {
   id: string
   title: string
-  category: string
+  programName: string
   price: number
   status: string
   publishedAt: Date
@@ -210,7 +210,7 @@ export function TutorDetailView({
                     <TableCell>
                       <Link href={`/super-admin/courses/${course.id}`} className="hover:underline">
                         <p className="font-medium">{course.title}</p>
-                        <p className="text-xs text-muted-foreground">{course.category}</p>
+                        <p className="text-xs text-muted-foreground">{course.programName}</p>
                       </Link>
                     </TableCell>
                     <TableCell>

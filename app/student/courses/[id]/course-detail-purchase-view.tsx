@@ -24,7 +24,8 @@ type CourseDetail = {
   id: string
   title: string
   description: string
-  category: string
+  programId: string | null
+  programName: string | null
   price: number
   tutorName: string
   tutorHeadline: string | null
@@ -97,7 +98,7 @@ export function CourseDetailPurchaseView({ course }: { course: CourseDetail }) {
   return (
     <div className="space-y-6">
       <div>
-        <Badge variant="secondary">{course.category}</Badge>
+        <Badge variant="secondary">{course.programName ?? "Uncategorized"}</Badge>
         <h1 className="text-3xl font-bold tracking-tight mt-2">{course.title}</h1>
         <p className="text-muted-foreground mt-2">{course.description}</p>
         <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">

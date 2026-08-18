@@ -25,10 +25,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { MoreHorizontal, Flag, FlagOff, Trash2, Eye } from "lucide-react"
 import { flagCourse, unflagCourse, removeCourse } from "./actions"
-import type { Course, TutorProfile, User } from "@/lib/generated/prisma/client"
+import type { Course, Program, TutorProfile, User } from "@/lib/generated/prisma/client"
 
 export type CourseRow = Course & {
   tutor: TutorProfile & { user: Omit<User, "passwordHash"> }
+  program: Program | null
   _count: { enrollments: number }
 }
 
@@ -82,7 +83,7 @@ export function CoursesTable({ courses }: { courses: CourseRow[] }) {
       render: (course: CourseRow) => (
         <Link href={`/super-admin/courses/${course.id}`} className="hover:underline">
           <p className="font-medium">{course.title}</p>
-          <p className="text-sm text-muted-foreground">{course.category}</p>
+          <p className="text-sm text-muted-foreground">{course.program?.name ?? "Uncategorized"}</p>
         </Link>
       ),
     },

@@ -109,11 +109,11 @@ class _HomeScreenState extends State<HomeScreen>
               parent: _tabFadeController, curve: Curves.easeOut),
           child: IndexedStack(
             index: _index,
-            children: [
-              const DashboardScreen(),
-              const _ExamsTab(),
-              const CourseCatalogScreen(),
-              const ProfileScreen(),
+            children: const [
+              DashboardScreen(),
+              _ExamsTab(),
+              CourseCatalogScreen(),
+              ProfileScreen(),
             ],
           ),
         ),

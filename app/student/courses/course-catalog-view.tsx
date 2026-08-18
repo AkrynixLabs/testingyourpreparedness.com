@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,7 +12,8 @@ type CourseRow = {
   id: string
   title: string
   description: string
-  category: string
+  programId: string | null
+  programName: string | null
   price: number
   thumbnailUrl: string | null
   tutorName: string
@@ -23,23 +24,22 @@ type CourseRow = {
   averageRating: number | null
 }
 
-export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
-  const [search, setSearch] = useState("")
-  const [category, setCategory] = useState("all")
+type ProgramOption = { id: string; name: string }
 
-  const categories = useMemo(
-    () => Array.from(new Set(courses.map((c) => c.category))).sort(),
-    [courses]
-  )
+export function CourseCatalogView({ courses, programs }: { courses: CourseRow[]; programs: ProgramOption[] }) {
+  const [search, setSearch] = useState("")
+  const [programId, setProgramId] = useState("all")
 
   const filtered = courses.filter((c) => {
     const matchesSearch =
       !search ||
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.tutorName.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = category === "all" || c.category === category
-    return matchesSearch && matchesCategory
+    const matchesProgram = programId === "all" || c.programId === programId
+    return matchesSearch && matchesProgram
   })
+
+  const selectedProgramName = programs.find((p) => p.id === programId)?.name
 
   return (
     <div className="space-y-6">
@@ -53,15 +53,15 @@ export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={category} onValueChange={setCategory}>
+        <Select value={programId} onValueChange={setProgramId}>
           <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
+            <SelectItem value="all">All Programs</SelectItem>
+            {programs.map((program) => (
+              <SelectItem key={program.id} value={program.id}>
+                {program.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -69,7 +69,13 @@ export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-12 text-center">No courses match your search.</p>
+        <p className="text-sm text-muted-foreground py-12 text-center">
+          {search
+            ? "No courses match your search."
+            : selectedProgramName
+              ? `No ${selectedProgramName} courses yet — check back soon.`
+              : "No courses match your search."}
+        </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((course) => (
@@ -77,7 +83,7 @@ export function CourseCatalogView({ courses }: { courses: CourseRow[] }) {
               <Card className="h-full hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
-                    <Badge variant="secondary">{course.category}</Badge>
+                    <Badge variant="secondary">{course.programName ?? "Uncategorized"}</Badge>
                     {course.isEnrolled && (
                       <Badge variant="default" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />

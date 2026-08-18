@@ -10,14 +10,14 @@ export default async function TutorCoursesPage() {
 
   const courses = await prisma.course.findMany({
     where: { tutorId: tutor.id },
-    include: { _count: { select: { enrollments: true, modules: true } } },
+    include: { program: true, _count: { select: { enrollments: true, modules: true } } },
     orderBy: { publishedAt: "desc" },
   })
 
   const rows = courses.map((c) => ({
     id: c.id,
     title: c.title,
-    category: c.category,
+    programName: c.program?.name ?? "Uncategorized",
     price: c.price,
     status: c.status,
     students: c._count.enrollments,

@@ -1,11 +1,23 @@
 // Mirrors lib/student/courses.ts's CourseCatalogRow/CourseDetail/MyCourseRow/
 // LearnCourse types (returned by GET /api/mobile/courses/**).
 
+/// A real Program (BECE/WASSCE/Nursing/University Entrance/Digital Skills),
+/// backing the catalog's program filter - GET /api/mobile/courses/programs.
+class ProgramOption {
+  final String id;
+  final String name;
+  const ProgramOption({required this.id, required this.name});
+
+  factory ProgramOption.fromJson(Map<String, dynamic> json) =>
+      ProgramOption(id: json['id'] as String, name: json['name'] as String);
+}
+
 class CourseCatalogRow {
   final String id;
   final String title;
   final String description;
-  final String category;
+  final String? programId;
+  final String? programName;
   final int price;
   final String? thumbnailUrl;
   final String tutorName;
@@ -19,7 +31,8 @@ class CourseCatalogRow {
     required this.id,
     required this.title,
     required this.description,
-    required this.category,
+    this.programId,
+    this.programName,
     required this.price,
     this.thumbnailUrl,
     required this.tutorName,
@@ -34,7 +47,8 @@ class CourseCatalogRow {
         id: json['id'] as String,
         title: json['title'] as String,
         description: json['description'] as String,
-        category: json['category'] as String,
+        programId: json['programId'] as String?,
+        programName: json['programName'] as String?,
         price: json['price'] as int,
         thumbnailUrl: json['thumbnailUrl'] as String?,
         tutorName: json['tutorName'] as String,
@@ -149,7 +163,8 @@ class CourseDetail {
   final String id;
   final String title;
   final String description;
-  final String category;
+  final String? programId;
+  final String? programName;
   final int price;
   final String tutorName;
   final String? tutorHeadline;
@@ -166,7 +181,8 @@ class CourseDetail {
     required this.id,
     required this.title,
     required this.description,
-    required this.category,
+    this.programId,
+    this.programName,
     required this.price,
     required this.tutorName,
     this.tutorHeadline,
@@ -184,7 +200,8 @@ class CourseDetail {
         id: json['id'] as String,
         title: json['title'] as String,
         description: json['description'] as String,
-        category: json['category'] as String,
+        programId: json['programId'] as String?,
+        programName: json['programName'] as String?,
         price: json['price'] as int,
         tutorName: json['tutorName'] as String,
         tutorHeadline: json['tutorHeadline'] as String?,
@@ -206,7 +223,7 @@ class CourseDetail {
 class MyCourseRow {
   final String courseId;
   final String title;
-  final String category;
+  final String? programName;
   final String tutorName;
   final DateTime enrolledAt;
   final int lessonCount;
@@ -215,7 +232,7 @@ class MyCourseRow {
   const MyCourseRow({
     required this.courseId,
     required this.title,
-    required this.category,
+    this.programName,
     required this.tutorName,
     required this.enrolledAt,
     required this.lessonCount,
@@ -225,7 +242,7 @@ class MyCourseRow {
   factory MyCourseRow.fromJson(Map<String, dynamic> json) => MyCourseRow(
         courseId: json['courseId'] as String,
         title: json['title'] as String,
-        category: json['category'] as String,
+        programName: json['programName'] as String?,
         tutorName: json['tutorName'] as String,
         enrolledAt: DateTime.parse(json['enrolledAt'] as String),
         lessonCount: json['lessonCount'] as int,

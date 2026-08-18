@@ -1,6 +1,9 @@
+import { prisma } from "@/lib/prisma"
 import { CreateCourseForm } from "./create-course-form"
 
-export default function CreateCoursePage() {
+export default async function CreateCoursePage() {
+  const programs = await prisma.program.findMany({ where: { active: true }, orderBy: { name: "asc" } })
+
   return (
     <div className="space-y-6">
       <div>
@@ -9,7 +12,7 @@ export default function CreateCoursePage() {
           Your course goes live immediately once published - there&apos;s no approval queue.
         </p>
       </div>
-      <CreateCourseForm />
+      <CreateCourseForm programs={programs.map((p) => ({ id: p.id, name: p.name }))} />
     </div>
   )
 }

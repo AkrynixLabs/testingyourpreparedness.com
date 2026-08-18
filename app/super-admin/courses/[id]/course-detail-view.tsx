@@ -53,6 +53,7 @@ import {
 import { flagCourse, unflagCourse, removeCourse } from "../actions"
 import type {
   Course,
+  Program,
   TutorProfile,
   User,
   Module,
@@ -64,6 +65,7 @@ import type {
 
 type CourseWithRelations = Course & {
   tutor: TutorProfile & { user: Omit<User, "passwordHash"> }
+  program: Program | null
   modules: (Module & { lessons: Lesson[] })[]
   enrollments: (Enrollment & { student: Student & { user: Omit<User, "passwordHash"> } })[]
   purchases: CoursePurchase[]
@@ -137,7 +139,7 @@ export function CourseDetailView({
                 {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
               </Badge>
             </div>
-            <p className="text-muted-foreground">{course.category} · by {course.tutor.user.name}</p>
+            <p className="text-muted-foreground">{course.program?.name ?? "Uncategorized"} · by {course.tutor.user.name}</p>
           </div>
         </div>
         <DropdownMenu>

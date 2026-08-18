@@ -237,7 +237,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       color: colors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20)),
                   child: Text(
-                    course.category,
+                    course.programName ?? 'Uncategorized',
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

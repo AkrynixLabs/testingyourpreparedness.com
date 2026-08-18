@@ -65,7 +65,7 @@ function lessonCreateData(l: LessonInput, order: number) {
 export type CreateCourseInput = {
   title: string
   description: string
-  category: string
+  programId: string
   price: number
   thumbnailUrl: string
   modules: {
@@ -82,11 +82,13 @@ export async function createCourse(input: CreateCourseInput) {
 
   const title = input.title.trim()
   const description = input.description.trim()
-  const category = input.category.trim()
+  const programId = input.programId.trim()
 
   if (!title) throw new Error("Title is required.")
   if (!description) throw new Error("Description is required.")
-  if (!category) throw new Error("Category is required.")
+  if (!programId) throw new Error("Program is required.")
+  const program = await prisma.program.findUnique({ where: { id: programId } })
+  if (!program || !program.active) throw new Error("Invalid program.")
   if (!Number.isFinite(input.price) || input.price < 0) throw new Error("Price must be a non-negative number.")
   if (input.modules.length === 0) throw new Error("Add at least one module.")
   for (const m of input.modules) {
@@ -100,7 +102,8 @@ export async function createCourse(input: CreateCourseInput) {
       tutorId: tutor.id,
       title,
       description,
-      category,
+      programId,
+      category: program.name, // deprecated field, kept in sync only so it's never stale/blank - see Course.category's own schema comment
       price: Math.round(input.price),
       thumbnailUrl: input.thumbnailUrl.trim() || null,
       modules: {

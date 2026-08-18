@@ -31,11 +31,11 @@ function emptyModule(): ModuleDraft {
   return { title: "", lessons: [emptyLesson()] }
 }
 
-export function CreateCourseForm() {
+export function CreateCourseForm({ programs }: { programs: { id: string; name: string }[] }) {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
+  const [programId, setProgramId] = useState("")
   const [price, setPrice] = useState("")
   const [thumbnailUrl, setThumbnailUrl] = useState("")
   const [modules, setModules] = useState<ModuleDraft[]>([emptyModule()])
@@ -75,7 +75,7 @@ export function CreateCourseForm() {
         const { courseId } = await createCourse({
           title,
           description,
-          category,
+          programId,
           price: Number(price),
           thumbnailUrl,
           modules,
@@ -108,14 +108,19 @@ export function CreateCourseForm() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Input
-                id="category"
-                required
-                placeholder="e.g. Web Development"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
+              <Label htmlFor="program">Program *</Label>
+              <Select value={programId} onValueChange={setProgramId} required>
+                <SelectTrigger id="program">
+                  <SelectValue placeholder="Select a program" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programs.map((program) => (
+                    <SelectItem key={program.id} value={program.id}>
+                      {program.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">Price (GHS) *</Label>

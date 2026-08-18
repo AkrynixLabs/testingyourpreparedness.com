@@ -12,6 +12,7 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
   const course = await prisma.course.findUnique({
     where: { id },
     include: {
+      program: true,
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       enrollments: { include: { student: { include: { user: true } } }, orderBy: { enrolledAt: "desc" } },
       purchases: { where: { status: "completed" } },
@@ -31,7 +32,7 @@ export default async function TutorCourseDetailPage({ params }: { params: Promis
         id: course.id,
         title: course.title,
         description: course.description,
-        category: course.category,
+        programName: course.program?.name ?? "Uncategorized",
         price: course.price,
         status: course.status,
         modules: course.modules.map((m) => ({

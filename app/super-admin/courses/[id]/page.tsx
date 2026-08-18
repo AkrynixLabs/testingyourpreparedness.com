@@ -13,6 +13,7 @@ export default async function AdminCourseDetailPage({ params }: { params: Promis
     where: { id },
     include: {
       tutor: { include: { user: true } },
+      program: true,
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       enrollments: { include: { student: { include: { user: true } } }, orderBy: { enrolledAt: "desc" } },
       purchases: { where: { status: "completed" }, orderBy: { createdAt: "desc" } },

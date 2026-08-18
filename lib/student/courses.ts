@@ -14,7 +14,8 @@ export type CourseCatalogRow = {
   id: string
   title: string
   description: string
-  category: string
+  programId: string | null
+  programName: string | null
   price: number
   thumbnailUrl: string | null
   tutorName: string
@@ -31,6 +32,7 @@ export async function getCourseCatalog(studentId: string | null): Promise<Course
       where: { status: "published" },
       include: {
         tutor: { include: { user: true } },
+        program: true,
         _count: { select: { enrollments: true, modules: true, reviews: true } },
         reviews: { select: { rating: true } },
       },
@@ -47,7 +49,8 @@ export async function getCourseCatalog(studentId: string | null): Promise<Course
     id: c.id,
     title: c.title,
     description: c.description,
-    category: c.category,
+    programId: c.programId,
+    programName: c.program?.name ?? null,
     price: c.price,
     thumbnailUrl: c.thumbnailUrl,
     tutorName: c.tutor.user.name,
@@ -63,7 +66,8 @@ export type CourseDetail = {
   id: string
   title: string
   description: string
-  category: string
+  programId: string | null
+  programName: string | null
   price: number
   tutorName: string
   tutorHeadline: string | null
@@ -94,6 +98,7 @@ export async function getCourseDetail(courseId: string, studentId: string | null
     where: { id: courseId },
     include: {
       tutor: { include: { user: true } },
+      program: true,
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
       _count: { select: { enrollments: true } },
       reviews: { include: { student: { include: { user: true } } }, orderBy: { createdAt: "desc" } },
@@ -117,7 +122,8 @@ export async function getCourseDetail(courseId: string, studentId: string | null
     id: course.id,
     title: course.title,
     description: course.description,
-    category: course.category,
+    programId: course.programId,
+    programName: course.program?.name ?? null,
     price: course.price,
     tutorName: course.tutor.user.name,
     tutorHeadline: course.tutor.headline,
@@ -160,7 +166,7 @@ export async function getCourseDetail(courseId: string, studentId: string | null
 export type MyCourseRow = {
   courseId: string
   title: string
-  category: string
+  programName: string | null
   tutorName: string
   enrolledAt: Date
   lessonCount: number
@@ -174,6 +180,7 @@ export async function getMyCourses(studentId: string): Promise<MyCourseRow[]> {
       course: {
         include: {
           tutor: { include: { user: true } },
+          program: true,
           modules: { include: { lessons: true } },
         },
       },
@@ -184,7 +191,7 @@ export async function getMyCourses(studentId: string): Promise<MyCourseRow[]> {
   return enrollments.map((e) => ({
     courseId: e.course.id,
     title: e.course.title,
-    category: e.course.category,
+    programName: e.course.program?.name ?? null,
     tutorName: e.course.tutor.user.name,
     enrolledAt: e.enrolledAt,
     lessonCount: e.course.modules.reduce((sum, m) => sum + m.lessons.length, 0),

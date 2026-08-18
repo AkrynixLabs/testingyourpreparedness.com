@@ -501,7 +501,7 @@ class _SupportTabState extends State<_SupportTab> {
                   const SizedBox(height: 14),
                 ],
                 DropdownButtonFormField<String>(
-                  value: _subject,
+                  initialValue: _subject,
                   decoration: const InputDecoration(
                     labelText: 'Subject',
                     border: OutlineInputBorder(),

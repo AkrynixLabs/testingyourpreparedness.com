@@ -317,15 +317,12 @@ export function PlansView({
                     {plan.studentLimit === null ? "Unlimited" : `Up to ${plan.studentLimit}`} students
                   </p>
                   <ul className="space-y-2">
-                    {features.slice(0, 4).map((feature, index) => (
+                    {features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-2 text-sm">
                         <CheckCircle2 className="h-4 w-4 text-primary" />
                         {feature}
                       </li>
                     ))}
-                    {features.length > 4 && (
-                      <li className="text-sm text-muted-foreground">+{features.length - 4} more features</li>
-                    )}
                   </ul>
                 </div>
 

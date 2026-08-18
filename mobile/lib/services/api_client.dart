@@ -227,6 +227,15 @@ class ApiClient {
         .toList();
   }
 
+  Future<List<ProgramOption>> getPrograms() async {
+    final body = await _authorizedRequest(
+        'GET', '/api/mobile/courses/programs',
+        fallback: 'Could not load programs.');
+    return (body['programs'] as List<dynamic>)
+        .map((e) => ProgramOption.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<MyCourseRow>> getMyCourses() async {
     final body = await _authorizedRequest('GET', '/api/mobile/courses/my',
         fallback: 'Could not load your courses.');

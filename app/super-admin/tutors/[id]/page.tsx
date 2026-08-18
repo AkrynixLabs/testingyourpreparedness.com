@@ -16,6 +16,7 @@ export default async function TutorDetailPage({ params }: { params: Promise<{ id
       courses: {
         orderBy: { publishedAt: "desc" },
         include: {
+          program: true,
           _count: { select: { enrollments: true } },
           purchases: { where: { status: "completed" } },
         },
@@ -29,7 +30,7 @@ export default async function TutorDetailPage({ params }: { params: Promise<{ id
   const courseRows = tutor.courses.map((c) => ({
     id: c.id,
     title: c.title,
-    category: c.category,
+    programName: c.program?.name ?? "Uncategorized",
     price: c.price,
     status: c.status,
     publishedAt: c.publishedAt,

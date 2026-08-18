@@ -12,6 +12,7 @@ export default async function CoursesPage() {
     orderBy: { publishedAt: "desc" },
     include: {
       tutor: { include: { user: true } },
+      program: true,
       _count: { select: { enrollments: true } },
     },
   })

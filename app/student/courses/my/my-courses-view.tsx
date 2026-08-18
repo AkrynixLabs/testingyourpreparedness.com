@@ -9,7 +9,7 @@ import { BookOpen, PlayCircle } from "lucide-react"
 type EnrollmentRow = {
   courseId: string
   title: string
-  category: string
+  programName: string | null
   tutorName: string
   enrolledAt: string
   lessonCount: number
@@ -37,7 +37,7 @@ export function MyCoursesView({ enrollments }: { enrollments: EnrollmentRow[] })
         <Card key={e.courseId}>
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between gap-2">
-              <Badge variant="secondary">{e.category}</Badge>
+              <Badge variant="secondary">{e.programName ?? "Uncategorized"}</Badge>
               {e.courseRemoved && <Badge variant="destructive">No longer available</Badge>}
             </div>
             <CardTitle className="text-lg leading-tight mt-2">{e.title}</CardTitle>

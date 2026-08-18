@@ -38,7 +38,7 @@ type CourseDetail = {
   id: string
   title: string
   description: string
-  category: string
+  programName: string
   price: number
   status: string
   modules: { id: string; title: string; lessons: { id: string; title: string; type: string }[] }[]
@@ -90,7 +90,7 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
-            {course.category} · GHS {course.price}
+            {course.programName} · GHS {course.price}
           </p>
         </div>
       </div>

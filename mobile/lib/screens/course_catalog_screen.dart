@@ -8,9 +8,13 @@ import '../widgets/star_rating_display.dart';
 import 'course_detail_screen.dart';
 import 'my_courses_screen.dart';
 
-/// Mirrors app/student/courses/course-catalog-view.tsx - search + category
+/// Mirrors app/student/courses/course-catalog-view.tsx - search + program
 /// filter over the published-course list, a card grid rendered as a list on
-/// a phone-width screen.
+/// a phone-width screen. The program filter always shows every real active
+/// Program (BECE/WASSCE/Nursing/University Entrance/Digital Skills), not
+/// just categories derived from whatever courses happen to exist right now
+/// - per the 2026-08-18 course-taxonomy decision (a free-text category could
+/// never reliably answer "are there Nursing courses" when there are zero).
 class CourseCatalogScreen extends StatefulWidget {
   const CourseCatalogScreen({super.key});
 
@@ -19,19 +23,28 @@ class CourseCatalogScreen extends StatefulWidget {
 }
 
 class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
-  late Future<List<CourseCatalogRow>> _coursesFuture;
+  late Future<(List<CourseCatalogRow>, List<ProgramOption>)> _dataFuture;
   String _search = '';
-  String _category = 'all';
+  String _programId = 'all';
 
   @override
   void initState() {
     super.initState();
-    _coursesFuture = ApiClient.instance.getCourses();
+    _dataFuture = _load();
+  }
+
+  Future<(List<CourseCatalogRow>, List<ProgramOption>)> _load() async {
+    final results = await Future.wait(
+        [ApiClient.instance.getCourses(), ApiClient.instance.getPrograms()]);
+    return (
+      results[0] as List<CourseCatalogRow>,
+      results[1] as List<ProgramOption>
+    );
   }
 
   Future<void> _refresh() async {
-    setState(() => _coursesFuture = ApiClient.instance.getCourses());
-    await _coursesFuture;
+    setState(() => _dataFuture = _load());
+    await _dataFuture;
   }
 
   @override
@@ -49,8 +62,8 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<CourseCatalogRow>>(
-        future: _coursesFuture,
+      body: FutureBuilder<(List<CourseCatalogRow>, List<ProgramOption>)>(
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CourseListSkeleton();
@@ -63,18 +76,21 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
             );
           }
 
-          final courses = snapshot.data!;
-          final categories = courses.map((c) => c.category).toSet().toList()
-            ..sort();
+          final (courses, programs) = snapshot.data!;
           final filtered = courses.where((c) {
             final query = _search.toLowerCase();
             final matchesSearch = query.isEmpty ||
                 c.title.toLowerCase().contains(query) ||
                 c.tutorName.toLowerCase().contains(query);
-            final matchesCategory =
-                _category == 'all' || c.category == _category;
-            return matchesSearch && matchesCategory;
+            final matchesProgram =
+                _programId == 'all' || c.programId == _programId;
+            return matchesSearch && matchesProgram;
           }).toList();
+          String? selectedProgramName;
+          if (_programId != 'all') {
+            final matches = programs.where((p) => p.id == _programId);
+            selectedProgramName = matches.isEmpty ? null : matches.first.name;
+          }
 
           return RefreshIndicator(
             onRefresh: _refresh,
@@ -91,7 +107,7 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                         ),
                         onChanged: (value) => setState(() => _search = value),
                       ),
-                      if (categories.isNotEmpty) ...[
+                      if (programs.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         SizedBox(
                           height: 34,
@@ -101,14 +117,15 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                             children: [
                               _CategoryPill(
                                 label: 'All',
-                                selected: _category == 'all',
-                                onTap: () => setState(() => _category = 'all'),
+                                selected: _programId == 'all',
+                                onTap: () => setState(() => _programId = 'all'),
                               ),
-                              for (final c in categories)
+                              for (final p in programs)
                                 _CategoryPill(
-                                  label: c,
-                                  selected: _category == c,
-                                  onTap: () => setState(() => _category = c),
+                                  label: p.name,
+                                  selected: _programId == p.id,
+                                  onTap: () =>
+                                      setState(() => _programId = p.id),
                                 ),
                             ],
                           ),
@@ -119,8 +136,12 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                 ),
                 Expanded(
                   child: filtered.isEmpty
-                      ? const EmptyView(
-                          message: 'No courses match your search.',
+                      ? EmptyView(
+                          message: _search.isNotEmpty
+                              ? 'No courses match your search.'
+                              : selectedProgramName != null
+                                  ? 'No $selectedProgramName courses yet - check back soon.'
+                                  : 'No courses match your search.',
                           icon: Icons.search_off)
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -260,9 +281,8 @@ class _CourseCard extends StatelessWidget {
 }
 
 /// A thumbnail image when the tutor provided one, otherwise a colored
-/// gradient "cover" derived from the category name so cards never look
-/// like a bare list-item even without real course artwork yet (zero real
-/// courses exist in the seeded DB as of this writing).
+/// gradient "cover" derived from the course's program name so cards never
+/// look like a bare list-item even without real course artwork.
 class _CourseCover extends StatelessWidget {
   final CourseCatalogRow course;
   const _CourseCover({required this.course});
@@ -270,7 +290,8 @@ class _CourseCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final hue = (course.category.hashCode % 360).abs().toDouble();
+    final categoryLabel = course.programName ?? 'Uncategorized';
+    final hue = (categoryLabel.hashCode % 360).abs().toDouble();
     final gradientColor = HSLColor.fromAHSL(
             1, hue, 0.55, colors.brightness == Brightness.dark ? 0.35 : 0.55)
         .toColor();
@@ -292,7 +313,7 @@ class _CourseCover extends StatelessWidget {
             top: 12,
             left: 12,
             child: _Badge(
-                label: course.category,
+                label: categoryLabel,
                 background: Colors.black.withValues(alpha: 0.45),
                 color: Colors.white),
           ),

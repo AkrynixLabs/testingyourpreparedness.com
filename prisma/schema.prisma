@@ -164,6 +164,9 @@ model Program {
   // can later be scoped by a plan/subscription without a migration.
   subscriptionPlans SubscriptionPlan[]
   subscriptions     Subscription[]
+
+  // Course.programId - added 2026-08-18, see that field's own comment.
+  courses Course[]
 }
 
 // ---------------------------------------------------------------------------
@@ -915,7 +918,24 @@ model Course {
   tutor        TutorProfile @relation(fields: [tutorId], references: [id])
   title        String
   description  String
-  category     String // free-text, not a FK - a separate taxonomy from Program/Subject, can be normalized later if browse/filter needs it
+  // Deprecated 2026-08-18 in favor of programId below - kept (not dropped)
+  // so the 2 real courses that already existed at migration time
+  // ("Testing phase", "Morals") don't lose data, but no longer read/written
+  // by any UI. See programId's own comment for why.
+  category     String
+  // Normalizes the free-text `category` above into the same Program entity
+  // used everywhere else on the platform (BECE/WASSCE/Nursing/University
+  // Entrance/Digital Skills) - decided 2026-08-18 after the user asked how
+  // someone looking for e.g. Nursing courses would actually find them: a
+  // free-text category only ever surfaced whatever string a tutor happened
+  // to type, so the catalog filter couldn't reliably show "Nursing" at all,
+  // let alone show it when zero Nursing courses exist yet. Nullable since
+  // the 2 pre-existing real courses have no Program to migrate to; new/
+  // edited courses are expected to always set one (enforced in
+  // createCourse, not at the schema level, same "validate in the action"
+  // precedent as this model's other required-in-practice fields).
+  programId    String?
+  program      Program?     @relation(fields: [programId], references: [id])
   price        Int // GHS, tutor-set
   status       CourseStatus @default(published)
   thumbnailUrl String?
@@ -929,6 +949,7 @@ model Course {
 
   @@index([tutorId])
   @@index([status])
+  @@index([programId])
 }
 
 // Added 2026-08-08 - a real gap for a Coursera/Udemy-style catalog, students

@@ -19,7 +19,7 @@ import { deleteCourse } from "./actions"
 type CourseRow = {
   id: string
   title: string
-  category: string
+  programName: string
   price: number
   status: string
   students: number
@@ -77,7 +77,7 @@ export function CoursesTable({ courses }: { courses: CourseRow[] }) {
               {courses.map((course) => (
                 <TableRow key={course.id}>
                   <TableCell className="font-medium">{course.title}</TableCell>
-                  <TableCell>{course.category}</TableCell>
+                  <TableCell>{course.programName}</TableCell>
                   <TableCell>GHS {course.price}</TableCell>
                   <TableCell>{course.modules}</TableCell>
                   <TableCell>{course.students}</TableCell>
