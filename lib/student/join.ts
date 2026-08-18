@@ -6,6 +6,7 @@ import { subscribeToNewsletterBestEffort } from "@/lib/newsletter/brevo"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { joinRequestPendingEmail, newJoinRequestEmail } from "@/lib/email/templates"
 import { sendVerificationEmailBestEffort } from "@/lib/email-verification"
+import { getSchoolStudentCapacity } from "@/lib/school/capacity"
 
 // Extracted from app/join/actions.ts (unchanged logic) so
 // app/api/mobile/auth/join can share the exact same school-code lookup and
@@ -58,6 +59,18 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("An account with that email already exists.")
+
+  // Same enforcement point as the school-admin add-student flows
+  // (lib/school/capacity.ts) - a school-code join is still a new Student row
+  // against the same plan limit, and pending join requests already count
+  // toward it (see the `status: "pending"` count query below), so this has
+  // to be checked at creation, not later at admin-approval time.
+  const { current, limit } = await getSchoolStudentCapacity(school.schoolId)
+  if (limit !== null && current >= limit) {
+    throw new Error(
+      "This school has reached its maximum number of students on its current plan. Please contact your school administrator."
+    )
+  }
 
   const passwordHash = await bcrypt.hash(password, 10)
   const name = `${firstName} ${lastName}`

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getSchoolStudentCapacity } from "@/lib/school/capacity"
 import { AddStudentForm } from "./add-student-form"
 
 export default async function AddStudentsPage() {
@@ -11,10 +12,13 @@ export default async function AddStudentsPage() {
   })
   if (!schoolAdmin) notFound()
 
-  const classes = await prisma.class.findMany({
-    where: { schoolId: schoolAdmin.schoolId },
-    orderBy: { displayName: "asc" },
-  })
+  const [classes, capacity] = await Promise.all([
+    prisma.class.findMany({
+      where: { schoolId: schoolAdmin.schoolId },
+      orderBy: { displayName: "asc" },
+    }),
+    getSchoolStudentCapacity(schoolAdmin.schoolId),
+  ])
 
-  return <AddStudentForm classes={classes} />
+  return <AddStudentForm classes={classes} capacity={capacity} />
 }

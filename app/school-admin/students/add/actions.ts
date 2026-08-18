@@ -9,6 +9,7 @@ import { Role, type Gender, type GuardianRelation } from "@/lib/generated/prisma
 import { validateStudentRow, type ClassOption, type ParsedStudentRow } from "./validation"
 import { sendEmailBestEffort } from "@/lib/email/resend"
 import { newAccountTempPasswordEmail } from "@/lib/email/templates"
+import { assertStudentCapacityAvailable, getSchoolStudentCapacity } from "@/lib/school/capacity"
 
 // A random temporary password is generated and returned once so the school
 // admin can hand it to the student directly - kept as the reliable fallback
@@ -59,6 +60,8 @@ export async function createStudent(input: CreateStudentInput) {
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) throw new Error("A user with that email already exists.")
+
+  await assertStudentCapacityAvailable(schoolId)
 
   const tempPassword = generateTempPassword()
   const passwordHash = await bcrypt.hash(tempPassword, 10)
@@ -163,6 +166,9 @@ export async function bulkCreateStudents(
   const classRows = await prisma.class.findMany({ where: { schoolId } })
   const classOptions: ClassOption[] = classRows.map((c) => ({ id: c.id, displayName: c.displayName }))
 
+  const { current, limit } = await getSchoolStudentCapacity(schoolId)
+  let remainingCapacity = limit === null ? Number.POSITIVE_INFINITY : Math.max(0, limit - current)
+
   const created: { name: string; email: string; tempPassword: string }[] = []
   const skipped: { row: number; issues: string[] }[] = []
 
@@ -171,6 +177,14 @@ export async function bulkCreateStudents(
 
     if (validated.status === "error" || !validated.resolvedClassId) {
       skipped.push({ row, issues: validated.issues })
+      continue
+    }
+
+    if (remainingCapacity <= 0) {
+      skipped.push({
+        row,
+        issues: [`Your plan's student limit (${limit}) has been reached - upgrade your subscription plan to import more.`],
+      })
       continue
     }
 
@@ -206,6 +220,7 @@ export async function bulkCreateStudents(
     })
 
     created.push({ name: parsed.name.trim(), email, tempPassword })
+    remainingCapacity -= 1
   }
 
   revalidatePath("/school-admin/students")

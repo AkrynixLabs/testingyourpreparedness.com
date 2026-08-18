@@ -30,9 +30,14 @@ import type { Class, Gender, GuardianRelation } from "@/lib/generated/prisma/cli
 
 const EMPTY_ROW: ParsedStudentRow = { name: "", email: "", class: "", guardian: "", guardian_phone: "" }
 
-export function AddStudentForm({ classes }: { classes: Class[] }) {
+type Capacity = { current: number; limit: number | null }
+
+export function AddStudentForm({ classes, capacity }: { classes: Class[]; capacity: Capacity }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("single")
+
+  const atCapacity = capacity.limit !== null && capacity.current >= capacity.limit
+  const remaining = capacity.limit !== null ? Math.max(0, capacity.limit - capacity.current) : null
 
   return (
     <div className="space-y-6">
@@ -48,6 +53,30 @@ export function AddStudentForm({ classes }: { classes: Class[] }) {
         </div>
       </div>
 
+      {capacity.limit !== null && (
+        <Alert variant={atCapacity ? "destructive" : undefined}>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>{atCapacity ? "Student limit reached" : "Plan usage"}</AlertTitle>
+          <AlertDescription>
+            {atCapacity ? (
+              <>
+                Your plan allows up to {capacity.limit} students and you&apos;ve reached that limit ({capacity.current}
+                /{capacity.limit}).{" "}
+                <Link href="/school-admin/subscription/upgrade" className="underline underline-offset-2">
+                  Upgrade your plan
+                </Link>{" "}
+                to add more.
+              </>
+            ) : (
+              <>
+                {capacity.current} of {capacity.limit} students used on your current plan ({remaining} slot
+                {remaining === 1 ? "" : "s"} left).
+              </>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="single" className="gap-2">
@@ -61,11 +90,19 @@ export function AddStudentForm({ classes }: { classes: Class[] }) {
         </TabsList>
 
         <TabsContent value="single" className="space-y-6">
-          <SingleStudentTab classes={classes} onDone={() => router.push("/school-admin/students")} />
+          <SingleStudentTab
+            classes={classes}
+            atCapacity={atCapacity}
+            onDone={() => router.push("/school-admin/students")}
+          />
         </TabsContent>
 
         <TabsContent value="bulk" className="space-y-6">
-          <BulkImportTab classes={classes} onDone={() => router.push("/school-admin/students")} />
+          <BulkImportTab
+            classes={classes}
+            atCapacity={atCapacity}
+            onDone={() => router.push("/school-admin/students")}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -74,7 +111,15 @@ export function AddStudentForm({ classes }: { classes: Class[] }) {
 
 type AddedStudent = { studentId: string; name: string; email: string; tempPassword: string }
 
-function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () => void }) {
+function SingleStudentTab({
+  classes,
+  atCapacity,
+  onDone,
+}: {
+  classes: Class[]
+  atCapacity: boolean
+  onDone: () => void
+}) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   // A running list, not a single overwritten value - "Add Another" lets one
@@ -389,10 +434,10 @@ function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () =>
         <Button variant="outline" asChild>
           <Link href="/school-admin/students">Cancel</Link>
         </Button>
-        <Button variant="outline" onClick={() => handleSubmit(true)} disabled={isPending}>
+        <Button variant="outline" onClick={() => handleSubmit(true)} disabled={isPending || atCapacity}>
           Save & Add Another
         </Button>
-        <Button onClick={() => handleSubmit(false)} disabled={isPending}>
+        <Button onClick={() => handleSubmit(false)} disabled={isPending || atCapacity}>
           <UserPlus className="mr-2 h-4 w-4" />
           {isPending ? "Adding..." : "Add Student"}
         </Button>
@@ -401,7 +446,15 @@ function SingleStudentTab({ classes, onDone }: { classes: Class[]; onDone: () =>
   )
 }
 
-function BulkImportTab({ classes, onDone }: { classes: Class[]; onDone: () => void }) {
+function BulkImportTab({
+  classes,
+  atCapacity,
+  onDone,
+}: {
+  classes: Class[]
+  atCapacity: boolean
+  onDone: () => void
+}) {
   const [isPending, startTransition] = useTransition()
   const [defaultClassId, setDefaultClassId] = useState("")
   const [parseError, setParseError] = useState<string | null>(null)
@@ -711,7 +764,7 @@ function BulkImportTab({ classes, onDone }: { classes: Class[]; onDone: () => vo
           <Button variant="outline" onClick={() => setValidatedRows(null)}>
             Cancel
           </Button>
-          <Button onClick={handleImport} disabled={isPending || validCount + warningCount === 0}>
+          <Button onClick={handleImport} disabled={isPending || validCount + warningCount === 0 || atCapacity}>
             <UserPlus className="mr-2 h-4 w-4" />
             {isPending ? "Importing..." : `Import ${validCount + warningCount} Students`}
           </Button>
