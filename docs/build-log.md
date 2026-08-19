@@ -1231,6 +1231,13 @@ Verification: live-tested end to end against the real Neon DB with a temp script
 - New `POST /api/mobile/account/change-password` (bearer-auth-gated via `authenticateMobileRequest`), `ApiClient.changePassword()`, and a new `screens/change_password_screen.dart` (current/new/confirm fields, show/hide toggles, client-side length/match checks mirroring the shared function's own validation) - linked from `settings_screen.dart`'s list, in the same card as Downloaded Lessons.
 - Verified live against the real Neon DB with a temp script (a real test user: wrong current password correctly rejected, correct current password correctly updates the bcrypt hash, cleaned up after - the Resend send errored only because the script used a fake `@example.com` address, same fail-open behavior as every other email call in this app, not a blocker). `npx tsc --noEmit` (0 errors, full repo) and, for real in this sandbox (Flutter SDK installed), `flutter analyze` (0 issues) and `flutter test` (all passing).
 
+**Built 2026-08-19 — a real "unassigned published assessments" nav badge on `school-admin`'s "Assign New" item, the lighter alternative to a Super Admin platform-wide "push" the user asked about and, on discussion, decided against** (a raw broadcast would bypass each school's own per-assignment timing/retake/notification settings, and there's no signal the manual per-school assign step is an actual bottleneck at this project's current scale - see this file's reasoning, recorded in the chat rather than a separate doc). This is the smaller fix instead: a nudge, not new distribution infrastructure.
+- `app/school-admin/layout.tsx` gained a new count: published `Assessment`s with zero `AssessmentAssignment` rows for this school at all (`assignments: { none: { schoolId } }`) - doesn't distinguish "brand new" from "old but never assigned," both are equally worth surfacing, and `assign/page.tsx`'s own list already shows every published assessment regardless of this count, so it's purely a nav nudge, not a new data source or a new page.
+- `school-admin-shell.tsx`'s "Assign New" nav item now shows this count as a badge (hidden at 0, same conditional-badge convention as the existing "Flagged Attempts" item) - previously this was the one item in the Assessments nav group with no badge at all.
+- Verified live against the real Neon DB (not just typechecked): a real school currently has 4 published assessments and 0 of its own assignments, so the badge would correctly read "4."
+- No mobile counterpart - mobile v1 is student-only scope, there is no School Admin role/shell on mobile at all, so no parity gap here (confirmed, not assumed).
+- `npx tsc --noEmit` clean (full repo).
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

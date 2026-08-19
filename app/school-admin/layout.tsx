@@ -14,7 +14,7 @@ export default async function SchoolAdminLayout({
 
   // Tenant-scoped to this admin's own school, same resolution pattern as
   // every other school-admin page (never trust a client-supplied schoolId).
-  const [allStudents, classes, assignedTests, flaggedAttempts] = schoolAdmin
+  const [allStudents, classes, assignedTests, flaggedAttempts, unassignedAssessments] = schoolAdmin
     ? await Promise.all([
         prisma.student.count({ where: { schoolId: schoolAdmin.schoolId } }),
         prisma.class.count({ where: { schoolId: schoolAdmin.schoolId } }),
@@ -24,14 +24,26 @@ export default async function SchoolAdminLayout({
         // matches this file's existing nav-badge convention of reusing the
         // destination page's own real count.
         prisma.examAttempt.count({ where: { student: { schoolId: schoolAdmin.schoolId }, flaggedForReview: true } }),
+        // Published assessments this school has never assigned at all (to
+        // any class/student) - a nudge toward newly-approved content a
+        // school admin might not have noticed, added 2026-08-19 as a
+        // lighter alternative to a platform-wide "push" the user considered
+        // and decided against (see docs/build-log.md). Doesn't distinguish
+        // "brand new" from "old but never assigned" - both are equally
+        // worth surfacing, and assign/page.tsx's own list already shows
+        // every published assessment regardless, so this is purely a count
+        // nudge, not a new data source.
+        prisma.assessment.count({
+          where: { status: "published", assignments: { none: { schoolId: schoolAdmin.schoolId } } },
+        }),
       ])
-    : [0, 0, 0, 0]
+    : [0, 0, 0, 0, 0]
 
   return (
     <SchoolAdminShell
       userName={session?.user?.name ?? "School Admin"}
       userEmail={session?.user?.email ?? ""}
-      counts={{ allStudents, classes, assignedTests, flaggedAttempts }}
+      counts={{ allStudents, classes, assignedTests, flaggedAttempts, unassignedAssessments }}
     >
       {children}
     </SchoolAdminShell>

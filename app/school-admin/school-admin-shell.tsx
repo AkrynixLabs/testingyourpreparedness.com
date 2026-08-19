@@ -21,6 +21,7 @@ type SchoolAdminNavCounts = {
   classes: number
   assignedTests: number
   flaggedAttempts: number
+  unassignedAssessments: number
 }
 
 function buildNavigation(counts: SchoolAdminNavCounts): NavGroup[] {
@@ -43,7 +44,12 @@ function buildNavigation(counts: SchoolAdminNavCounts): NavGroup[] {
       title: "Assessments",
       items: [
         { title: "Assigned Tests", href: "/school-admin/assessments", icon: ClipboardList, badge: formatCount(counts.assignedTests) },
-        { title: "Assign New", href: "/school-admin/assessments/assign", icon: PlusCircle },
+        {
+          title: "Assign New",
+          href: "/school-admin/assessments/assign",
+          icon: PlusCircle,
+          badge: counts.unassignedAssessments > 0 ? formatCount(counts.unassignedAssessments) : undefined,
+        },
         { title: "Results", href: "/school-admin/results", icon: BarChart3 },
         {
           title: "Flagged Attempts",
