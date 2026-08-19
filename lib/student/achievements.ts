@@ -18,12 +18,13 @@ import { getStudentClassRank, getStudentNationalRank } from "./leaderboard"
 // after an attempt is graded - so a badge can be earned from either client.
 
 export async function checkAndAwardAchievements(studentId: string): Promise<{ id: string; name: string }[]> {
-  const [attempts, existing, achievements, student] = await Promise.all([
+  const [attempts, lessonCompletions, existing, achievements, student] = await Promise.all([
     prisma.examAttempt.findMany({
       where: { studentId, submittedAt: { not: null }, score: { not: null }, totalMarks: { not: null } },
       include: { assessment: { include: { subject: true } } },
       orderBy: { submittedAt: "asc" },
     }),
+    prisma.lessonProgress.findMany({ where: { studentId }, select: { completedAt: true } }),
     prisma.studentAchievement.findMany({ where: { studentId }, select: { achievementId: true } }),
     prisma.achievement.findMany(),
     prisma.student.findUnique({ where: { id: studentId }, select: { classId: true } }),
@@ -31,10 +32,18 @@ export async function checkAndAwardAchievements(studentId: string): Promise<{ id
 
   const earnedIds = new Set(existing.map((e) => e.achievementId))
   const remaining = achievements.filter((a) => !earnedIds.has(a.id))
-  if (remaining.length === 0 || attempts.length === 0) return []
+  // "Study Streak" is reachable via lesson completions alone (see below), so
+  // this can't early-return on attempts.length === 0 the way it used to -
+  // every other criterion below still only means anything with real attempts.
+  if (remaining.length === 0 || (attempts.length === 0 && lessonCompletions.length === 0)) return []
 
   const percentages = attempts.map((a) => (a.totalMarks! > 0 ? (a.score! / a.totalMarks!) * 100 : 0))
   const submittedDates = attempts.map((a) => a.submittedAt!)
+  // Broadened 2026-08-18 (confirmed with the user) to match
+  // lib/student/dashboard-stats.ts's own streak - a student studying purely
+  // through course lessons, never taking a practice test, can still earn
+  // this badge, same as the dashboard's own streak number now reflects them.
+  const streakDates = [...submittedDates, ...lessonCompletions.map((l) => l.completedAt)]
 
   const bySubject = new Map<string, number[]>()
   attempts.forEach((a, i) => {
@@ -53,7 +62,7 @@ export async function checkAndAwardAchievements(studentId: string): Promise<{ id
   const criteriaMet: Record<string, boolean> = {
     "Top Performer": percentages.filter((p) => p >= 90).length >= 5,
     "Perfect Score": attempts.some((a) => a.totalMarks! > 0 && a.score === a.totalMarks),
-    "Study Streak": computeStreak(submittedDates) >= 7,
+    "Study Streak": computeStreak(streakDates) >= 7,
     "Consistency King": attempts.length >= 20,
     "Quick Learner": hasNInWindow(submittedDates, 10, 7),
     "Subject Master": subjectMaster,

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import MuxPlayer from "@mux/mux-player-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { PlayCircle, FileText, ArrowLeft, ExternalLink, Loader2 } from "lucide-react"
+import { PlayCircle, FileText, ArrowLeft, ExternalLink, Loader2, CheckCircle2, Circle } from "lucide-react"
+import { markLessonComplete } from "./actions"
 
 type Lesson = {
   id: string
@@ -16,13 +17,35 @@ type Lesson = {
   videoSource: string | null
   muxPlaybackId: string | null
   muxStatus: string | null
+  isCompleted: boolean
 }
 type Module = { id: string; title: string; lessons: Lesson[] }
 
 export function LessonViewer({ course }: { course: { id: string; title: string; modules: Module[] } }) {
   const allLessons = course.modules.flatMap((m) => m.lessons)
   const [activeLessonId, setActiveLessonId] = useState(allLessons[0]?.id ?? null)
+  const [completedIds, setCompletedIds] = useState(
+    () => new Set(allLessons.filter((l) => l.isCompleted).map((l) => l.id))
+  )
+  const [isPending, startTransition] = useTransition()
   const activeLesson = allLessons.find((l) => l.id === activeLessonId) ?? null
+  const activeIsCompleted = activeLesson ? completedIds.has(activeLesson.id) : false
+
+  const handleMarkComplete = () => {
+    if (!activeLesson || activeIsCompleted) return
+    // Optimistic - a failed request just leaves the lesson unmarked on the
+    // next real fetch; not worth a rollback dance for a low-stakes toggle.
+    setCompletedIds((prev) => new Set(prev).add(activeLesson.id))
+    startTransition(() => {
+      markLessonComplete(activeLesson.id).catch(() => {
+        setCompletedIds((prev) => {
+          const next = new Set(prev)
+          next.delete(activeLesson.id)
+          return next
+        })
+      })
+    })
+  }
 
   return (
     <div className="space-y-4">
@@ -37,7 +60,25 @@ export function LessonViewer({ course }: { course: { id: string; title: string; 
           <CardContent className="p-6">
             {activeLesson ? (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold">{activeLesson.title}</h2>
+                <div className="flex items-start justify-between gap-4">
+                  <h2 className="text-xl font-semibold">{activeLesson.title}</h2>
+                  <Button
+                    size="sm"
+                    variant={activeIsCompleted ? "secondary" : "outline"}
+                    disabled={activeIsCompleted || isPending}
+                    onClick={handleMarkComplete}
+                    className="shrink-0"
+                  >
+                    {activeIsCompleted ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-600" />
+                        Completed
+                      </>
+                    ) : (
+                      "Mark as complete"
+                    )}
+                  </Button>
+                </div>
                 {activeLesson.type === "video" && activeLesson.videoSource === "mux" ? (
                   activeLesson.muxStatus === "ready" && activeLesson.muxPlaybackId ? (
                     <MuxPlayer
@@ -91,7 +132,12 @@ export function LessonViewer({ course }: { course: { id: string; title: string; 
                       }`}
                     >
                       {lesson.type === "video" ? <PlayCircle className="h-4 w-4 shrink-0" /> : <FileText className="h-4 w-4 shrink-0" />}
-                      {lesson.title}
+                      <span className="flex-1">{lesson.title}</span>
+                      {completedIds.has(lesson.id) ? (
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      ) : (
+                        <Circle className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                      )}
                     </button>
                   ))}
                 </div>

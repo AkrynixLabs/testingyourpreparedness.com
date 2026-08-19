@@ -261,6 +261,10 @@ class LearnLesson {
   final String? videoSource;
   final String? muxPlaybackId;
   final String? muxStatus;
+  // Added 2026-08-18 alongside real lesson-completion tracking (closes the
+  // course marketplace's standing "no progress tracking" gap) - backs the
+  // "Mark as complete" action and the student dashboard's broadened streak.
+  final bool isCompleted;
 
   const LearnLesson({
     required this.id,
@@ -271,6 +275,7 @@ class LearnLesson {
     this.videoSource,
     this.muxPlaybackId,
     this.muxStatus,
+    this.isCompleted = false,
   });
 
   bool get isMuxVideo => videoSource == 'mux';
@@ -286,6 +291,7 @@ class LearnLesson {
         videoSource: json['videoSource'] as String?,
         muxPlaybackId: json['muxPlaybackId'] as String?,
         muxStatus: json['muxStatus'] as String?,
+        isCompleted: json['isCompleted'] as bool? ?? false,
       );
 }
 

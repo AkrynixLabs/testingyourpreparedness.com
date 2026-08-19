@@ -6,6 +6,7 @@ import '../models/course.dart';
 import '../models/offline_lesson.dart';
 import '../services/api_client.dart';
 import '../services/offline_library.dart';
+import '../theme/app_theme.dart';
 import '../widgets/async_state_views.dart';
 import '../widgets/mux_video_player.dart';
 import 'offline_library_screen.dart';
@@ -38,6 +39,9 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
   Set<String> _downloadedLessonIds = {};
   List<OfflineLesson> _cachedLessonsForCourse = [];
   bool _loadingDownloadAction = false;
+  Set<String> _completedLessonIds = {};
+  bool _completedIdsLoaded = false;
+  bool _markingComplete = false;
 
   @override
   void initState() {
@@ -58,8 +62,33 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
   }
 
   void _retry() {
-    setState(() =>
-        _courseFuture = ApiClient.instance.getLearnContent(widget.courseId));
+    setState(() {
+      _courseFuture = ApiClient.instance.getLearnContent(widget.courseId);
+      _completedIdsLoaded = false;
+    });
+  }
+
+  // Closes the course marketplace's standing "no lesson-completion tracking"
+  // gap (2026-08-18) - also feeds the student dashboard's broadened study
+  // streak. Optimistic, same pattern as the download toggle above - a
+  // failed request just leaves the lesson unmarked next time this screen
+  // reloads, not worth a rollback dance for a low-stakes toggle.
+  Future<void> _markComplete(LearnLesson lesson) async {
+    if (_markingComplete || _completedLessonIds.contains(lesson.id)) return;
+    setState(() {
+      _markingComplete = true;
+      _completedLessonIds = {..._completedLessonIds, lesson.id};
+    });
+    HapticFeedback.selectionClick();
+    try {
+      await ApiClient.instance.markLessonComplete(lesson.id);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _completedLessonIds =
+          _completedLessonIds.difference({lesson.id}));
+    } finally {
+      if (mounted) setState(() => _markingComplete = false);
+    }
   }
 
   Future<void> _openVideo(String url) async {
@@ -157,6 +186,13 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
                   icon: Icons.video_library_outlined);
             }
             _activeLessonId ??= allLessons.first.id;
+            if (!_completedIdsLoaded) {
+              _completedIdsLoaded = true;
+              _completedLessonIds = allLessons
+                  .where((l) => l.isCompleted)
+                  .map((l) => l.id)
+                  .toSet();
+            }
             final activeLesson = allLessons.firstWhere(
                 (l) => l.id == _activeLessonId,
                 orElse: () => allLessons.first);
@@ -196,6 +232,13 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
                               ),
                             ],
                           ],
+                        ),
+                        const SizedBox(height: 10),
+                        _MarkCompleteButton(
+                          completed:
+                              _completedLessonIds.contains(activeLesson.id),
+                          loading: _markingComplete,
+                          onTap: () => _markComplete(activeLesson),
                         ),
                         const SizedBox(height: 16),
                         if (activeLesson.type == 'video' &&
@@ -267,6 +310,8 @@ class _CourseLearnScreenState extends State<CourseLearnScreen> {
                             downloaded: lesson.type != 'video' &&
                                 _downloadedLessonIds.contains(lesson.id),
                             requiresConnection: lesson.type == 'video',
+                            completed:
+                                _completedLessonIds.contains(lesson.id),
                             onTap: () =>
                                 setState(() => _activeLessonId = lesson.id),
                           ),
@@ -386,6 +431,32 @@ class _MuxLessonVideo extends StatelessWidget {
   }
 }
 
+class _MarkCompleteButton extends StatelessWidget {
+  final bool completed;
+  final bool loading;
+  final VoidCallback onTap;
+  const _MarkCompleteButton(
+      {required this.completed, required this.loading, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    if (completed) {
+      return OutlinedButton.icon(
+        onPressed: null,
+        icon: Icon(Icons.check_circle, size: 18, color: Theme.of(context).success),
+        label: const Text('Completed'),
+      );
+    }
+    return OutlinedButton(
+      onPressed: loading ? null : onTap,
+      child: loading
+          ? const SizedBox(
+              width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Text('Mark as complete'),
+    );
+  }
+}
+
 class _DownloadButton extends StatelessWidget {
   final bool downloaded;
   final bool loading;
@@ -422,6 +493,7 @@ class _LessonTile extends StatelessWidget {
   final bool selected;
   final bool downloaded;
   final bool requiresConnection;
+  final bool completed;
   final VoidCallback onTap;
   const _LessonTile({
     required this.title,
@@ -429,6 +501,7 @@ class _LessonTile extends StatelessWidget {
     required this.selected,
     required this.downloaded,
     required this.requiresConnection,
+    required this.completed,
     required this.onTap,
   });
 
@@ -463,7 +536,9 @@ class _LessonTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (downloaded)
+                if (completed)
+                  Icon(Icons.check_circle, size: 16, color: Theme.of(context).success)
+                else if (downloaded)
                   Icon(Icons.download_done, size: 15, color: colors.primary)
                 else if (requiresConnection)
                   Icon(Icons.wifi_off,

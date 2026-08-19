@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import type { Student } from "@/lib/generated/prisma/client"
+import { computeStreak } from "./streak"
 
 // Extracted from app/student/page.tsx (unchanged logic) so
 // app/api/mobile/dashboard returns the exact same stats/trend/subject-
@@ -59,11 +60,14 @@ export type StudentDashboard = {
 }
 
 export async function getStudentDashboard(student: Student): Promise<StudentDashboard> {
-  const attempts = await prisma.examAttempt.findMany({
-    where: { studentId: student.id, submittedAt: { not: null } },
-    include: { assessment: { include: { subject: true } } },
-    orderBy: { submittedAt: "desc" },
-  })
+  const [attempts, lessonCompletions] = await Promise.all([
+    prisma.examAttempt.findMany({
+      where: { studentId: student.id, submittedAt: { not: null } },
+      include: { assessment: { include: { subject: true } } },
+      orderBy: { submittedAt: "desc" },
+    }),
+    prisma.lessonProgress.findMany({ where: { studentId: student.id }, select: { completedAt: true } }),
+  ])
 
   const totalExams = attempts.length
   const percentages = attempts.map((a) => ((a.score ?? 0) / (a.totalMarks || 1)) * 100)
@@ -71,27 +75,17 @@ export async function getStudentDashboard(student: Student): Promise<StudentDash
   const totalTimeSpentSeconds = attempts.reduce((sum, a) => sum + (a.timeSpentSeconds ?? 0), 0)
 
   // Current streak: consecutive calendar days (ending today/yesterday) with
-  // at least one submitted attempt - same computation as school-admin/leaderboard.
-  const attemptDays = Array.from(new Set(attempts.map((a) => a.submittedAt!.toISOString().slice(0, 10)))).sort(
-    (a, b) => (a < b ? 1 : -1)
-  )
-  let currentStreak = 0
-  if (attemptDays.length > 0) {
-    const today = new Date()
-    today.setUTCHours(0, 0, 0, 0)
-    const mostRecent = new Date(attemptDays[0])
-    const diffFromToday = Math.round((today.getTime() - mostRecent.getTime()) / (24 * 60 * 60 * 1000))
-    if (diffFromToday <= 1) {
-      currentStreak = 1
-      for (let i = 1; i < attemptDays.length; i++) {
-        const prev = new Date(attemptDays[i - 1])
-        const cur = new Date(attemptDays[i])
-        const diff = Math.round((prev.getTime() - cur.getTime()) / (24 * 60 * 60 * 1000))
-        if (diff === 1) currentStreak++
-        else break
-      }
-    }
-  }
+  // either a submitted exam attempt OR a completed lesson - broadened
+  // 2026-08-18 (confirmed with the user first) from exam-only, since a
+  // "Study Streak" that only ever moved on a practice test undercounted
+  // real studying happening through the course marketplace. Now the single
+  // shared lib/student/streak.ts computeStreak(), same function
+  // lib/student/achievements.ts's "Study Streak" badge check uses, rather
+  // than this file's own previously-duplicated inline copy.
+  const currentStreak = computeStreak([
+    ...attempts.map((a) => a.submittedAt!),
+    ...lessonCompletions.map((l) => l.completedAt),
+  ])
 
   // Class rank only applies to school-provisioned students with a class -
   // independent students have no classmates to rank against.

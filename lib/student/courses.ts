@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { initializeTransaction, verifyTransaction } from "@/lib/payments/paystack"
 import { generateCoursePurchaseId } from "@/lib/payments/ids"
 import { getPlatformFeePercent } from "@/lib/platform-settings"
+import { getCompletedLessonIds } from "./lesson-progress"
 
 // Extracted from app/student/courses/{page,[id]/page,my/page,[id]/learn/page,actions}.tsx
 // (unchanged logic) so app/api/mobile/courses/** can call the exact same
@@ -214,6 +215,7 @@ export type LearnCourse = {
       videoSource: string | null
       muxPlaybackId: string | null
       muxStatus: string | null
+      isCompleted: boolean
     }[]
   }[]
 }
@@ -236,6 +238,8 @@ export async function getLearnContent(courseId: string, studentId: string): Prom
   })
   if (!course) return null
 
+  const completedIds = await getCompletedLessonIds(studentId, courseId)
+
   return {
     id: course.id,
     title: course.title,
@@ -251,6 +255,7 @@ export async function getLearnContent(courseId: string, studentId: string): Prom
         videoSource: l.videoSource,
         muxPlaybackId: l.muxPlaybackId,
         muxStatus: l.muxStatus,
+        isCompleted: completedIds.has(l.id),
       })),
     })),
   }

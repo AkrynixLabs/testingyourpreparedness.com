@@ -301,6 +301,7 @@ model Student {
   coursePurchases     CoursePurchase[]
   courseReviews       CourseReview[]
   deviceTokens        DeviceToken[]
+  lessonProgress      LessonProgress[]
 
   @@index([schoolId])
   @@index([classId])
@@ -1025,7 +1026,31 @@ model Lesson {
   muxPlaybackId String?
   muxStatus     MuxAssetStatus?
 
+  progress LessonProgress[]
+
   @@index([moduleId])
+}
+
+// Added 2026-08-18 - closes the standing "lesson-completion progress
+// tracking is out of scope for now" gap noted when the course marketplace
+// was first designed. Built specifically to broaden the student dashboard's
+// study streak beyond "submitted an exam today" to also count "completed a
+// lesson today" (confirmed with the user first - see docs/build-log.md) -
+// independently useful too, since the course marketplace had zero progress
+// tracking of any kind until now. One row per student per lesson they've
+// marked complete - re-marking an already-completed lesson is a no-op
+// upsert (completedAt not bumped), not a duplicate-completion counter.
+model LessonProgress {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([studentId, lessonId])
+  @@index([studentId])
+  @@index([lessonId])
 }
 
 enum VirtualSessionMode {

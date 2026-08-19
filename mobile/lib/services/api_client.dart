@@ -398,6 +398,14 @@ class ApiClient {
     return LearnCourse.fromJson(body);
   }
 
+  Future<void> markLessonComplete(String lessonId) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/courses/lessons/$lessonId/complete',
+      fallback: 'Could not mark this lesson complete.',
+    );
+  }
+
   /// Mirrors the web Settings page's "Delete My Account" action - same
   /// 30-day grace period, same confirmation email, via the shared
   /// lib/account-deletion.ts function underneath. Returns the scheduled
