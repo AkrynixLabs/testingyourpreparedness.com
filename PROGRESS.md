@@ -41,6 +41,8 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 ### 2026-08-19
 
 - **The Cookie Policy is now a real page, not a "check back soon" placeholder** — it now describes, accurately, exactly what TYP actually uses: the login cookies that keep you signed in, your Light/Dark/System theme choice (which isn't even a cookie), our cookie-free analytics, and that payment checkout happens on Paystack's own page under Paystack's own policy. It also says plainly that TYP runs no advertising or cross-site tracking cookies, because that's true. Presented the same way as the Terms of Service and Privacy Policy (no "draft" banner) — unlike those two, which have been through an actual lawyer review, this one hasn't yet.
+- **Mobile app tidy-up, user-requested**: the "Privacy & Legal" section that had briefly appeared in both Settings and Profile now lives only on Profile, so it's not listed twice.
+- **You can now change your password from the mobile app.** The website has always had this in Settings; the app never did. Now there's a real "Change Password" option right next to Downloaded Lessons in the app's Settings — current password, new password, confirm — and it sends the same confirmation email the website's version does.
 
 ### 2026-08-18
 

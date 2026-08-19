@@ -1,13 +1,11 @@
 "use server"
 
-import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import type { GuardianRelation } from "@/lib/generated/prisma/client"
-import { sendEmailBestEffort } from "@/lib/email/resend"
-import { passwordChangedEmail } from "@/lib/email/templates"
 import { requestAccountDeletion, cancelAccountDeletion } from "@/lib/account-deletion"
+import { changePasswordForUser } from "@/lib/student/change-password"
 
 async function resolveStudent() {
   const session = await auth()
@@ -50,20 +48,7 @@ export async function updateGuardian(input: { name: string; phone: string; email
 
 export async function updatePassword(input: { currentPassword: string; newPassword: string }) {
   const { userId } = await resolveStudent()
-
-  if (input.newPassword.length < 8) throw new Error("New password must be at least 8 characters.")
-
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) throw new Error("Not authorized")
-
-  const currentMatches = await bcrypt.compare(input.currentPassword, user.passwordHash)
-  if (!currentMatches) throw new Error("Current password is incorrect.")
-
-  const passwordHash = await bcrypt.hash(input.newPassword, 10)
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } })
-
-  const { subject, html } = passwordChangedEmail({ name: user.name })
-  await sendEmailBestEffort({ to: user.email, subject, html })
+  await changePasswordForUser(userId, input.currentPassword, input.newPassword)
 }
 
 export async function deleteAccount() {

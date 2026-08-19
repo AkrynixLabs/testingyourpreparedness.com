@@ -8,7 +8,7 @@ import '../services/session.dart';
 import '../services/theme_controller.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/async_state_views.dart';
-import 'legal_screen.dart';
+import 'change_password_screen.dart';
 import 'offline_library_screen.dart';
 
 /// Mirrors the web app's app/student/settings - Log Out and the Danger Zone
@@ -17,14 +17,13 @@ import 'offline_library_screen.dart';
 /// management actions, not profile display. Reuses GET /api/mobile/me for
 /// scheduledDeletionAt rather than adding a second endpoint - same data
 /// ProfileScreen already fetches, just a separate screen showing a
-/// different slice of it. Updated 2026-08-18: the "Privacy & Legal" tab
-/// nested in this screen was pulled out into its own LegalScreen (linked
-/// from the row below) and this screen's own TabBar dropped along with it -
-/// a flat single list is simpler than a tab bar for one remaining section,
-/// and LegalScreen now needs to be reachable from ProfileScreen too, which
-/// a tab embedded here couldn't support. Log Out also moved to a shared
-/// confirmAndLogOut() (services/session.dart) since ProfileScreen now has
-/// its own Sign Out entry point calling the same flow.
+/// different slice of it. Updated 2026-08-18: this screen's own TabBar was
+/// dropped in favor of a flat list (was General / Privacy & Legal). Updated
+/// 2026-08-19, user-requested: Privacy & Legal removed from here entirely -
+/// it now lives only on ProfileScreen's list (screens/legal_screen.dart),
+/// not duplicated here too. Log Out uses a shared confirmAndLogOut()
+/// (services/session.dart) since ProfileScreen also has its own Sign Out
+/// entry point calling the same flow.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -160,12 +159,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(Icons.privacy_tip_outlined),
-                        title: const Text('Privacy & Legal'),
-                        subtitle: const Text('Terms, privacy policy, and cookies'),
+                        leading: const Icon(Icons.password_outlined),
+                        title: const Text('Change Password'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LegalScreen()),
+                          MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen()),
                         ),
                       ),
                     ],

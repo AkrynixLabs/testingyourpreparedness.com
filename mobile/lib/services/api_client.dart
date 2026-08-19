@@ -427,6 +427,23 @@ class ApiClient {
     );
   }
 
+  /// Mirrors the web Settings page's "Change Password" action - same
+  /// current-password check, same confirmation email, via the shared
+  /// lib/student/change-password.ts function underneath. Closes a real gap:
+  /// mobile had no way to change a password at all before this
+  /// (confirmed with the user 2026-08-19).
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _authorizedRequest(
+      'POST',
+      '/api/mobile/account/change-password',
+      body: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      fallback: 'Could not change your password.',
+    );
+  }
+
   /// Registers/refreshes this device's FCM token against the signed-in
   /// student - called on login and on every cold start (see
   /// PushNotificationService), not just once, since FCM can reissue a token
