@@ -425,7 +425,7 @@ export function SettingsView({
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Assessment Results</Label>
-                  <p className="text-sm text-muted-foreground">Receive email summaries when students complete assessments</p>
+                  <p className="text-sm text-muted-foreground">Receive email summaries when learners complete assessments</p>
                 </div>
                 <Switch
                   checked={notifications.emailResults}

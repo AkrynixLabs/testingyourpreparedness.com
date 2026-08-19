@@ -68,7 +68,7 @@ export async function createJoinedStudent(input: JoinedStudentInput) {
   const { current, limit } = await getSchoolStudentCapacity(school.schoolId)
   if (limit !== null && current >= limit) {
     throw new Error(
-      "This school has reached its maximum number of students on its current plan. Please contact your school administrator."
+      "This school has reached its maximum number of learners on its current plan. Please contact your school administrator."
     )
   }
 

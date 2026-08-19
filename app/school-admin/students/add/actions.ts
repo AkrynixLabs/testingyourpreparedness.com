@@ -92,7 +92,7 @@ export async function createStudent(input: CreateStudentInput) {
     },
   })
 
-  const { subject, html } = newAccountTempPasswordEmail({ name, email, tempPassword, roleLabel: "Student" })
+  const { subject, html } = newAccountTempPasswordEmail({ name, email, tempPassword, roleLabel: "Learner" })
   await sendEmailBestEffort({ to: email, subject, html })
 
   revalidatePath("/school-admin/students")
@@ -127,7 +127,7 @@ export async function resendStudentCredentials(studentId: string) {
     name: student.user.name,
     email: student.user.email,
     tempPassword,
-    roleLabel: "Student",
+    roleLabel: "Learner",
   })
   await sendEmailBestEffort({ to: student.user.email, subject, html })
 
@@ -183,7 +183,7 @@ export async function bulkCreateStudents(
     if (remainingCapacity <= 0) {
       skipped.push({
         row,
-        issues: [`Your plan's student limit (${limit}) has been reached - upgrade your subscription plan to import more.`],
+        issues: [`Your plan's learner limit (${limit}) has been reached - upgrade your subscription plan to import more.`],
       })
       continue
     }

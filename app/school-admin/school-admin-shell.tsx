@@ -31,10 +31,10 @@ function buildNavigation(counts: SchoolAdminNavCounts): NavGroup[] {
       ],
     },
     {
-      title: "Students",
+      title: "Learners",
       items: [
-        { title: "All Students", href: "/school-admin/students", icon: Users, badge: formatCount(counts.allStudents) },
-        { title: "Add Students", href: "/school-admin/students/add", icon: UserPlus },
+        { title: "All Learners", href: "/school-admin/students", icon: Users, badge: formatCount(counts.allStudents) },
+        { title: "Add Learners", href: "/school-admin/students/add", icon: UserPlus },
         { title: "Classes/Forms", href: "/school-admin/classes", icon: GraduationCap, badge: formatCount(counts.classes) },
         { title: "Leaderboard", href: "/school-admin/leaderboard", icon: Trophy },
       ],

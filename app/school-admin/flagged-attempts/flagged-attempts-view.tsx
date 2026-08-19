@@ -46,7 +46,7 @@ export function FlaggedAttemptsView({
   const columns = [
     {
       key: "studentName",
-      header: "Student",
+      header: "Learner",
       render: (a: FlaggedAttemptRow) => (
         <div>
           <p className="font-medium">{a.studentName}</p>

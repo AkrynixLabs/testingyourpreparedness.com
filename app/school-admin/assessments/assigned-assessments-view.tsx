@@ -114,7 +114,7 @@ export function AssignedAssessmentsView({ assignments, subjects }: { assignments
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Assigned Assessments</h1>
-          <p className="text-muted-foreground">Manage and monitor assessments assigned to your students</p>
+          <p className="text-muted-foreground">Manage and monitor assessments assigned to your learners</p>
         </div>
         <Button asChild>
           <Link href="/school-admin/assessments/assign">

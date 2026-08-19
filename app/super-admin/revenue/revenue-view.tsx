@@ -140,7 +140,7 @@ export function RevenueView({
             <Card className="border-border/50">
               <CardHeader>
                 <CardTitle className="text-lg">Revenue by Region</CardTitle>
-                <CardDescription>School subscriptions only - independent students have no structured region field</CardDescription>
+                <CardDescription>School subscriptions only - independent learners have no structured region field</CardDescription>
               </CardHeader>
               <CardContent>
                 {revenueByRegion.length === 0 ? (
@@ -259,7 +259,7 @@ export function RevenueView({
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="text-lg">Revenue by Audience</CardTitle>
-              <CardDescription>School subscriptions vs. independent-student subscriptions</CardDescription>
+              <CardDescription>School subscriptions vs. independent-learner subscriptions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -268,7 +268,7 @@ export function RevenueView({
                   <p className="text-2xl font-bold">GHS {stats.schoolRevenue.toLocaleString()}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground">Independent Students</p>
+                  <p className="text-sm text-muted-foreground">Independent Learners</p>
                   <p className="text-2xl font-bold">GHS {stats.independentRevenue.toLocaleString()}</p>
                 </div>
               </div>

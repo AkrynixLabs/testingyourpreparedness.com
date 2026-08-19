@@ -152,7 +152,7 @@ export function SubscriptionView({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Student Seats</p>
+                <p className="text-sm text-muted-foreground">Learner Seats</p>
                 <p className="text-2xl font-bold">
                   {currentStudents}/{subscription.studentLimit ?? "∞"}
                 </p>
@@ -245,7 +245,7 @@ export function SubscriptionView({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Student Seats</span>
+                    <span className="text-sm font-medium">Learner Seats</span>
                   </div>
                   <span className="text-sm">
                     {currentStudents} / {subscription.studentLimit} used
@@ -256,7 +256,7 @@ export function SubscriptionView({
                   <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3 flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-amber-800">Running low on student seats</p>
+                      <p className="text-sm font-medium text-amber-800">Running low on learner seats</p>
                       <p className="text-sm text-amber-700 mt-1">
                         You&apos;re using {Math.round(studentUsagePercent)}% of your student seats. Consider upgrading
                         to add more students.

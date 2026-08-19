@@ -130,7 +130,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
       { field: "adminPassword", label: "Password" },
       { field: "adminConfirmPassword", label: "Confirm Password" },
     ],
-    4: [{ field: "jhsStudents", label: "JHS Students (Forms 1-3)" }],
+    4: [{ field: "jhsStudents", label: "JHS Learners (Forms 1-3)" }],
   }
 
   const isFieldMissing = (field: keyof typeof formData) => {
@@ -623,7 +623,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="totalStudents">Total Student Population</Label>
+                    <Label htmlFor="totalStudents">Total Learner Population</Label>
                     <Input
                       id="totalStudents"
                       type="number"
@@ -634,7 +634,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="jhsStudents">Students (Forms 1-3) *</Label>
+                    <Label htmlFor="jhsStudents">Learners (Forms 1-3) *</Label>
                     <Input
                       id="jhsStudents"
                       type="number"
@@ -643,7 +643,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                       onChange={(e) => updateFormData("jhsStudents", e.target.value)}
                       className={invalidClass("jhsStudents")}
                     />
-                    <p className="text-xs text-muted-foreground">All students will use the TYP platform</p>
+                    <p className="text-xs text-muted-foreground">All learners will use the TYP platform</p>
                   </div>
                 </div>
 
@@ -746,7 +746,7 @@ export function SchoolRegistrationWizard({ plans }: { plans: SubscriptionPlan[] 
                           <div>
                             <h3 className="font-semibold text-lg">{plan.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {plan.studentLimit ? `Up to ${plan.studentLimit} students` : "Unlimited students"}
+                              {plan.studentLimit ? `Up to ${plan.studentLimit} learners` : "Unlimited learners"}
                             </p>
                             <div className="flex items-baseline gap-1 mt-2">
                               <span className="text-3xl font-bold">GHS {monthlyEquivalent}</span>

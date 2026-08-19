@@ -48,19 +48,19 @@ export function AddStudentForm({ classes, capacity }: { classes: Class[]; capaci
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Add Students</h1>
-          <p className="text-muted-foreground">Add students individually or import in bulk</p>
+          <h1 className="text-2xl font-bold tracking-tight">Add Learners</h1>
+          <p className="text-muted-foreground">Add learners individually or import in bulk</p>
         </div>
       </div>
 
       {capacity.limit !== null && (
         <Alert variant={atCapacity ? "destructive" : undefined}>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{atCapacity ? "Student limit reached" : "Plan usage"}</AlertTitle>
+          <AlertTitle>{atCapacity ? "Learner limit reached" : "Plan usage"}</AlertTitle>
           <AlertDescription>
             {atCapacity ? (
               <>
-                Your plan allows up to {capacity.limit} students and you&apos;ve reached that limit ({capacity.current}
+                Your plan allows up to {capacity.limit} learners and you&apos;ve reached that limit ({capacity.current}
                 /{capacity.limit}).{" "}
                 <Link href="/school-admin/subscription/upgrade" className="underline underline-offset-2">
                   Upgrade your plan
@@ -69,7 +69,7 @@ export function AddStudentForm({ classes, capacity }: { classes: Class[]; capaci
               </>
             ) : (
               <>
-                {capacity.current} of {capacity.limit} students used on your current plan ({remaining} slot
+                {capacity.current} of {capacity.limit} learners used on your current plan ({remaining} slot
                 {remaining === 1 ? "" : "s"} left).
               </>
             )}
@@ -81,7 +81,7 @@ export function AddStudentForm({ classes, capacity }: { classes: Class[]; capaci
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="single" className="gap-2">
             <UserPlus className="h-4 w-4" />
-            Single Student
+            Single Learner
           </TabsTrigger>
           <TabsTrigger value="bulk" className="gap-2">
             <FileSpreadsheet className="h-4 w-4" />
@@ -193,7 +193,7 @@ function SingleStudentTab({
           onDone()
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to add student.")
+        setError(err instanceof Error ? err.message : "Failed to add learner.")
       }
     })
   }
@@ -210,10 +210,10 @@ function SingleStudentTab({
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <KeyRound className="h-4 w-4" />
-              Students added this session
+              Learners added this session
             </CardTitle>
             <CardDescription>
-              We&apos;ve emailed each student their sign-in details. Delivery can&apos;t be confirmed - resend if
+              We&apos;ve emailed each learner their sign-in details. Delivery can&apos;t be confirmed - resend if
               one didn&apos;t arrive (this issues a new temporary password, replacing the one shown here).
             </CardDescription>
           </CardHeader>
@@ -271,8 +271,8 @@ function SingleStudentTab({
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2 border-border/50">
           <CardHeader>
-            <CardTitle>Student Information</CardTitle>
-            <CardDescription>Enter the student&apos;s personal details</CardDescription>
+            <CardTitle>Learner Information</CardTitle>
+            <CardDescription>Enter the learner&apos;s personal details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -302,7 +302,7 @@ function SingleStudentTab({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="student@school.edu.gh"
+                  placeholder="learner@school.edu.gh"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
@@ -439,7 +439,7 @@ function SingleStudentTab({
         </Button>
         <Button onClick={() => handleSubmit(false)} disabled={isPending || atCapacity}>
           <UserPlus className="mr-2 h-4 w-4" />
-          {isPending ? "Adding..." : "Add Student"}
+          {isPending ? "Adding..." : "Add Learner"}
         </Button>
       </div>
     </>
@@ -516,9 +516,9 @@ function BulkImportTab({
           <KeyRound className="h-4 w-4" />
           <AlertTitle>Import complete</AlertTitle>
           <AlertDescription>
-            {result.created.length} student{result.created.length !== 1 ? "s" : ""} added,{" "}
+            {result.created.length} learner{result.created.length !== 1 ? "s" : ""} added,{" "}
             {result.skipped.length} skipped. There&apos;s no email delivery set up yet - share each temporary
-            password with the corresponding student directly.
+            password with the corresponding learner directly.
           </AlertDescription>
         </Alert>
 
@@ -579,8 +579,8 @@ function BulkImportTab({
     return (
       <Card className="border-border/50">
         <CardHeader>
-          <CardTitle>Import Students from CSV</CardTitle>
-          <CardDescription>Upload a CSV file with student information to add multiple students at once</CardDescription>
+          <CardTitle>Import Learners from CSV</CardTitle>
+          <CardDescription>Upload a CSV file with learner information to add multiple learners at once</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {parseError && (
@@ -634,11 +634,11 @@ function BulkImportTab({
             <div className="grid gap-2 sm:grid-cols-2 text-sm">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-mono text-xs">name</Badge>
-                <span className="text-muted-foreground">Student full name</span>
+                <span className="text-muted-foreground">Learner full name</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-mono text-xs">email</Badge>
-                <span className="text-muted-foreground">Student email</span>
+                <span className="text-muted-foreground">Learner email</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-mono text-xs">class</Badge>
@@ -766,7 +766,7 @@ function BulkImportTab({
           </Button>
           <Button onClick={handleImport} disabled={isPending || validCount + warningCount === 0 || atCapacity}>
             <UserPlus className="mr-2 h-4 w-4" />
-            {isPending ? "Importing..." : `Import ${validCount + warningCount} Students`}
+            {isPending ? "Importing..." : `Import ${validCount + warningCount} Learners`}
           </Button>
         </div>
       </div>

@@ -18,7 +18,7 @@ export default async function StudentLayout({
 
   return (
     <StudentShell
-      userName={session?.user?.name ?? "Student"}
+      userName={session?.user?.name ?? "Learner"}
       userEmail={session?.user?.email ?? ""}
       counts={{ availableExams, myCourses }}
     >

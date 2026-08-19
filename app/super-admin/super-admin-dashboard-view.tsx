@@ -40,7 +40,7 @@ export function SuperAdminDashboardView({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Total Schools" value={stats.totalSchools} icon={School} />
-        <StatCard title="Total Students" value={stats.totalStudents.toLocaleString()} icon={Users} />
+        <StatCard title="Total Learners" value={stats.totalStudents.toLocaleString()} icon={Users} />
         <StatCard title="Assessments Taken" value={stats.assessmentsTaken.toLocaleString()} icon={BookOpen} />
         <StatCard title="Total Revenue" value={`GHS ${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} />
       </div>
@@ -77,7 +77,7 @@ export function SuperAdminDashboardView({
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Top Performing Schools</CardTitle>
-              <CardDescription>Based on average student scores</CardDescription>
+              <CardDescription>Based on average learner scores</CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/super-admin/schools">
@@ -102,7 +102,7 @@ export function SuperAdminDashboardView({
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{school.avgScore!.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground">{school.students} students</p>
+                      <p className="text-xs text-muted-foreground">{school.students} learners</p>
                     </div>
                   </div>
                 ))}

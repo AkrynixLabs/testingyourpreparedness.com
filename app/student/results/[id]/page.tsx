@@ -164,7 +164,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
                   <>
                     <div className="mt-4">
                       <p className="text-3xl font-bold text-primary">#{rank}</p>
-                      <p className="text-sm text-muted-foreground">out of {totalStudents} students</p>
+                      <p className="text-sm text-muted-foreground">out of {totalStudents} learners</p>
                     </div>
                     <p className="mt-2 text-sm">
                       Top <span className="font-semibold text-emerald-600">{percentile}%</span> percentile

@@ -265,11 +265,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   builder: (_) => const IndependentSignupScreen()),
                             ),
                     icon: const Icon(Icons.person_add_alt_outlined, size: 18),
-                    label: const Text('Sign up as an independent student'),
+                    label: const Text('Sign up as an independent learner'),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'TYP mobile is currently available to students only.',
+                    'TYP mobile is currently available to learners only.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),

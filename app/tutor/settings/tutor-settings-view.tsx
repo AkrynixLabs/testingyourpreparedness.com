@@ -232,7 +232,7 @@ export function TutorSettingsView({
           <Card>
             <CardHeader>
               <CardTitle>Tutor Profile</CardTitle>
-              <CardDescription>What students see on your courses.</CardDescription>
+              <CardDescription>What learners see on your courses.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {tutorMessage && (

@@ -41,7 +41,7 @@ const colorClasses = {
 export const metadata: Metadata = {
   title: "TYP - Testing Your Preparedness | Ghana's Exam Prep Platform",
   description:
-    "TYP (Testing Your Preparedness) helps Ghanaian students prepare for BECE, WASSCE, nursing entrance, and university entrance exams with real, examiner-style practice questions, timed mock exams, and progress tracking.",
+    "TYP (Testing Your Preparedness) helps Ghanaian learners prepare for BECE, WASSCE, nursing entrance, and university entrance exams with real, examiner-style practice questions, timed mock exams, and progress tracking.",
   alternates: {
     canonical: "/",
   },
@@ -73,7 +73,7 @@ const programs: {
     featured: true,
     tag: "Flagship track",
     image: "/images/homepage/zach-wear-wjCYyd_KppE.jpg",
-    imageAlt: "A classroom of students seated at their desks during an exam",
+    imageAlt: "A classroom of learners seated at their desks during an exam",
   },
   {
     name: "WASSCE",
@@ -81,7 +81,7 @@ const programs: {
     icon: BookOpen,
     color: "chart-2",
     image: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg",
-    imageAlt: "A group of students smiling together outside their classroom",
+    imageAlt: "A group of learners smiling together outside their classroom",
   },
   {
     name: "Nursing Exams",
@@ -89,7 +89,7 @@ const programs: {
     icon: Stethoscope,
     color: "chart-3",
     image: "/images/homepage/annie-spratt-OIuCXxx08yg.jpg",
-    imageAlt: "Students seated attentively in a classroom",
+    imageAlt: "Learners seated attentively in a classroom",
   },
   {
     name: "University Entrance",
@@ -97,7 +97,7 @@ const programs: {
     icon: Landmark,
     color: "chart-4",
     image: "/images/homepage/dom-fou-YRMWVcdyhmI-unsplash.jpg",
-    imageAlt: "A university lecture hall filled with students",
+    imageAlt: "A university lecture hall filled with learners",
   },
   {
     name: "Digital Skills",
@@ -108,27 +108,27 @@ const programs: {
 ]
 
 const heroSliderImages = [
-  { src: "/images/homepage/dom-fou-YRMWVcdyhmI-unsplash.jpg", alt: "Students seated in a large lecture hall during a presentation" },
+  { src: "/images/homepage/dom-fou-YRMWVcdyhmI-unsplash.jpg", alt: "Learners seated in a large lecture hall during a presentation" },
   { src: "/images/homepage/pexels-joseph-oti-nyametease-2148147873-29941468.jpg", alt: "Two nurses in scrubs with stethoscopes standing in a hospital ward" },
-  { src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg", alt: "A classroom of students seated at their desks during an exam" },
-  { src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg", alt: "A group of students smiling together outside their classroom" },
-  { src: "/images/homepage/barak-paul-munuo-K5F_iHnR-Mg-unsplash.jpg", alt: "University students smiling together in a lecture hall" },
-  { src: "/images/homepage/ato-aikins-y842V6cRTKM-unsplash.jpg", alt: "Students in school uniform seated together in a classroom" },
+  { src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg", alt: "A classroom of learners seated at their desks during an exam" },
+  { src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg", alt: "A group of learners smiling together outside their classroom" },
+  { src: "/images/homepage/barak-paul-munuo-K5F_iHnR-Mg-unsplash.jpg", alt: "University learners smiling together in a lecture hall" },
+  { src: "/images/homepage/ato-aikins-y842V6cRTKM-unsplash.jpg", alt: "Learners in school uniform seated together in a classroom" },
 ]
 
 const classroomPhotos = [
   {
     src: "/images/homepage/zach-wear-wjCYyd_KppE.jpg",
-    alt: "A classroom of students seated at their desks during an exam",
+    alt: "A classroom of learners seated at their desks during an exam",
     className: "row-span-2",
   },
   {
     src: "/images/homepage/michael-ali-BUb4bw9dHgU.jpg",
-    alt: "A group of students smiling together outside their classroom",
+    alt: "A group of learners smiling together outside their classroom",
   },
   {
     src: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg",
-    alt: "A student in class alongside classmates writing in their notebooks",
+    alt: "A learner in class alongside classmates writing in their notebooks",
   },
 ]
 
@@ -166,7 +166,7 @@ const features: {
     icon: Users,
     color: "chart-5",
     title: "School Management",
-    description: "Manage students, classes, and assignments in one place.",
+    description: "Manage learners, classes, and assignments in one place.",
   },
   {
     icon: Trophy,
@@ -178,7 +178,7 @@ const features: {
     icon: ShieldCheck,
     color: "chart-4",
     title: "Vetted Content",
-    description: "Every question reviewed and approved before it reaches a student.",
+    description: "Every question reviewed and approved before it reaches a learner.",
   },
   {
     icon: Smartphone,
@@ -194,8 +194,8 @@ const faqs = [
     answer: "Click on 'Get Started' and select 'School Registration'. Fill in your school details and choose a subscription plan.",
   },
   {
-    question: "Can students register independently?",
-    answer: "Yes! Students can sign up without a school affiliation. They will need guardian approval and can choose from individual subscription plans.",
+    question: "Can learners register independently?",
+    answer: "Yes! Learners can sign up without a school affiliation. They will need guardian approval and can choose from individual subscription plans.",
   },
   {
     question: "What subjects are covered?",
@@ -223,7 +223,7 @@ const steps: {
     title: "Choose Your Track",
     description: "Pick BECE, WASSCE, nursing, university entrance, or digital skills — or study more than one at once.",
     image: "/images/homepage/emmanuel-ikwuegbu-VC6MGt9ZoBA.jpg",
-    imageAlt: "A student reading through her workbook during a lesson",
+    imageAlt: "A learner reading through her workbook during a lesson",
   },
   {
     number: "02",
@@ -232,7 +232,7 @@ const steps: {
     title: "Practice Under Real Conditions",
     description: "Take timed, topic-based assessments built from a vetted, examiner-reviewed question bank.",
     image: "/images/homepage/storyzangu-hub-2JFGBQhdHu0.jpg",
-    imageAlt: "A student concentrating while writing in her notebook during class",
+    imageAlt: "A learner concentrating while writing in her notebook during class",
   },
   {
     number: "03",
@@ -241,7 +241,7 @@ const steps: {
     title: "Track & Improve",
     description: "See exactly where you're strong and weak, then get pointed at what to study next.",
     image: "/images/homepage/topsphere-media-ojBd8yB5KDM.jpg",
-    imageAlt: "A student in class alongside classmates writing in their notebooks",
+    imageAlt: "A learner in class alongside classmates writing in their notebooks",
   },
 ]
 
@@ -283,7 +283,7 @@ export default async function LandingPage() {
                 </span>
               </h1>
               <p className="font-sans text-sm md:text-lg font-medium text-foreground max-w-2xl mx-auto mb-8 text-pretty drop-shadow-[0_2px_14px_rgba(0,0,0,0.35)]">
-                TYP is a home for Ghanaian students getting ready for what&apos;s next, whether that&apos;s BECE, WASSCE, a nursing entrance exam, or university admission. Practice with real, examiner style questions, see exactly where you stand, and walk into exam day feeling ready instead of anxious.
+                TYP is a home for Ghanaian learners getting ready for what&apos;s next, whether that&apos;s BECE, WASSCE, a nursing entrance exam, or university admission. Practice with real, examiner style questions, see exactly where you stand, and walk into exam day feeling ready instead of anxious.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="lg" asChild className="group text-base px-8">
@@ -363,7 +363,7 @@ export default async function LandingPage() {
               <span className="text-sm font-semibold tracking-wide uppercase text-primary">Features</span>
               <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mt-2 mb-3">Everything you need, in one platform</h2>
               <p className="font-sans text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
-                A vetted question bank and timed, scored practice experience, built to help students prepare under real exam conditions and see exactly where they stand, whether through a school or on their own.
+                A vetted question bank and timed, scored practice experience, built to help learners prepare under real exam conditions and see exactly where they stand, whether through a school or on their own.
               </p>
             </Reveal>
 
@@ -435,7 +435,7 @@ export default async function LandingPage() {
               <span className="text-sm font-semibold tracking-wide uppercase text-primary">Pricing</span>
               <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mt-2 mb-3">Simple, transparent pricing</h2>
               <p className="font-sans text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
-                Choose the plan that fits — whether you&apos;re a school or an independent student.
+                Choose the plan that fits — whether you&apos;re a school or an independent learner.
               </p>
             </Reveal>
 
@@ -549,7 +549,7 @@ export default async function LandingPage() {
             <Reveal>
               <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mb-3">Ready to ace your next exam?</h2>
               <p className="font-sans text-base md:text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">
-                Built for Ghanaian students getting ready for BECE, with real examiner-style practice and honest progress tracking to help you walk in prepared.
+                Built for Ghanaian learners getting ready for BECE, with real examiner-style practice and honest progress tracking to help you walk in prepared.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button size="lg" asChild className="group text-base px-8">

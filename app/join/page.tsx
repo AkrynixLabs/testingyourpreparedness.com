@@ -144,7 +144,7 @@ export default function JoinSchoolPage() {
                   <p className="text-sm text-muted-foreground">
                     Don&apos;t have a school code?{" "}
                     <Link href="/signup/independent" className="text-primary hover:underline">
-                      Register as an independent student
+                      Register as an independent learner
                     </Link>
                   </p>
                 </div>

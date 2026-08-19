@@ -77,7 +77,7 @@ export default async function StudentsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Learners</h1>
           <p className="text-muted-foreground">
             Manage and monitor your school&apos;s students
           </p>
@@ -100,7 +100,7 @@ export default async function StudentsPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         <Card className="border-border/50">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total Students</p>
+            <p className="text-sm text-muted-foreground">Total Learners</p>
             <p className="text-2xl font-bold">{totalStudents}</p>
           </CardContent>
         </Card>

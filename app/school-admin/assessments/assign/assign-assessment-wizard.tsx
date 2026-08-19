@@ -189,7 +189,7 @@ export function AssignAssessmentWizard({
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Assign Assessment</h1>
-          <p className="text-muted-foreground">Assign an assessment to your students</p>
+          <p className="text-muted-foreground">Assign an assessment to your learners</p>
         </div>
       </div>
 
@@ -327,7 +327,7 @@ export function AssignAssessmentWizard({
             <Card>
               <CardHeader>
                 <CardTitle>Assign To</CardTitle>
-                <CardDescription>Select which students should take this assessment</CardDescription>
+                <CardDescription>Select which learners should take this assessment</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <Tabs value={assignmentType} onValueChange={(v) => setAssignmentType(v as "classes" | "students")}>
@@ -390,7 +390,7 @@ export function AssignAssessmentWizard({
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        placeholder="Search students..."
+                        placeholder="Search learners..."
                         className="pl-9"
                         value={studentSearch}
                         onChange={(e) => setStudentSearch(e.target.value)}
@@ -402,7 +402,7 @@ export function AssignAssessmentWizard({
                       </span>
                     </div>
                     {filteredStudents.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-8 text-center">No students found.</p>
+                      <p className="text-sm text-muted-foreground py-8 text-center">No learners found.</p>
                     ) : (
                       <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
                         {filteredStudents.map((student) => (
@@ -439,7 +439,7 @@ export function AssignAssessmentWizard({
             <Card>
               <CardHeader>
                 <CardTitle>Schedule</CardTitle>
-                <CardDescription>Set when students can access this assessment</CardDescription>
+                <CardDescription>Set when learners can access this assessment</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -546,7 +546,7 @@ export function AssignAssessmentWizard({
             <Card>
               <CardHeader>
                 <CardTitle>Assessment Options</CardTitle>
-                <CardDescription>Configure how students will experience this assessment</CardDescription>
+                <CardDescription>Configure how learners will experience this assessment</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -558,7 +558,7 @@ export function AssignAssessmentWizard({
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Shuffle Questions</Label>
-                        <p className="text-sm text-muted-foreground">Randomize the order of questions for each student</p>
+                        <p className="text-sm text-muted-foreground">Randomize the order of questions for each learner</p>
                       </div>
                       <Switch checked={shuffleQuestions} onCheckedChange={setShuffleQuestions} />
                     </div>
@@ -583,7 +583,7 @@ export function AssignAssessmentWizard({
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Show Results Immediately</Label>
-                        <p className="text-sm text-muted-foreground">Students can see their score right after submission</p>
+                        <p className="text-sm text-muted-foreground">Learners can see their score right after submission</p>
                       </div>
                       <Switch checked={showResults} onCheckedChange={setShowResults} />
                     </div>
@@ -619,7 +619,7 @@ export function AssignAssessmentWizard({
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Allow Retakes</Label>
-                        <p className="text-sm text-muted-foreground">Students can attempt the assessment multiple times</p>
+                        <p className="text-sm text-muted-foreground">Learners can attempt the assessment multiple times</p>
                       </div>
                       <Switch checked={allowRetake} onCheckedChange={setAllowRetake} />
                     </div>
@@ -696,14 +696,14 @@ export function AssignAssessmentWizard({
                     {assignmentType === "classes" ? (
                       <>
                         <p className="text-sm">{selectedClasses.length} class(es) selected</p>
-                        <p className="text-xs text-muted-foreground">{getTotalStudents()} total students</p>
+                        <p className="text-xs text-muted-foreground">{getTotalStudents()} total learners</p>
                       </>
                     ) : (
-                      <p className="text-sm">{selectedStudents.length} student(s) selected</p>
+                      <p className="text-sm">{selectedStudents.length} learner(s) selected</p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No students selected</p>
+                  <p className="text-sm text-muted-foreground">No learners selected</p>
                 )}
               </div>
 
@@ -731,7 +731,7 @@ export function AssignAssessmentWizard({
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-2xl font-bold text-primary">{getTotalStudents()}</p>
-                  <p className="text-xs text-muted-foreground">Students</p>
+                  <p className="text-xs text-muted-foreground">Learners</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-2xl font-bold text-primary">{selectedAssessmentData?.duration || 0}</p>

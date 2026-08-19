@@ -320,7 +320,7 @@ export function CreateQuestionForm({ subjects }: { subjects: SubjectWithTopics[]
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Question Preview</DialogTitle>
-            <DialogDescription>How this question will appear to students</DialogDescription>
+            <DialogDescription>How this question will appear to learners</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-lg font-medium">{questionText || "(no question text yet)"}</p>

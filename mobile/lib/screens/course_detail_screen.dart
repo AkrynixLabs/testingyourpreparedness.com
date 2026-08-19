@@ -256,7 +256,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     Icon(Icons.people_outline,
                         size: 15, color: colors.onSurfaceVariant),
                     const SizedBox(width: 4),
-                    Text('${course.studentCount} students',
+                    Text('${course.studentCount} learners',
                         style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(width: 12),
                     Icon(Icons.menu_book_outlined,

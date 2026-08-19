@@ -312,7 +312,7 @@ export function ResultsView({
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="text-lg">Topic Performance</CardTitle>
-          <CardDescription>Average correctness by topic across all students</CardDescription>
+          <CardDescription>Average correctness by topic across all learners</CardDescription>
         </CardHeader>
         <CardContent>
           {topicBreakdown.length === 0 ? (

@@ -59,7 +59,7 @@ const columns = [
       </span>
     ),
   },
-  { key: "students", header: "Students" },
+  { key: "students", header: "Learners" },
   {
     key: "status",
     header: "Status",

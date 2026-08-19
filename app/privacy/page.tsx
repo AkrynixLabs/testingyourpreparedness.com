@@ -25,8 +25,8 @@ export default function PrivacyPage() {
                 <p>
                   This Policy describes how TYP (&ldquo;Testing Your Preparedness&rdquo;) collects, uses, and
                   protects personal data across both parts of the platform — the exam-prep track (schools,
-                  independent students, content admins, super admin) and the course marketplace (tutors and
-                  purchasing students).
+                  independent learners, content admins, super admin) and the course marketplace (tutors and
+                  purchasing learners).
                 </p>
                 <p>
                   TYP is a Ghana-focused product, and we intend to handle personal data consistently with Ghana&apos;s
@@ -48,13 +48,13 @@ export default function PrivacyPage() {
                     contact details, ownership type, and education level.
                   </li>
                   <li>
-                    <strong>Students:</strong> class/form, and — for independent students — date of birth, gender,
+                    <strong>Learners:</strong> class/form, and — for independent learners — date of birth, gender,
                     and address where provided. Exam attempts, answers, scores, and progress history are recorded
-                    against the student&apos;s account.
+                    against the learner&apos;s account.
                   </li>
                   <li>
-                    <strong>Guardians of independent students:</strong> guardian name, phone number, email, and
-                    relationship to the student, collected because independent-student signup requires a guardian
+                    <strong>Guardians of independent learners:</strong> guardian name, phone number, email, and
+                    relationship to the learner, collected because independent-learner signup requires a guardian
                     contact and a real emailed confirmation from that guardian.
                   </li>
                   <li>
@@ -78,9 +78,9 @@ export default function PrivacyPage() {
               <section>
                 <h2>3. Children&apos;s data</h2>
                 <p>
-                  Many BECE-track students are minors. For independent-student signups, we require a guardian&apos;s
+                  Many BECE-track learners are minors. For independent-learner signups, we require a guardian&apos;s
                   contact information and only treat the account as guardian-approved once that guardian confirms
-                  via a real emailed link (not a self-attestation checkbox). School-provisioned student accounts are
+                  via a real emailed link (not a self-attestation checkbox). School-provisioned learner accounts are
                   created by the school, which is responsible for its own consent arrangements with parents/guardians
                   under Ghanaian law.
                 </p>
@@ -135,8 +135,8 @@ export default function PrivacyPage() {
                 <h2>8. Your rights</h2>
                 <p>
                   Subject to Act 843, you may request access to, correction of, or deletion of your personal data,
-                  and may ask us about how your data has been processed. For a student under 18, a parent or
-                  guardian may exercise these rights on the student&apos;s behalf. To make a request, contact us
+                  and may ask us about how your data has been processed. For a learner under 18, a parent or
+                  guardian may exercise these rights on the learner&apos;s behalf. To make a request, contact us
                   using the details below.
                 </p>
               </section>

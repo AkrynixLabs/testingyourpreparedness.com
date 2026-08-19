@@ -143,7 +143,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Classes & Forms</h1>
-          <p className="text-muted-foreground">Manage your school classes and student groups</p>
+          <p className="text-muted-foreground">Manage your school classes and learner groups</p>
         </div>
         <Dialog
           open={isAddDialogOpen}
@@ -161,7 +161,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Class</DialogTitle>
-              <DialogDescription>Create a new class for your school. You can add students after creating the class.</DialogDescription>
+              <DialogDescription>Create a new class for your school. You can add learners after creating the class.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {addError && <p className="text-sm text-destructive">{addError}</p>}
@@ -234,7 +234,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Learners</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -249,7 +249,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{classes.length > 0 ? Math.round(totalStudents / classes.length) : 0}</div>
-            <p className="text-xs text-muted-foreground">Students per class</p>
+            <p className="text-xs text-muted-foreground">Learners per class</p>
           </CardContent>
         </Card>
         <Card>
@@ -267,7 +267,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
       <Card>
         <CardHeader>
           <CardTitle>Form Overview</CardTitle>
-          <CardDescription>Summary of students by form level</CardDescription>
+          <CardDescription>Summary of learners by form level</CardDescription>
         </CardHeader>
         <CardContent>
           {formSummary.length === 0 ? (
@@ -280,7 +280,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
                     <p className="font-medium">Form {form.form}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>{form.classCount} class{form.classCount !== 1 ? "es" : ""}</span>
-                      <span>{form.totalStudents} students</span>
+                      <span>{form.totalStudents} learners</span>
                     </div>
                   </div>
                   <Badge variant={form.avgPerformance !== null && form.avgPerformance >= 75 ? "default" : "secondary"}>
@@ -335,7 +335,7 @@ export function ClassesView({ classes, formSummary }: { classes: ClassRow[]; for
                 <TableHead>Class Name</TableHead>
                 <TableHead>Form</TableHead>
                 <TableHead>Class Teacher</TableHead>
-                <TableHead className="text-center">Students</TableHead>
+                <TableHead className="text-center">Learners</TableHead>
                 <TableHead className="text-center">Avg Performance</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>

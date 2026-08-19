@@ -115,7 +115,7 @@ export default function TutorSignupPage() {
               <img src="/logo.png" alt="TYP - Testing Your Preparedness" className="h-12 w-auto" />
             </Link>
             <CardTitle className="text-2xl">Become a Tutor</CardTitle>
-            <CardDescription>Create courses and start earning from student enrollments.</CardDescription>
+            <CardDescription>Create courses and start earning from learner enrollments.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -156,7 +156,7 @@ export default function TutorSignupPage() {
                 <Textarea
                   id="bio"
                   rows={3}
-                  placeholder="Tell students about your background and experience"
+                  placeholder="Tell learners about your background and experience"
                   value={formData.bio}
                   onChange={(e) => handleChange("bio", e.target.value)}
                 />

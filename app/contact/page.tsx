@@ -231,7 +231,7 @@ export default function ContactPage() {
                                 <SelectValue placeholder="Select your role" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="student">Student</SelectItem>
+                                <SelectItem value="student">Learner</SelectItem>
                                 <SelectItem value="parent">Parent/Guardian</SelectItem>
                                 <SelectItem value="teacher">Teacher</SelectItem>
                                 <SelectItem value="school-admin">School Administrator</SelectItem>

@@ -38,7 +38,7 @@ export function PricingToggle({
         </TabsTrigger>
         <TabsTrigger value="student" className="gap-1.5 px-4 text-sm">
           <GraduationCap className="h-4 w-4" />
-          Students
+          Learners
         </TabsTrigger>
       </TabsList>
 
@@ -75,7 +75,7 @@ export function PricingToggle({
                 <CardHeader className="p-5 pb-0">
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                   <CardDescription className="text-xs">
-                    {plan.studentLimit ? `Up to ${plan.studentLimit} students` : "Unlimited students"}
+                    {plan.studentLimit ? `Up to ${plan.studentLimit} learners` : "Unlimited learners"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-5">

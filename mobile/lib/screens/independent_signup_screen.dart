@@ -139,7 +139,7 @@ class _IndependentSignupScreenState extends State<IndependentSignupScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Sign up as an independent student - no school required.',
+                'Sign up as an independent learner - no school required.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 20),

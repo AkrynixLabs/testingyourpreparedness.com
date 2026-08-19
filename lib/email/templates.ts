@@ -415,7 +415,7 @@ export function newJoinRequestEmail(input: { schoolName: string; studentName: st
     subject: `New join request for ${input.schoolName} on TYP`,
     html: wrapper(`
       ${heading("New join request")}
-      <p style="margin:0 0 12px 0;"><strong style="color:#142A4F;">${input.studentName}</strong> (${input.studentEmail}) used your school's code to request joining <strong style="color:#142A4F;">${input.schoolName}</strong> on TYP. Review and approve or reject it from your Students page.</p>
+      <p style="margin:0 0 12px 0;"><strong style="color:#142A4F;">${input.studentName}</strong> (${input.studentEmail}) used your school's code to request joining <strong style="color:#142A4F;">${input.schoolName}</strong> on TYP. Review and approve or reject it from your Learners page.</p>
       ${button("Review Request", `${appUrl()}/school-admin/students`)}
     `),
   }

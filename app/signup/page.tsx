@@ -29,7 +29,7 @@ const roleOptions: {
     title: "Register a School",
     description: "For school administrators looking to onboard their institution",
     features: [
-      "Manage students and classes",
+      "Manage learners and classes",
       "Assign assessments school-wide",
       "Access detailed analytics",
       "Flexible subscription plans",
@@ -39,8 +39,8 @@ const roleOptions: {
     href: "/signup/independent",
     icon: GraduationCap,
     color: "chart-2",
-    title: "Student Account",
-    description: "For independent students preparing for BECE on their own",
+    title: "Learner Account",
+    description: "For independent learners preparing for BECE on their own",
     features: [
       "Start with free plan",
       "Access practice tests",
@@ -53,12 +53,12 @@ const roleOptions: {
     icon: Presentation,
     color: "chart-5",
     title: "Become a Tutor",
-    description: "Create and sell your own courses to students",
+    description: "Create and sell your own courses to learners",
     features: [
       "Publish courses instantly",
       "Set your own pricing",
       "Earn from every enrollment",
-      "Track student engagement",
+      "Track learner engagement",
     ],
   },
 ]

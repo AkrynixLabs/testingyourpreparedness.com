@@ -257,7 +257,7 @@ class _CourseCard extends StatelessWidget {
                         Icon(Icons.people_outline,
                             size: 14, color: colors.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text('${course.studentCount} students',
+                        Text('${course.studentCount} learners',
                             style: Theme.of(context).textTheme.bodySmall),
                         const Spacer(),
                         Text(

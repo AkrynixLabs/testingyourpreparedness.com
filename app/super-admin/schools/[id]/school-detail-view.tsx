@@ -169,7 +169,7 @@ export function SchoolDetailView({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Students</p>
+                <p className="text-sm text-muted-foreground">Total Learners</p>
                 <p className="text-2xl font-bold">{stats.totalStudents}</p>
                 <p className="text-xs text-muted-foreground">{stats.activeStudents} active</p>
               </div>
@@ -224,7 +224,7 @@ export function SchoolDetailView({
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
+          <TabsTrigger value="students">Learners</TabsTrigger>
           <TabsTrigger value="classes">Classes</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
@@ -343,7 +343,7 @@ export function SchoolDetailView({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search students..."
+                  placeholder="Search learners..."
                   className="pl-9 w-[250px]"
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
@@ -369,7 +369,7 @@ export function SchoolDetailView({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student</TableHead>
+                  <TableHead>Learner</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Avg Score</TableHead>
                   <TableHead>Exams Taken</TableHead>
@@ -443,7 +443,7 @@ export function SchoolDetailView({
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{cls.displayName}</CardTitle>
-                      <Badge variant="secondary">{cls.studentCount} students</Badge>
+                      <Badge variant="secondary">{cls.studentCount} learners</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -468,7 +468,7 @@ export function SchoolDetailView({
                       <span className="font-medium">{cls.examsCompleted}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Top Student</span>
+                      <span className="text-muted-foreground">Top Learner</span>
                       <span className="font-medium">{cls.topStudentName ?? "-"}</span>
                     </div>
                   </CardContent>
@@ -581,7 +581,7 @@ export function SchoolDetailView({
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Most recent completed exam attempts by this school&apos;s students</CardDescription>
+              <CardDescription>Most recent completed exam attempts by this school&apos;s learners</CardDescription>
             </CardHeader>
             <CardContent>
               {recentAttempts.length === 0 ? (

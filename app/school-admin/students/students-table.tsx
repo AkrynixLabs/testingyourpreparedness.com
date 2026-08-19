@@ -58,7 +58,7 @@ export function StudentsTable({
   // filters currently show, same "export what's on screen" convention as
   // leaderboard/results' own real export buttons.
   const handleExport = () => {
-    downloadCsv("students.csv", [
+    downloadCsv("learners.csv", [
       ["Name", "Email", "Class", "Avg. Score", "Tests Taken"],
       ...filteredStudents.map((s) => [
         s.user.name,
@@ -73,7 +73,7 @@ export function StudentsTable({
   const columns = [
     {
       key: "name",
-      header: "Student",
+      header: "Learner",
       render: (student: StudentRow) => (
         <div>
           <p className="font-medium">{student.user.name}</p>
@@ -163,7 +163,7 @@ export function StudentsTable({
       {/* Students table */}
       <Card className="border-border/50">
         <CardHeader>
-          <CardTitle>All Students</CardTitle>
+          <CardTitle>All Learners</CardTitle>
           <CardDescription>
             {filteredStudents.length} students enrolled
           </CardDescription>
@@ -182,7 +182,7 @@ export function StudentsTable({
             data={filteredStudents}
             columns={columns}
             searchKey="name"
-            searchPlaceholder="Search students..."
+            searchPlaceholder="Search learners..."
           />
         </CardContent>
       </Card>

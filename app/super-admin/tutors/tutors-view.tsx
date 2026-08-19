@@ -113,7 +113,7 @@ export function TutorsView({ tutors }: { tutors: TutorRow[] }) {
                 <TableHead>Tutor</TableHead>
                 <TableHead>Expertise</TableHead>
                 <TableHead className="text-center">Courses</TableHead>
-                <TableHead className="text-center">Students</TableHead>
+                <TableHead className="text-center">Learners</TableHead>
                 <TableHead className="text-right">Earnings</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[50px]"></TableHead>

@@ -26,8 +26,8 @@ export default function StudentSignupPage() {
               </div>
               <span className="font-bold text-2xl tracking-tight">TYP</span>
             </Link>
-            <h1 className="text-2xl font-bold mb-2">Student Registration</h1>
-            <p className="text-muted-foreground">Choose how you want to create your student account</p>
+            <h1 className="text-2xl font-bold mb-2">Learner Registration</h1>
+            <p className="text-muted-foreground">Choose how you want to create your learner account</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6">
@@ -39,7 +39,7 @@ export default function StudentSignupPage() {
                     <GraduationCap className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="text-xl flex items-center justify-between">
-                    Independent Student
+                    Independent Learner
                     <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                   </CardTitle>
                   <CardDescription>
@@ -76,7 +76,7 @@ export default function StudentSignupPage() {
                   <School className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <CardTitle className="text-xl text-muted-foreground">
-                  School Student
+                  School Learner
                 </CardTitle>
                 <CardDescription>
                   Your school provides access to TYP

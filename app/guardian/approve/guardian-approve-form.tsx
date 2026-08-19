@@ -14,11 +14,11 @@ type ApprovalState =
 const STATE_COPY: Record<"invalid" | "expired" | "used", { title: string; description: string }> = {
   invalid: {
     title: "Invalid Link",
-    description: "This approval link isn't valid. Ask the student to check the link they shared with you.",
+    description: "This approval link isn't valid. Ask the learner to check the link they shared with you.",
   },
   expired: {
     title: "Link Expired",
-    description: "This approval link has expired. Ask the student to update their contact details so a new one can be sent.",
+    description: "This approval link has expired. Ask the learner to update their contact details so a new one can be sent.",
   },
   used: {
     title: "Already Approved",

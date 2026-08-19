@@ -142,7 +142,7 @@ export function LeaderboardView({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">School Students</p>
+                <p className="text-sm text-muted-foreground">School Learners</p>
                 <p className="text-2xl font-bold">{summary.schoolStudents}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -155,7 +155,7 @@ export function LeaderboardView({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Independent Students</p>
+                <p className="text-sm text-muted-foreground">Independent Learners</p>
                 <p className="text-2xl font-bold">{summary.independentStudents}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -189,7 +189,7 @@ export function LeaderboardView({
       <Tabs defaultValue="schools" className="space-y-6">
         <TabsList className="flex-wrap">
           <TabsTrigger value="schools">School Rankings</TabsTrigger>
-          <TabsTrigger value="students">Student Rankings</TabsTrigger>
+          <TabsTrigger value="students">Learner Rankings</TabsTrigger>
           <TabsTrigger value="regions">Regional Analysis</TabsTrigger>
           <TabsTrigger value="subjects">Subject Performance</TabsTrigger>
         </TabsList>
@@ -276,7 +276,7 @@ export function LeaderboardView({
                       <p className="text-sm text-muted-foreground">{school.region}</p>
                       <p className="text-2xl font-bold mt-2 text-primary">{school.avgScore!.toFixed(1)}%</p>
                       <div className="flex items-center justify-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <span>{school.students} students</span>
+                        <span>{school.students} learners</span>
                         <span>|</span>
                         <span>{school.passRate!.toFixed(0)}% pass</span>
                       </div>
@@ -291,7 +291,7 @@ export function LeaderboardView({
                       <TableHead>School</TableHead>
                       <TableHead>Region</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Students</TableHead>
+                      <TableHead className="text-right">Learners</TableHead>
                       <TableHead className="text-right">Exams</TableHead>
                       <TableHead className="text-right">Avg Score</TableHead>
                       <TableHead className="text-right">Pass Rate</TableHead>
@@ -354,7 +354,7 @@ export function LeaderboardView({
                 <div className="relative flex-1 max-w-xs">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search students..."
+                    placeholder="Search learners..."
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
                     className="pl-9"
@@ -362,12 +362,12 @@ export function LeaderboardView({
                 </div>
                 <Select value={studentType} onValueChange={(v) => setStudentType(v as EnrollmentType | "all")}>
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="All Students" />
+                    <SelectValue placeholder="All Learners" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Students</SelectItem>
-                    <SelectItem value="school">School Students</SelectItem>
-                    <SelectItem value="independent">Independent Students</SelectItem>
+                    <SelectItem value="all">All Learners</SelectItem>
+                    <SelectItem value="school">School Learners</SelectItem>
+                    <SelectItem value="independent">Independent Learners</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -376,18 +376,18 @@ export function LeaderboardView({
 
           <Card>
             <CardHeader>
-              <CardTitle>Top Students Nationally</CardTitle>
+              <CardTitle>Top Learners Nationally</CardTitle>
               <CardDescription>Ranked by average score across all submitted exam attempts</CardDescription>
             </CardHeader>
             <CardContent>
               {filteredStudents.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">No students have any submitted exam attempts yet.</p>
+                <p className="text-sm text-muted-foreground py-8 text-center">No learners have any submitted exam attempts yet.</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[60px]">Rank</TableHead>
-                      <TableHead>Student</TableHead>
+                      <TableHead>Learner</TableHead>
                       <TableHead>School/Status</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead className="text-right">Exams</TableHead>
@@ -475,7 +475,7 @@ export function LeaderboardView({
                     <TableRow>
                       <TableHead>Region</TableHead>
                       <TableHead className="text-right">Schools</TableHead>
-                      <TableHead className="text-right">Students</TableHead>
+                      <TableHead className="text-right">Learners</TableHead>
                       <TableHead className="text-right">Avg Score</TableHead>
                     </TableRow>
                   </TableHeader>

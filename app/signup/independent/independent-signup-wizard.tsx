@@ -243,7 +243,7 @@ export function IndependentSignupWizard({ plans }: { plans: SubscriptionPlan[] }
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-1.5">Create Your Account</h1>
-            <p className="text-base text-muted-foreground">Set up your independent student account in a few quick steps</p>
+            <p className="text-base text-muted-foreground">Set up your independent learner account in a few quick steps</p>
           </div>
 
           {/* Step navigation */}

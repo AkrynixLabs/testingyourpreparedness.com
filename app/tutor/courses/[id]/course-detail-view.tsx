@@ -98,7 +98,7 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Students Enrolled</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Learners Enrolled</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -249,11 +249,11 @@ export function CourseDetailView({ course }: { course: CourseDetail }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Enrolled Students</CardTitle>
+          <CardTitle>Enrolled Learners</CardTitle>
         </CardHeader>
         <CardContent>
           {course.enrollments.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No students enrolled yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No learners enrolled yet.</p>
           ) : (
             <div className="space-y-2">
               {course.enrollments.map((e) => (

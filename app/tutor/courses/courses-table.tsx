@@ -68,7 +68,7 @@ export function CoursesTable({ courses }: { courses: CourseRow[] }) {
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Modules</TableHead>
-                <TableHead>Students</TableHead>
+                <TableHead>Learners</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-10" />
               </TableRow>

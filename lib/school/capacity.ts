@@ -23,8 +23,8 @@ export async function assertStudentCapacityAvailable(schoolId: string, additiona
     const remaining = Math.max(0, limit - current)
     throw new Error(
       remaining > 0
-        ? `Your plan allows up to ${limit} students (${current} already added, ${remaining} slot${remaining === 1 ? "" : "s"} left). Upgrade your subscription plan to add more.`
-        : `Your plan's student limit (${limit}) has been reached. Upgrade your subscription plan to add more students.`
+        ? `Your plan allows up to ${limit} learners (${current} already added, ${remaining} slot${remaining === 1 ? "" : "s"} left). Upgrade your subscription plan to add more.`
+        : `Your plan's learner limit (${limit}) has been reached. Upgrade your subscription plan to add more learners.`
     )
   }
 }

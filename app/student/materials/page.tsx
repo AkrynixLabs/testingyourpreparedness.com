@@ -10,7 +10,7 @@ export default async function StudentMaterialsPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Study Materials</h1>
-        <p className="text-muted-foreground">No student profile found for this account.</p>
+        <p className="text-muted-foreground">No learner profile found for this account.</p>
       </div>
     )
   }

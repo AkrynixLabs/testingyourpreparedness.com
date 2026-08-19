@@ -29,7 +29,7 @@ type Message = {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  student: "Student",
+  student: "Learner",
   parent: "Parent/Guardian",
   teacher: "Teacher",
   "school-admin": "School Administrator",

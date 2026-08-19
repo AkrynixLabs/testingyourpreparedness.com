@@ -64,7 +64,7 @@ export default async function TutorDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Students</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Learners</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

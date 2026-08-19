@@ -36,7 +36,7 @@ export function SchoolAdminDashboardView({
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/school-admin/students/add">Add Students</Link>
+            <Link href="/school-admin/students/add">Add Learners</Link>
           </Button>
           <Button asChild>
             <Link href="/school-admin/assessments/assign">Assign Assessment</Link>
@@ -45,13 +45,13 @@ export function SchoolAdminDashboardView({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Students" value={String(stats.totalStudents)} icon={Users} change={0} />
+        <StatCard title="Total Learners" value={String(stats.totalStudents)} icon={Users} change={0} />
         <StatCard title="Active Assessments" value={String(stats.activeAssessments)} icon={ClipboardList} change={0} />
         <StatCard title="Average Score" value={stats.averageScore !== null ? `${stats.averageScore}%` : "-"} icon={TrendingUp} change={0} />
         <StatCard
           title="Completion Rate"
           value={stats.completionRate !== null ? `${stats.completionRate}%` : "-"}
-          changeLabel="Students with a submitted exam"
+          changeLabel="Learners with a submitted exam"
           icon={Target}
           change={0}
         />
@@ -111,8 +111,8 @@ export function SchoolAdminDashboardView({
         <Card className="border-border/50">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Top Students</CardTitle>
-              <CardDescription>Highest performing students</CardDescription>
+              <CardTitle className="text-lg">Top Learners</CardTitle>
+              <CardDescription>Highest performing learners</CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/school-admin/students">

@@ -48,7 +48,7 @@ function buildNavigation(counts: SuperAdminNavCounts): NavGroup[] {
       title: "Management",
       items: [
         { title: "Schools", href: "/super-admin/schools", icon: School, badge: formatCount(counts.schools) },
-        { title: "Students", href: "/super-admin/students", icon: GraduationCap, badge: formatCount(counts.students) },
+        { title: "Learners", href: "/super-admin/students", icon: GraduationCap, badge: formatCount(counts.students) },
         { title: "Content Admins", href: "/super-admin/content-admins", icon: Users, badge: formatCount(counts.contentAdmins) },
         { title: "Tutors", href: "/super-admin/tutors", icon: UserCog, badge: formatCount(counts.tutors) },
         { title: "Subjects & Topics", href: "/super-admin/subjects", icon: BookOpen },

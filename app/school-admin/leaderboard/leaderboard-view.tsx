@@ -181,8 +181,8 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Student Leaderboard</h1>
-          <p className="text-muted-foreground">Track and compare student performance across your school</p>
+          <h1 className="text-2xl font-bold text-foreground">Learner Leaderboard</h1>
+          <p className="text-muted-foreground">Track and compare learner performance across your school</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={timeframe} onValueChange={(v) => setTimeframe(v as Timeframe)}>
@@ -209,7 +209,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Ranked Students</p>
+                <p className="text-sm text-muted-foreground">Ranked Learners</p>
                 <p className="text-2xl font-bold">{ranked.length}</p>
                 <p className="text-xs text-muted-foreground">With exams in this period</p>
               </div>
@@ -254,7 +254,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
               <div>
                 <p className="text-sm text-muted-foreground">Active Streaks</p>
                 <p className="text-2xl font-bold">{activeStreaks}</p>
-                <p className="text-xs text-muted-foreground">Students with 3+ day streak</p>
+                <p className="text-xs text-muted-foreground">Learners with 3+ day streak</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
                 <Flame className="h-5 w-5 text-orange-500" />
@@ -276,7 +276,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
           <div className="grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Top Performing Students</CardTitle>
+                <CardTitle>Top Performing Learners</CardTitle>
                 <CardDescription>School-wide rankings based on average scores</CardDescription>
               </CardHeader>
               <CardContent>
@@ -323,7 +323,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[60px]">Rank</TableHead>
-                          <TableHead>Student</TableHead>
+                          <TableHead>Learner</TableHead>
                           <TableHead>Class</TableHead>
                           <TableHead className="text-right">Exams</TableHead>
                           <TableHead className="text-right">Score</TableHead>
@@ -378,7 +378,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Top Achievers</CardTitle>
-                  <CardDescription>Students with most badges</CardDescription>
+                  <CardDescription>Learners with most badges</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {topAchievers.length === 0 ? (
@@ -407,7 +407,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Longest Streaks</CardTitle>
-                  <CardDescription>Most consistent students</CardDescription>
+                  <CardDescription>Most consistent learners</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {longestStreaks.length === 0 ? (
@@ -455,7 +455,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
           <Card>
             <CardHeader>
               <CardTitle>{classes.find((c) => c.id === selectedClassId)?.displayName ?? "Class"} Rankings</CardTitle>
-              <CardDescription>Top students in this class</CardDescription>
+              <CardDescription>Top learners in this class</CardDescription>
             </CardHeader>
             <CardContent>
               {classRanked.length === 0 ? (
@@ -545,7 +545,7 @@ export function LeaderboardView({ students, classes }: { students: StudentRow[];
                 <TableHeader>
                   <TableRow>
                     <TableHead>Class</TableHead>
-                    <TableHead className="text-right">Students</TableHead>
+                    <TableHead className="text-right">Learners</TableHead>
                     <TableHead className="text-right">Avg Score</TableHead>
                     <TableHead className="text-right">Exams Completed</TableHead>
                     <TableHead>Top Performer</TableHead>

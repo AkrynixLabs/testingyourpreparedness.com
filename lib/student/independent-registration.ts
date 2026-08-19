@@ -99,7 +99,7 @@ export async function registerIndependentStudent(input: RegisterIndependentStude
     await subscribeToNewsletterBestEffort(email)
   }
 
-  const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "student", dashboardPath: "/student" })
+  const { subject, html } = welcomeEmail({ name: studentName, roleLabel: "learner", dashboardPath: "/student" })
   await sendEmailBestEffort({ to: email, subject, html })
 
   await sendVerificationEmailBestEffort(student.userId, email, studentName)

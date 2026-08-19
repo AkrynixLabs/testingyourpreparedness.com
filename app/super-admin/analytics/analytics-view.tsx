@@ -40,7 +40,7 @@ export function AnalyticsView({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Students" value={stats.totalStudents.toString()} changeLabel="Across all schools" icon={Users} />
+        <StatCard title="Total Learners" value={stats.totalStudents.toString()} changeLabel="Across all schools" icon={Users} />
         <StatCard title="Active Schools" value={stats.activeSchools.toString()} icon={School} />
         <StatCard title="Questions in Bank" value={stats.questionsInBank.toString()} changeLabel="Approved & active" icon={FileQuestion} />
         <StatCard title="Exams Completed" value={stats.examsCompleted.toString()} icon={BookOpen} />
@@ -124,7 +124,7 @@ export function AnalyticsView({
             <School className="h-5 w-5 text-primary" />
             Top Performing Schools
           </CardTitle>
-          <CardDescription>Schools with highest average student scores, from real exam attempts</CardDescription>
+          <CardDescription>Schools with highest average learner scores, from real exam attempts</CardDescription>
         </CardHeader>
         <CardContent>
           {topSchools.length === 0 ? (

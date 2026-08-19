@@ -14,7 +14,7 @@ export default async function StudentSettingsPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">No student profile found for this account.</p>
+        <p className="text-muted-foreground">No learner profile found for this account.</p>
       </div>
     )
   }

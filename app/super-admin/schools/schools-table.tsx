@@ -52,7 +52,7 @@ export function SchoolsTable({ schools }: { schools: SchoolRow[] }) {
     },
     {
       key: "students",
-      header: "Students",
+      header: "Learners",
       render: (school: SchoolRow) => school._count.students.toLocaleString(),
     },
     {

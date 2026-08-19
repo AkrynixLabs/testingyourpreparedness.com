@@ -181,7 +181,7 @@ export function PlansView({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="student-limit">Student Limit (blank = unlimited)</Label>
+                  <Label htmlFor="student-limit">Learner Limit (blank = unlimited)</Label>
                   <Input
                     id="student-limit"
                     type="number"
@@ -217,7 +217,7 @@ export function PlansView({
               <div className="grid gap-2">
                 <Label>Features (one per line)</Label>
                 <Textarea
-                  placeholder={"Up to 500 students\nAdvanced assessments\nPriority support"}
+                  placeholder={"Up to 500 learners\nAdvanced assessments\nPriority support"}
                   rows={5}
                   value={featuresText}
                   onChange={(e) => setFeaturesText(e.target.value)}

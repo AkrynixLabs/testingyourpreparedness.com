@@ -55,7 +55,7 @@ function OwnRankCard({ result, scope }: { result: LeaderboardResult; scope: stri
 
 function LeaderboardTable({ result, showSchool }: { result: LeaderboardResult; showSchool: boolean }) {
   if (result.entries.length === 0) {
-    return <p className="text-sm text-muted-foreground py-8 text-center">No ranked students yet.</p>
+    return <p className="text-sm text-muted-foreground py-8 text-center">No ranked learners yet.</p>
   }
   const ownId = result.ownRank?.entry.studentId
   return (
@@ -63,7 +63,7 @@ function LeaderboardTable({ result, showSchool }: { result: LeaderboardResult; s
       <TableHeader>
         <TableRow>
           <TableHead className="w-[60px]">Rank</TableHead>
-          <TableHead>Student</TableHead>
+          <TableHead>Learner</TableHead>
           {showSchool && <TableHead>School</TableHead>}
           <TableHead className="text-right">Exams</TableHead>
           <TableHead className="text-right">Badges</TableHead>
@@ -131,7 +131,7 @@ export function LeaderboardView({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Leaderboard</h1>
-        <p className="text-muted-foreground">See how you stack up against other students</p>
+        <p className="text-muted-foreground">See how you stack up against other learners</p>
       </div>
 
       <Tabs defaultValue={classBoard ? "class" : "national"} className="space-y-6">

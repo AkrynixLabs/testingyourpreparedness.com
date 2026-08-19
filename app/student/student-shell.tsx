@@ -84,7 +84,7 @@ export function StudentShell({
 
   return (
     <DashboardShell
-      userRole="Student"
+      userRole="Learner"
       navigation={buildNavigation(counts)}
       userName={userName}
       userEmail={userEmail}

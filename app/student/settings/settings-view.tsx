@@ -253,7 +253,7 @@ export function StudentSettingsView({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="school">School</Label>
-                  <Input id="school" value={schoolName ?? "Independent student"} disabled className="bg-muted" />
+                  <Input id="school" value={schoolName ?? "Independent learner"} disabled className="bg-muted" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="form">Form/Class</Label>

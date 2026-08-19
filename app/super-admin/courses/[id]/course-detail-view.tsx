@@ -286,8 +286,8 @@ export function CourseDetailView({
 
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle>Enrolled Students</CardTitle>
-            <CardDescription>{course.enrollments.length} students enrolled</CardDescription>
+            <CardTitle>Enrolled Learners</CardTitle>
+            <CardDescription>{course.enrollments.length} learners enrolled</CardDescription>
           </CardHeader>
           <CardContent>
             {course.enrollments.length === 0 ? (
@@ -296,7 +296,7 @@ export function CourseDetailView({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Student</TableHead>
+                    <TableHead>Learner</TableHead>
                     <TableHead>Enrolled</TableHead>
                   </TableRow>
                 </TableHeader>

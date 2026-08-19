@@ -30,12 +30,12 @@ export default function TermsPage() {
                 <ul>
                   <li>
                     <strong>The exam-prep track</strong>: timed practice assessments for BECE, WASSCE, nursing
-                    entrance/licensing, university entrance, and digital-skills content, accessed by students through
+                    entrance/licensing, university entrance, and digital-skills content, accessed by learners through
                     a subscribing school or through an individual (&ldquo;independent&rdquo;) subscription.
                   </li>
                   <li>
                     <strong>The course marketplace</strong>: paid and free courses published directly by independent
-                    tutors and purchased by students on a per-course basis.
+                    tutors and purchased by learners on a per-course basis.
                   </li>
                 </ul>
                 <p>
@@ -49,15 +49,15 @@ export default function TermsPage() {
                 <p>
                   TYP accounts have one of five roles: <strong>Super Admin</strong>, <strong>Content Admin</strong>{" "}
                   (creates and submits exam content for review), <strong>School Admin</strong> (manages a subscribed
-                  school, its classes, and its students), <strong>Student</strong> (school-provisioned or
+                  school, its classes, and its learners), <strong>Learner</strong> (school-provisioned or
                   independent), and <strong>Tutor</strong> (self-onboards to publish courses). You&apos;re
                   responsible for keeping your login credentials confidential and for activity that happens under
                   your account.
                 </p>
                 <p>
-                  <strong>Students under 18.</strong> Where a student is a minor, an independent-student account
+                  <strong>Learners under 18.</strong> Where a learner is a minor, an independent-learner account
                   requires a parent or guardian&apos;s contact details at signup, and we send that guardian a real
-                  confirmation link before treating the account as guardian-approved. School-provisioned student
+                  confirmation link before treating the account as guardian-approved. School-provisioned learner
                   accounts are created and managed by the school itself, which is responsible for its own
                   arrangements with parents/guardians under its jurisdiction.
                 </p>
@@ -66,7 +66,7 @@ export default function TermsPage() {
               <section>
                 <h2>3. Subscriptions, course purchases, and payments</h2>
                 <p>
-                  Subscription plans (for schools and for independent students) and individual course purchases are
+                  Subscription plans (for schools and for independent learners) and individual course purchases are
                   billed in Ghana Cedis (GHS) and processed through Paystack. TYP never collects or stores raw card
                   numbers — checkout happens on Paystack&apos;s own hosted payment page, and TYP only retains what
                   Paystack reports back (e.g. a masked card summary, a mobile-money provider label, and transaction
@@ -74,7 +74,7 @@ export default function TermsPage() {
                 </p>
                 <p>
                   School subscriptions renew on the billing cycle selected at signup until cancelled by the school.
-                  Independent-student subscriptions and one-off course purchases are billed as described at the time
+                  Independent-learner subscriptions and one-off course purchases are billed as described at the time
                   of purchase. Refunds, where applicable, are handled case-by-case — contact us using the details
                   below.
                 </p>
@@ -101,9 +101,9 @@ export default function TermsPage() {
                 <h2>5. Content, question banks, and assessments</h2>
                 <p>
                   Exam-prep questions and assessments are authored by Content Admins and reviewed by a Super Admin
-                  before becoming visible to students — nothing in the exam-prep question bank goes live without
+                  before becoming visible to learners — nothing in the exam-prep question bank goes live without
                   that approval step. Course content in the marketplace is authored and owned by the publishing
-                  tutor, who grants TYP a license to host, display, and stream it to enrolled/purchasing students for
+                  tutor, who grants TYP a license to host, display, and stream it to enrolled/purchasing learners for
                   as long as the course remains published.
                 </p>
               </section>
@@ -124,7 +124,7 @@ export default function TermsPage() {
                 <ul>
                   <li>Share your account credentials or let someone else take an assessment on your behalf.</li>
                   <li>Upload or publish content that is unlawful, infringing, or harmful, including as a tutor.</li>
-                  <li>Attempt to access another user&apos;s data, another school&apos;s students, or admin functions you haven&apos;t been granted.</li>
+                  <li>Attempt to access another user&apos;s data, another school&apos;s learners, or admin functions you haven&apos;t been granted.</li>
                   <li>Interfere with the platform&apos;s operation, including automated scraping or abuse of rate-limited endpoints.</li>
                 </ul>
               </section>
@@ -134,7 +134,7 @@ export default function TermsPage() {
                 <p>
                   You may stop using TYP and (where applicable) cancel your subscription at any time. We may suspend
                   or terminate an account that violates these Terms, including school accounts, tutor accounts, and
-                  student accounts, with notice where practical.
+                  learner accounts, with notice where practical.
                 </p>
               </section>
 

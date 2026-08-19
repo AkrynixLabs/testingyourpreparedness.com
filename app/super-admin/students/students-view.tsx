@@ -110,8 +110,8 @@ export function StudentsView({
   })
 
   const distribution = [
-    { name: "School Students", value: stats.school, color: DIST_COLORS[0] },
-    { name: "Independent Students", value: stats.independent, color: DIST_COLORS[1] },
+    { name: "School Learners", value: stats.school, color: DIST_COLORS[0] },
+    { name: "Independent Learners", value: stats.independent, color: DIST_COLORS[1] },
   ]
 
   const handleSetStatus = (studentId: string, status: StudentStatus) => {
@@ -124,35 +124,35 @@ export function StudentsView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Student Management</h1>
-        <p className="text-muted-foreground">Comprehensive view of all students across the platform</p>
+        <h1 className="text-2xl font-bold tracking-tight">Learner Management</h1>
+        <p className="text-muted-foreground">Comprehensive view of all learners across the platform</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Students" value={stats.total.toString()} icon={Users} />
-        <StatCard title="School Students" value={stats.school.toString()} icon={School} />
-        <StatCard title="Independent Students" value={stats.independent.toString()} icon={GraduationCap} />
+        <StatCard title="Total Learners" value={stats.total.toString()} icon={Users} />
+        <StatCard title="School Learners" value={stats.school.toString()} icon={School} />
+        <StatCard title="Independent Learners" value={stats.independent.toString()} icon={GraduationCap} />
         <StatCard title="Active" value={stats.active.toString()} icon={UserCheck} />
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="all">All Students</TabsTrigger>
-          <TabsTrigger value="school">School Students</TabsTrigger>
-          <TabsTrigger value="independent">Independent Students</TabsTrigger>
+          <TabsTrigger value="all">All Learners</TabsTrigger>
+          <TabsTrigger value="school">School Learners</TabsTrigger>
+          <TabsTrigger value="independent">Independent Learners</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="text-lg">Student Distribution</CardTitle>
-                <CardDescription>School vs Independent students</CardDescription>
+                <CardTitle className="text-lg">Learner Distribution</CardTitle>
+                <CardDescription>School vs Independent learners</CardDescription>
               </CardHeader>
               <CardContent>
                 {stats.total === 0 ? (
-                  <p className="text-sm text-muted-foreground">No students yet.</p>
+                  <p className="text-sm text-muted-foreground">No learners yet.</p>
                 ) : (
                   <>
                     <div className="h-[280px]">
@@ -199,11 +199,11 @@ export function StudentsView({
             <Card className="border-border/50">
               <CardHeader>
                 <CardTitle className="text-lg">Regional Distribution</CardTitle>
-                <CardDescription>School-affiliated students by region</CardDescription>
+                <CardDescription>School-affiliated learners by region</CardDescription>
               </CardHeader>
               <CardContent>
                 {regionDistribution.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No school-affiliated students yet.</p>
+                  <p className="text-sm text-muted-foreground">No school-affiliated learners yet.</p>
                 ) : (
                   <div className="h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -230,11 +230,11 @@ export function StudentsView({
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="text-lg">Distribution by Form</CardTitle>
-              <CardDescription>School-affiliated student count per form</CardDescription>
+              <CardDescription>School-affiliated learner count per form</CardDescription>
             </CardHeader>
             <CardContent>
               {formDistribution.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No school-affiliated students yet.</p>
+                <p className="text-sm text-muted-foreground">No school-affiliated learners yet.</p>
               ) : (
                 <div className="space-y-4">
                   {formDistribution.map((form) => (
@@ -301,7 +301,7 @@ export function StudentsView({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Student</TableHead>
+                    <TableHead>Learner</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>School / Form</TableHead>
                     <TableHead>Registered</TableHead>
@@ -404,14 +404,14 @@ export function StudentsView({
         <TabsContent value="school" className="space-y-4">
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle>School-Affiliated Students</CardTitle>
-              <CardDescription>Students registered through partner schools</CardDescription>
+              <CardTitle>School-Affiliated Learners</CardTitle>
+              <CardDescription>Learners registered through partner schools</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Student</TableHead>
+                    <TableHead>Learner</TableHead>
                     <TableHead>School</TableHead>
                     <TableHead>Form</TableHead>
                     <TableHead>Last Active</TableHead>
@@ -454,14 +454,14 @@ export function StudentsView({
         <TabsContent value="independent" className="space-y-4">
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle>Independent Students</CardTitle>
-              <CardDescription>Self-registered students studying independently</CardDescription>
+              <CardTitle>Independent Learners</CardTitle>
+              <CardDescription>Self-registered learners studying independently</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Student</TableHead>
+                    <TableHead>Learner</TableHead>
                     <TableHead>Registered</TableHead>
                     <TableHead>Last Active</TableHead>
                     <TableHead className="text-center">Exams Completed</TableHead>

@@ -93,7 +93,7 @@ export function StudentProfileView({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-          <p className="text-muted-foreground">View and manage your student profile</p>
+          <p className="text-muted-foreground">View and manage your learner profile</p>
         </div>
         {!isEditing ? (
           <Button onClick={() => setIsEditing(true)}>
@@ -133,7 +133,7 @@ export function StudentProfileView({
                         {studentStatus.charAt(0).toUpperCase() + studentStatus.slice(1)}
                       </Badge>
                     </div>
-                    <p className="text-muted-foreground">{enrollmentType === "school" ? "School-provisioned student" : "Independent student"}</p>
+                    <p className="text-muted-foreground">{enrollmentType === "school" ? "School-provisioned learner" : "Independent learner"}</p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
