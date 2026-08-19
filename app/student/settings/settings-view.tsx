@@ -586,8 +586,7 @@ export function StudentSettingsView({
         {/* Privacy & Legal Tab - previously reachable only from the public
             marketing footer, invisible from inside the authenticated
             dashboard shell entirely. Links to the same real /terms, /privacy,
-            /cookies pages (still first-draft/pending-legal-review text per
-            CLAUDE.md) rather than duplicating their content here. */}
+            /cookies pages rather than duplicating their content here. */}
         <TabsContent value="legal" className="space-y-6">
           <Card>
             <CardHeader>
