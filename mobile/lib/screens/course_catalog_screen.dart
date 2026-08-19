@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../models/course.dart';
 import '../services/api_client.dart';
 import '../widgets/async_state_views.dart';
+import '../widgets/pagination_controls.dart';
 import '../widgets/skeleton.dart';
 import '../widgets/star_rating_display.dart';
 import 'course_detail_screen.dart';
-import 'my_courses_screen.dart';
+
+const _pageSize = 8;
 
 /// Mirrors app/student/courses/course-catalog-view.tsx - search + program
 /// filter over the published-course list, a card grid rendered as a list on
@@ -15,6 +17,13 @@ import 'my_courses_screen.dart';
 /// just categories derived from whatever courses happen to exist right now
 /// - per the 2026-08-18 course-taxonomy decision (a free-text category could
 /// never reliably answer "are there Nursing courses" when there are zero).
+///
+/// Card redesigned + paginated 2026-08-19 (user-requested, "the course UI
+/// card is a little huge") - a compact horizontal row (small thumbnail +
+/// stacked info) instead of a full-width 16:8 cover banner followed by a
+/// title/description/rating/stats block. Paginated client-side, same
+/// PaginationControls widget My Courses uses - the API returns the full
+/// filtered list already, no server-side page/limit params exist yet.
 class CourseCatalogScreen extends StatefulWidget {
   const CourseCatalogScreen({super.key});
 
@@ -26,6 +35,7 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
   late Future<(List<CourseCatalogRow>, List<ProgramOption>)> _dataFuture;
   String _search = '';
   String _programId = 'all';
+  int _page = 0;
 
   @override
   void initState() {
@@ -43,25 +53,17 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() => _dataFuture = _load());
+    setState(() {
+      _dataFuture = _load();
+      _page = 0;
+    });
     await _dataFuture;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Browse Courses'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.school_outlined),
-            tooltip: 'My Courses',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyCoursesScreen()),
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Browse Courses')),
       body: FutureBuilder<(List<CourseCatalogRow>, List<ProgramOption>)>(
         future: _dataFuture,
         builder: (context, snapshot) {
@@ -92,6 +94,11 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
             selectedProgramName = matches.isEmpty ? null : matches.first.name;
           }
 
+          final totalPages = (filtered.length / _pageSize).ceil();
+          final page = totalPages == 0 ? 0 : _page.clamp(0, totalPages - 1);
+          final pageCourses =
+              filtered.skip(page * _pageSize).take(_pageSize).toList();
+
           return RefreshIndicator(
             onRefresh: _refresh,
             child: Column(
@@ -105,7 +112,10 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                           hintText: 'Search courses or tutors',
                           prefixIcon: Icon(Icons.search),
                         ),
-                        onChanged: (value) => setState(() => _search = value),
+                        onChanged: (value) => setState(() {
+                          _search = value;
+                          _page = 0;
+                        }),
                       ),
                       if (programs.isNotEmpty) ...[
                         const SizedBox(height: 10),
@@ -118,14 +128,19 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                               _CategoryPill(
                                 label: 'All',
                                 selected: _programId == 'all',
-                                onTap: () => setState(() => _programId = 'all'),
+                                onTap: () => setState(() {
+                                  _programId = 'all';
+                                  _page = 0;
+                                }),
                               ),
                               for (final p in programs)
                                 _CategoryPill(
                                   label: p.name,
                                   selected: _programId == p.id,
-                                  onTap: () =>
-                                      setState(() => _programId = p.id),
+                                  onTap: () => setState(() {
+                                    _programId = p.id;
+                                    _page = 0;
+                                  }),
                                 ),
                             ],
                           ),
@@ -144,11 +159,16 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                                   : 'No courses match your search.',
                           icon: Icons.search_off)
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: filtered.length,
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                          itemCount: pageCourses.length,
                           itemBuilder: (context, index) =>
-                              _CourseCard(course: filtered[index]),
+                              _CourseCard(course: pageCourses[index]),
                         ),
+                ),
+                PaginationControls(
+                  page: page,
+                  totalPages: totalPages,
+                  onPageChanged: (p) => setState(() => _page = p),
                 ),
               ],
             ),
@@ -202,70 +222,70 @@ class _CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Card(
-        child: InkWell(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (_) => CourseDetailScreen(courseId: course.id)),
-          ),
-          child: Column(
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (_) => CourseDetailScreen(courseId: course.id)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _CourseCover(course: course),
-              Padding(
-                padding: const EdgeInsets.all(16),
+              _CourseThumbnail(course: course),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(course.title,
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 6),
-                    Text(
-                      course.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text('by ${course.tutorName}',
-                        style: Theme.of(context).textTheme.bodySmall),
-                    if (course.averageRating != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          StarRatingDisplay(
-                              rating: course.averageRating!, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${course.averageRating!.toStringAsFixed(1)} (${course.reviewCount})',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ],
-                    const SizedBox(height: 10),
                     Row(
                       children: [
-                        Icon(Icons.menu_book_outlined,
-                            size: 14, color: colors.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text('${course.moduleCount} modules',
-                            style: Theme.of(context).textTheme.bodySmall),
-                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(course.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleSmall),
+                        ),
+                        if (course.isEnrolled) ...[
+                          const SizedBox(width: 6),
+                          Icon(Icons.check_circle,
+                              size: 16, color: colors.primary),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text('by ${course.tutorName}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        if (course.averageRating != null) ...[
+                          StarRatingDisplay(
+                              rating: course.averageRating!, size: 12),
+                          const SizedBox(width: 4),
+                          Text(course.averageRating!.toStringAsFixed(1),
+                              style: Theme.of(context).textTheme.bodySmall),
+                          const SizedBox(width: 10),
+                        ],
                         Icon(Icons.people_outline,
-                            size: 14, color: colors.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text('${course.studentCount} learners',
+                            size: 12, color: colors.onSurfaceVariant),
+                        const SizedBox(width: 3),
+                        Text('${course.studentCount}',
                             style: Theme.of(context).textTheme.bodySmall),
                         const Spacer(),
                         Text(
                           course.price == 0 ? 'Free' : 'GHS ${course.price}',
                           style: Theme.of(context)
                               .textTheme
-                              .titleMedium
-                              ?.copyWith(color: colors.primary),
+                              .labelLarge
+                              ?.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -280,12 +300,13 @@ class _CourseCard extends StatelessWidget {
   }
 }
 
-/// A thumbnail image when the tutor provided one, otherwise a colored
-/// gradient "cover" derived from the course's program name so cards never
-/// look like a bare list-item even without real course artwork.
-class _CourseCover extends StatelessWidget {
+/// A small square thumbnail - a real image when the tutor provided one,
+/// otherwise a colored gradient derived from the course's program name.
+/// Replaces the old full-width 16:8 cover banner (2026-08-19 compacting
+/// pass) - a card-sized preview, not a hero image, for a scrolling list.
+class _CourseThumbnail extends StatelessWidget {
   final CourseCatalogRow course;
-  const _CourseCover({required this.course});
+  const _CourseThumbnail({required this.course});
 
   @override
   Widget build(BuildContext context) {
@@ -296,39 +317,18 @@ class _CourseCover extends StatelessWidget {
             1, hue, 0.55, colors.brightness == Brightness.dark ? 0.35 : 0.55)
         .toColor();
 
-    return AspectRatio(
-      aspectRatio: 16 / 8,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (course.thumbnailUrl != null)
-            Image.network(
-              course.thumbnailUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _gradientFallback(gradientColor),
-            )
-          else
-            _gradientFallback(gradientColor),
-          Positioned(
-            top: 12,
-            left: 12,
-            child: _Badge(
-                label: categoryLabel,
-                background: Colors.black.withValues(alpha: 0.45),
-                color: Colors.white),
-          ),
-          if (course.isEnrolled)
-            Positioned(
-              top: 12,
-              right: 12,
-              child: _Badge(
-                label: 'Enrolled',
-                background: colors.primary,
-                color: colors.onPrimary,
-                icon: Icons.check_circle,
-              ),
-            ),
-        ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 60,
+        height: 60,
+        child: course.thumbnailUrl != null
+            ? Image.network(
+                course.thumbnailUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _gradientFallback(gradientColor),
+              )
+            : _gradientFallback(gradientColor),
       ),
     );
   }
@@ -344,40 +344,7 @@ class _CourseCover extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Icon(Icons.play_circle_fill,
-          size: 40, color: Colors.white.withValues(alpha: 0.85)),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  final String label;
-  final Color background;
-  final Color color;
-  final IconData? icon;
-  const _Badge(
-      {required this.label,
-      required this.background,
-      required this.color,
-      this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-          color: background, borderRadius: BorderRadius.circular(20)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 13, color: color),
-            const SizedBox(width: 4)
-          ],
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11.5, fontWeight: FontWeight.w700, color: color)),
-        ],
-      ),
+          size: 24, color: Colors.white.withValues(alpha: 0.85)),
     );
   }
 }

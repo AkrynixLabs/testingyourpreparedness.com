@@ -8,9 +8,9 @@ import '../services/api_client.dart';
 import '../theme/app_theme.dart';
 import '../widgets/async_state_views.dart';
 import '../widgets/skeleton.dart';
-import 'course_catalog_screen.dart';
 import 'dashboard_screen.dart';
 import 'exam_taking_screen.dart';
+import 'my_courses_screen.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
 
@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen>
             children: const [
               DashboardScreen(),
               _ExamsTab(),
-              CourseCatalogScreen(),
+              MyCoursesScreen(),
               ProfileScreen(),
             ],
           ),

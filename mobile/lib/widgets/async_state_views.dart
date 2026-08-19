@@ -13,7 +13,9 @@ import '../services/api_client.dart';
 /// parse error, etc.) that has no user-facing text of its own.
 String errorMessageFor(Object error,
     {String fallback = 'Something went wrong. Please try again.'}) {
-  if (error is ApiException) return error.message;
+  if (error is ApiException) {
+    return error.message;
+  }
   return fallback;
 }
 
@@ -131,8 +133,18 @@ class ErrorView extends StatelessWidget {
 class EmptyView extends StatelessWidget {
   final String message;
   final IconData icon;
+
+  /// Optional call-to-action shown below the message - e.g. a "Browse
+  /// Courses" button on an empty My Courses screen. Null by default so
+  /// every existing EmptyView call site is unaffected, same precedent as
+  /// ErrorView's own secondaryAction slot.
+  final Widget? action;
+
   const EmptyView(
-      {super.key, required this.message, this.icon = Icons.inbox_outlined});
+      {super.key,
+      required this.message,
+      this.icon = Icons.inbox_outlined,
+      this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +172,10 @@ class EmptyView extends StatelessWidget {
                   .bodyMedium
                   ?.copyWith(color: colors.onSurfaceVariant),
             ),
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              action!,
+            ],
           ],
         ),
       ),

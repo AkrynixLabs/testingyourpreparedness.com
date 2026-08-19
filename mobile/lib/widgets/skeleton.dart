@@ -152,55 +152,53 @@ class ExamListSkeleton extends StatelessWidget {
   }
 }
 
-/// Mimics course_catalog_screen.dart's `_CourseCard` - a cover placeholder,
-/// title, 2 description lines, and a footer row.
+/// Mirrors course_catalog_screen.dart's `_CourseCard` compact-row shape
+/// (2026-08-19 compacting pass) - a small square thumbnail placeholder +
+/// stacked text bars, not the old full-width banner shape, so the loading
+/// state doesn't look jarringly different from the real loaded cards.
 class CourseCardSkeleton extends StatelessWidget {
   const CourseCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AspectRatio(
-              aspectRatio: 16 / 8,
-              child: SkeletonBox(
-                  borderRadius: BorderRadius.zero,
-                  height: double.infinity,
-                  width: double.infinity),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SkeletonBox(
-                      width: MediaQuery.sizeOf(context).width * 0.55,
-                      height: 18),
-                  const SizedBox(height: 10),
-                  const SkeletonBox(height: 12),
-                  const SizedBox(height: 6),
-                  SkeletonBox(
-                      width: MediaQuery.sizeOf(context).width * 0.4,
-                      height: 12),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      const SkeletonBox(width: 70, height: 12),
-                      const Spacer(),
-                      SkeletonBox(
-                          width: 60,
-                          height: 18,
-                          borderRadius: BorderRadius.circular(4)),
-                    ],
-                  ),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonBox(
+                  width: 60, height: 60, borderRadius: BorderRadius.all(Radius.circular(10))),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(
+                        width: MediaQuery.sizeOf(context).width * 0.5,
+                        height: 16),
+                    const SizedBox(height: 8),
+                    SkeletonBox(
+                        width: MediaQuery.sizeOf(context).width * 0.3,
+                        height: 12),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const SkeletonBox(width: 50, height: 12),
+                        const Spacer(),
+                        SkeletonBox(
+                            width: 50,
+                            height: 14,
+                            borderRadius: BorderRadius.circular(4)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -44,6 +44,7 @@ Newest first. Each entry: what shipped, and (if relevant) what it unblocks or st
 - **Mobile app tidy-up, user-requested**: the "Privacy & Legal" section that had briefly appeared in both Settings and Profile now lives only on Profile, so it's not listed twice.
 - **You can now change your password from the mobile app.** The website has always had this in Settings; the app never did. Now there's a real "Change Password" option right next to Downloaded Lessons in the app's Settings — current password, new password, confirm — and it sends the same confirmation email the website's version does.
 - **School admins now get a visible nudge when there are new approved practice tests they haven't assigned to their students yet.** We discussed letting a super admin "push" a test to every school at once, but decided against it — it would bypass each school's own control over things like timing and retake rules. Instead, the "Assign New" menu item now shows a number when there's real content sitting there unassigned, the same way other menu items already flag things needing attention.
+- **Long course lists now load in pages instead of one giant scroll**, on both the website and the app — Browse Courses and My Courses show 9 at a time with simple next/previous buttons, and searching or filtering jumps back to the first page automatically.
 
 ### 2026-08-18
 

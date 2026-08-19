@@ -1238,6 +1238,11 @@ Verification: live-tested end to end against the real Neon DB with a temp script
 - No mobile counterpart - mobile v1 is student-only scope, there is no School Admin role/shell on mobile at all, so no parity gap here (confirmed, not assumed).
 - `npx tsc --noEmit` clean (full repo).
 
+**Built 2026-08-19 — client-side pagination for course listings, mobile first then extended to web ("apply the pagination bit to web too"), found already built and uncommitted in the working tree while grouping this session's work for commit (not authored by this session - documented here per this file's own convention that docs ride with the change, since whoever built it hadn't yet).** Both the catalog (Browse Courses) and My Courses lists paginate at 9 items/page - the underlying queries already return every course/enrollment in one shot on both platforms, so this is purely a rendering-layer slice, not a new paginated API.
+- Web: `course-catalog-view.tsx`/`my-courses-view.tsx` each gained local `page` state, a `PAGE_SIZE = 9` slice of the already-filtered list, and prev/next controls; changing the search/program filter resets to page 1.
+- Mobile: new shared `widgets/pagination_controls.dart` (`PaginationControls`, stateless prev/next bar - the caller owns page state and slices its own list, same "dumb shared widget" precedent as `async_state_views.dart`), used by `course_catalog_screen.dart`/`my_courses_screen.dart`. `widgets/async_state_views.dart`'s `EmptyView` gained an optional `action` slot (e.g. a "Browse Courses" button on an empty My Courses screen), and `widgets/skeleton.dart` was adjusted to match the new paginated grid shapes.
+- `npx tsc --noEmit` and `flutter analyze` both clean (0 issues) at the time this was grouped for commit.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

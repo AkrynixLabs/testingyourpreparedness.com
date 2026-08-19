@@ -4,9 +4,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Users, BookOpen, CheckCircle2, Star } from "lucide-react"
+import { Search, Users, BookOpen, CheckCircle2, Star, ChevronLeft, ChevronRight } from "lucide-react"
+
+const PAGE_SIZE = 9
 
 type CourseRow = {
   id: string
@@ -29,6 +32,7 @@ type ProgramOption = { id: string; name: string }
 export function CourseCatalogView({ courses, programs }: { courses: CourseRow[]; programs: ProgramOption[] }) {
   const [search, setSearch] = useState("")
   const [programId, setProgramId] = useState("all")
+  const [page, setPage] = useState(1)
 
   const filtered = courses.filter((c) => {
     const matchesSearch =
@@ -41,6 +45,14 @@ export function CourseCatalogView({ courses, programs }: { courses: CourseRow[];
 
   const selectedProgramName = programs.find((p) => p.id === programId)?.name
 
+  // Client-side pagination - the catalog query already returns every
+  // published course in one shot (no page/limit params on either
+  // platform yet), same reasoning as mobile's matching pagination pass
+  // (2026-08-19, user-requested "apply the pagination bit to web too").
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -50,10 +62,19 @@ export function CourseCatalogView({ courses, programs }: { courses: CourseRow[];
             placeholder="Search courses or tutors..."
             className="pl-9"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
           />
         </div>
-        <Select value={programId} onValueChange={setProgramId}>
+        <Select
+          value={programId}
+          onValueChange={(value) => {
+            setProgramId(value)
+            setPage(1)
+          }}
+        >
           <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
@@ -78,7 +99,7 @@ export function CourseCatalogView({ courses, programs }: { courses: CourseRow[];
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((course) => (
+          {paginated.map((course) => (
             <Link key={course.id} href={`/student/courses/${course.id}`}>
               <Card className="h-full hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
@@ -122,6 +143,30 @@ export function CourseCatalogView({ courses, programs }: { courses: CourseRow[];
               </Card>
             </Link>
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>
