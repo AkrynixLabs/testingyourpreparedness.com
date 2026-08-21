@@ -24,7 +24,7 @@ export default function PrivacyPage() {
                 <h2>1. Scope</h2>
                 <p>
                   This Policy describes how TYP (&ldquo;Testing Your Preparedness&rdquo;) collects, uses, and
-                  protects personal data across both parts of the platform — the exam-prep track (schools,
+                  protects personal data across both parts of the platform: the exam-prep track (schools,
                   independent learners, content admins, super admin) and the course marketplace (tutors and
                   purchasing learners).
                 </p>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
                     contact details, ownership type, and education level.
                   </li>
                   <li>
-                    <strong>Learners:</strong> class/form, and — for independent learners — date of birth, gender,
+                    <strong>Learners:</strong> class/form, and (for independent learners) date of birth, gender,
                     and address where provided. Exam attempts, answers, scores, and progress history are recorded
                     against the learner&apos;s account.
                   </li>
@@ -59,17 +59,17 @@ export default function PrivacyPage() {
                   </li>
                   <li>
                     <strong>Tutors:</strong> bio, headline, and areas of expertise displayed on course listings, plus
-                    payout details (a Paystack subaccount reference — TYP does not itself store bank account
+                    payout details (a Paystack subaccount reference; TYP does not itself store bank account
                     numbers, Paystack does).
                   </li>
                   <li>
                     <strong>Payments:</strong> transaction amount, status, and a Paystack reference for every
                     subscription or course payment, plus a masked card summary or mobile-money provider label when
-                    applicable. Full card numbers are never collected or stored by TYP — checkout happens on
+                    applicable. Full card numbers are never collected or stored by TYP. Checkout happens on
                     Paystack&apos;s hosted page.
                   </li>
                   <li>
-                    <strong>Usage data:</strong> login activity, and — during timed assessments — basic anti-cheat
+                    <strong>Usage data:</strong> login activity, and (during timed assessments) basic anti-cheat
                     signals such as tab-switch counts.
                   </li>
                 </ul>
@@ -101,11 +101,11 @@ export default function PrivacyPage() {
                 <h2>5. Who we share data with</h2>
                 <p>We share data with the following service providers, each acting on our behalf:</p>
                 <ul>
-                  <li><strong>Paystack</strong> — payment processing for subscriptions, course purchases, and tutor payouts (Split Payments).</li>
-                  <li><strong>Resend</strong> — transactional email delivery (password resets, invites, notifications, reports).</li>
-                  <li><strong>Upstash</strong> — rate-limiting infrastructure for public endpoints (stores request counters, not account content).</li>
-                  <li><strong>Sentry</strong> — error monitoring, to help us diagnose bugs and outages.</li>
-                  <li><strong>Neon and Vercel</strong> — our database and application hosting providers.</li>
+                  <li><strong>Paystack</strong>: payment processing for subscriptions, course purchases, and tutor payouts (Split Payments).</li>
+                  <li><strong>Resend</strong>: transactional email delivery (password resets, invites, notifications, reports).</li>
+                  <li><strong>Upstash</strong>: rate-limiting infrastructure for public endpoints (stores request counters, not account content).</li>
+                  <li><strong>Sentry</strong>: error monitoring, to help us diagnose bugs and outages.</li>
+                  <li><strong>Neon and Vercel</strong>: our database and application hosting providers.</li>
                 </ul>
                 <p>
                   We do not sell personal data. Some of these providers may process data on infrastructure located
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
                 <h2>7. Security</h2>
                 <p>
                   Passwords are stored as salted hashes, never in plain text. Card and full payment details never
-                  touch our servers — they&apos;re handled entirely by Paystack&apos;s hosted checkout. Access to
+                  touch our servers. They&apos;re handled entirely by Paystack&apos;s hosted checkout. Access to
                   administrative functions is role-scoped and logged.
                 </p>
               </section>

@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://testingyourpreparedness.com'
 const siteName = 'TYP - Testing Your Preparedness'
-const siteDescription = 'Ghana\'s all-in-one exam prep and digital skills platform — BECE, WASSCE, nursing, university entrance, and job-ready digital skills, with practice tests, analytics, and personalized learning.'
+const siteDescription = 'Ghana\'s all-in-one exam prep and digital skills platform: BECE, WASSCE, nursing, university entrance, and job-ready digital skills, with practice tests, analytics, and personalized learning.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

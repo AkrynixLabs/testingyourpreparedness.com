@@ -94,7 +94,7 @@ export function CourseCatalogView({ courses, programs }: { courses: CourseRow[];
           {search
             ? "No courses match your search."
             : selectedProgramName
-              ? `No ${selectedProgramName} courses yet — check back soon.`
+              ? `No ${selectedProgramName} courses yet. Check back soon.`
               : "No courses match your search."}
         </p>
       ) : (

@@ -58,7 +58,7 @@ export function PricingToggle({
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">Save 20%</span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {schoolPlans.map((plan) => {
             const planFeatures = plan.features as string[]
             const monthlyEquivalent =
@@ -68,38 +68,38 @@ export function PricingToggle({
             return (
               <Card key={plan.id} className={`relative h-full border-border shadow-sm ${plan.popular ? "border-primary ring-1 ring-primary" : ""}`}>
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[11px] font-medium rounded-full">
+                  <div className="absolute -top-2 sm:-top-3 left-1/2 -translate-x-1/2 px-1.5 sm:px-3 py-0.5 bg-primary text-primary-foreground text-[8px] sm:text-[11px] font-medium rounded-full whitespace-nowrap">
                     Most Popular
                   </div>
                 )}
-                <CardHeader className="p-5 pb-0">
-                  <CardTitle className="text-base">{plan.name}</CardTitle>
-                  <CardDescription className="text-xs">
+                <CardHeader className="p-2 sm:p-5 pb-0">
+                  <CardTitle className="text-[11px] sm:text-base leading-tight">{plan.name}</CardTitle>
+                  <CardDescription className="text-[9px] sm:text-xs">
                     {plan.studentLimit ? `Up to ${plan.studentLimit} learners` : "Unlimited learners"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-5">
-                  <div className="mb-4">
-                    <span className="text-2xl font-semibold">
+                <CardContent className="p-2 sm:p-5">
+                  <div className="mb-2 sm:mb-4">
+                    <span className="text-sm sm:text-2xl font-semibold">
                       {plan.currency} {monthlyEquivalent}
                     </span>
-                    <span className="text-sm text-muted-foreground">/month</span>
+                    <span className="text-[9px] sm:text-sm text-muted-foreground">/month</span>
                     {schoolBillingCycle === "yearly" && plan.yearlyPrice && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[8px] sm:text-xs text-muted-foreground mt-1">
                         {plan.currency} {yearlyPrice} billed yearly
                         {savings > 0 && <span className="text-primary font-medium"> (save {plan.currency} {savings})</span>}
                       </p>
                     )}
                   </div>
-                  <ul className="space-y-2 mb-4">
+                  <ul className="space-y-1 sm:space-y-2 mb-2 sm:mb-4">
                     {planFeatures.map((feature, j) => (
-                      <li key={j} className="flex items-start gap-2 text-xs">
-                        <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                      <li key={j} className="flex items-start gap-1 sm:gap-2 text-[9px] sm:text-xs">
+                        <Check className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-primary flex-shrink-0 mt-0.5" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button size="sm" className="w-full" variant={plan.popular ? "default" : "outline"} asChild>
+                  <Button size="sm" className="w-full text-[10px] sm:text-sm px-1 sm:px-4 h-7 sm:h-9" variant={plan.popular ? "default" : "outline"} asChild>
                     <Link href="/signup/school">Get Started</Link>
                   </Button>
                 </CardContent>
@@ -125,47 +125,47 @@ export function PricingToggle({
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">Save 33%</span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {visibleStudentPlans.map((plan) => {
             const { price, period } = planPriceAndPeriod(plan)
             const planFeatures = plan.features as string[]
             return (
               <Card key={plan.id} className={`relative h-full border-border shadow-sm ${plan.popular ? "border-primary ring-1 ring-primary" : ""}`}>
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[11px] font-medium rounded-full">
+                  <div className="absolute -top-2 sm:-top-3 left-1/2 -translate-x-1/2 px-1.5 sm:px-3 py-0.5 bg-primary text-primary-foreground text-[8px] sm:text-[11px] font-medium rounded-full whitespace-nowrap">
                     Best Value
                   </div>
                 )}
-                <CardHeader className="p-5 pb-0">
-                  <CardTitle className="text-base">{plan.name}</CardTitle>
+                <CardHeader className="p-2 sm:p-5 pb-0">
+                  <CardTitle className="text-[11px] sm:text-base leading-tight">{plan.name}</CardTitle>
                   {period && (
-                    <CardDescription className="text-xs">
+                    <CardDescription className="text-[9px] sm:text-xs">
                       Billed {period === "month" ? "monthly" : period === "term" ? "per term" : "annually"}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-5">
-                  <div className="mb-4">
+                <CardContent className="p-2 sm:p-5">
+                  <div className="mb-2 sm:mb-4">
                     {price === 0 ? (
-                      <span className="text-2xl font-semibold">Free</span>
+                      <span className="text-sm sm:text-2xl font-semibold">Free</span>
                     ) : (
                       <>
-                        <span className="text-2xl font-semibold">
+                        <span className="text-sm sm:text-2xl font-semibold">
                           {plan.currency} {price}
                         </span>
-                        <span className="text-sm text-muted-foreground">/{period}</span>
+                        <span className="text-[9px] sm:text-sm text-muted-foreground">/{period}</span>
                       </>
                     )}
                   </div>
-                  <ul className="space-y-2 mb-4">
+                  <ul className="space-y-1 sm:space-y-2 mb-2 sm:mb-4">
                     {planFeatures.map((feature, j) => (
-                      <li key={j} className="flex items-start gap-2 text-xs">
-                        <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                      <li key={j} className="flex items-start gap-1 sm:gap-2 text-[9px] sm:text-xs">
+                        <Check className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-primary flex-shrink-0 mt-0.5" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button size="sm" className="w-full" variant={price === 0 ? "outline" : "default"} asChild>
+                  <Button size="sm" className="w-full text-[10px] sm:text-sm px-1 sm:px-4 h-7 sm:h-9" variant={price === 0 ? "outline" : "default"} asChild>
                     <Link href="/signup/student">{price === 0 ? "Sign Up Free" : "Subscribe"}</Link>
                   </Button>
                 </CardContent>

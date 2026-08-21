@@ -28,7 +28,7 @@ export default function CookiesPage() {
                   that TYP (&ldquo;Testing Your Preparedness&rdquo;) uses on this website and how you can control
                   them. It applies to the public marketing site and the logged-in dashboards for every role
                   (School Admin, Content Admin, Super Admin, Learner, Tutor). It does not cover the TYP mobile app,
-                  which does not use browser cookies — the app stores its own login session directly on your device
+                  which does not use browser cookies. The app stores its own login session directly on your device
                   instead (see our{" "}
                   <a href="/privacy" className="text-primary hover:underline">
                     Privacy Policy
@@ -42,7 +42,7 @@ export default function CookiesPage() {
                 <p>
                   TYP does not run any advertising, retargeting, or cross-site tracking cookies of its own, and does
                   not embed third-party ad networks or social-media tracking pixels. Every cookie set on this site
-                  exists to make the platform work or to help us understand how it&apos;s used in aggregate — never
+                  exists to make the platform work or to help us understand how it&apos;s used in aggregate, never
                   to build an advertising profile or to track you across other websites.
                 </p>
               </section>
@@ -51,7 +51,7 @@ export default function CookiesPage() {
                 <h2>3. Strictly necessary cookies</h2>
                 <p>
                   These cookies are set by our authentication system (Auth.js) and are required for the site to
-                  function — you cannot log in, stay logged in, or submit forms securely without them. They cannot
+                  function. You cannot log in, stay logged in, or submit forms securely without them. They cannot
                   be switched off individually, though you can block or delete all cookies through your browser
                   settings, which will sign you out and may break parts of the site (see Section 6).
                 </p>
@@ -93,7 +93,7 @@ export default function CookiesPage() {
                 <h2>4. Functional storage (not a tracking cookie)</h2>
                 <p>
                   Your Light/Dark/System theme choice is remembered using your browser&apos;s local storage, not a
-                  cookie — it stays on your device, is never sent to our servers, and isn&apos;t used for tracking.
+                  cookie. It stays on your device, is never sent to our servers, and isn&apos;t used for tracking.
                 </p>
               </section>
 
@@ -101,7 +101,7 @@ export default function CookiesPage() {
                 <h2>5. Analytics</h2>
                 <p>
                   We use Vercel Web Analytics to understand overall traffic and page performance (e.g. which pages
-                  are visited, how the site performs). It is cookieless by design — it does not set a cookie, does
+                  are visited, how the site performs). It is cookieless by design. It does not set a cookie, does
                   not use a persistent identifier, and does not track you individually or across other websites.
                 </p>
               </section>
@@ -109,8 +109,8 @@ export default function CookiesPage() {
               <section>
                 <h2>6. Payment checkout cookies (Paystack)</h2>
                 <p>
-                  When you make a payment — a school subscription, an independent-learner subscription, or a course
-                  purchase — checkout happens on Paystack&apos;s own hosted payment page, on Paystack&apos;s domain,
+                  When you make a payment (a school subscription, an independent-learner subscription, or a course
+                  purchase), checkout happens on Paystack&apos;s own hosted payment page, on Paystack&apos;s domain,
                   not ours. Any cookies set during that step are set by Paystack and governed by Paystack&apos;s own
                   cookie and privacy policies, not this one. TYP never receives or stores cookies from that page.
                 </p>
@@ -121,7 +121,7 @@ export default function CookiesPage() {
                 <p>
                   Most browsers let you view, delete, and block cookies through their settings, and let you clear
                   local storage the same way. Blocking or deleting the authentication cookies in Section 3 will sign
-                  you out and prevent you from logging back in until they&apos;re allowed again — that&apos;s
+                  you out and prevent you from logging back in until they&apos;re allowed again. That&apos;s
                   expected, since those cookies are what keep your session working.
                 </p>
               </section>

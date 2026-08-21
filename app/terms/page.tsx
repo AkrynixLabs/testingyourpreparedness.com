@@ -68,14 +68,14 @@ export default function TermsPage() {
                 <p>
                   Subscription plans (for schools and for independent learners) and individual course purchases are
                   billed in Ghana Cedis (GHS) and processed through Paystack. TYP never collects or stores raw card
-                  numbers — checkout happens on Paystack&apos;s own hosted payment page, and TYP only retains what
+                  numbers. Checkout happens on Paystack&apos;s own hosted payment page, and TYP only retains what
                   Paystack reports back (e.g. a masked card summary, a mobile-money provider label, and transaction
                   references).
                 </p>
                 <p>
                   School subscriptions renew on the billing cycle selected at signup until cancelled by the school.
                   Independent-learner subscriptions and one-off course purchases are billed as described at the time
-                  of purchase. Refunds, where applicable, are handled case-by-case — contact us using the details
+                  of purchase. Refunds, where applicable, are handled case-by-case. Contact us using the details
                   below.
                 </p>
               </section>
@@ -83,7 +83,7 @@ export default function TermsPage() {
               <section>
                 <h2>4. Tutors and the course marketplace</h2>
                 <p>
-                  Tutors self-register and can publish courses immediately, without pre-approval — courses are
+                  Tutors self-register and can publish courses immediately, without pre-approval. Courses are
                   moderated <em>after</em> publication, not before. TYP may flag or remove a course, or suspend a
                   tutor account, at its discretion if content violates these Terms or applicable law (suspending a
                   tutor also flags that tutor&apos;s currently-published courses).
@@ -101,7 +101,7 @@ export default function TermsPage() {
                 <h2>5. Content, question banks, and assessments</h2>
                 <p>
                   Exam-prep questions and assessments are authored by Content Admins and reviewed by a Super Admin
-                  before becoming visible to learners — nothing in the exam-prep question bank goes live without
+                  before becoming visible to learners. Nothing in the exam-prep question bank goes live without
                   that approval step. Course content in the marketplace is authored and owned by the publishing
                   tutor, who grants TYP a license to host, display, and stream it to enrolled/purchasing learners for
                   as long as the course remains published.

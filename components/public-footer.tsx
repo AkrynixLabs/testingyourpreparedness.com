@@ -10,7 +10,7 @@ export function PublicFooter() {
               <img src="/logo.png" alt="TYP - Testing Your Preparedness" className="h-11 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Testing Your Preparedness — Ghana&apos;s all-in-one platform for BECE, WASSCE, nursing, university entrance exam prep, and digital skills.
+              Testing Your Preparedness: Ghana&apos;s all-in-one platform for BECE, WASSCE, nursing, university entrance exam prep, and digital skills.
             </p>
             <p className="text-xs text-muted-foreground">
               Empowering students across Ghana to achieve academic and career excellence.

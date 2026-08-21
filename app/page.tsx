@@ -221,7 +221,7 @@ const steps: {
     icon: Target,
     color: "chart-1",
     title: "Choose Your Track",
-    description: "Pick BECE, WASSCE, nursing, university entrance, or digital skills — or study more than one at once.",
+    description: "Pick BECE, WASSCE, nursing, university entrance, or digital skills, or study more than one at once.",
     image: "/images/homepage/emmanuel-ikwuegbu-VC6MGt9ZoBA.jpg",
     imageAlt: "A learner reading through her workbook during a lesson",
   },
@@ -316,7 +316,32 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
+            {/* Mobile: compact horizontal list — avoids stretching short lines over a full-bleed image at narrow widths */}
+            <div className="space-y-3 md:hidden">
+              {steps.map((step, i) => (
+                <Reveal key={step.title} delay={i * 100}>
+                  <div className="flex min-h-24 sm:min-h-28 items-start gap-3 rounded-xl border border-border bg-card p-3.5 shadow-sm">
+                    <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-lg">
+                      <img src={step.image} alt={step.imageAlt} loading="lazy" className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 bg-black/25" />
+                      <div
+                        className={`absolute bottom-1 right-1 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md backdrop-blur-sm ${colorClasses[step.color].bg}`}
+                      >
+                        <step.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${colorClasses[step.color].text}`} />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-xs font-semibold uppercase tracking-wide text-primary">Step {step.number}</span>
+                      <h3 className="font-sans text-base font-semibold leading-snug mt-0.5">{step.title}</h3>
+                      <p className="font-sans text-sm text-muted-foreground leading-snug mt-1">{step.description}</p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            {/* Desktop: full image cards with flow connectors */}
+            <div className="hidden md:grid gap-4 md:grid-cols-3 md:items-stretch">
               {steps.map((step, i) => (
                 <div key={step.title} className="flex items-stretch gap-4">
                   <Reveal delay={i * 120} className="flex-1">
@@ -344,9 +369,9 @@ export default async function LandingPage() {
                     </Card>
                   </Reveal>
 
-                  {/* Flow connector between steps (desktop only) */}
+                  {/* Flow connector between steps */}
                   {i < steps.length - 1 && (
-                    <div aria-hidden className="hidden md:flex items-center">
+                    <div aria-hidden className="flex items-center">
                       <ArrowRight className="h-7 w-7 text-primary" strokeWidth={2.5} />
                     </div>
                   )}
@@ -370,13 +395,13 @@ export default async function LandingPage() {
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {features.map((feature, i) => (
                 <Reveal key={feature.title} delay={(i % 4) * 80}>
-                  <Card className="h-full border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                  <Card className="h-44 sm:h-48 border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
                     <CardContent className="p-3 sm:p-5">
                       <div className={`mb-2 sm:mb-3 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg ${colorClasses[feature.color].bg}`}>
                         <feature.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colorClasses[feature.color].text}`} />
                       </div>
-                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5">{feature.title}</h3>
-                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty">{feature.description}</p>
+                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5 line-clamp-2">{feature.title}</h3>
+                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty line-clamp-3">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </Reveal>
@@ -397,12 +422,12 @@ export default async function LandingPage() {
               </p>
             </Reveal>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-6 sm:gap-4 lg:grid-cols-5">
               {programs.map((program, i) => (
-                <Reveal key={program.name} delay={i * 80}>
+                <Reveal key={program.name} delay={i * 80} className={`${i < 2 ? "sm:col-span-3" : "sm:col-span-2"} lg:col-span-1`}>
                   <Card
                     data-cursor="big"
-                    className={`group relative flex h-full min-h-[9rem] sm:min-h-[12rem] flex-col justify-end overflow-hidden border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${colorClasses[program.color].bg}`}
+                    className={`group relative flex h-40 sm:h-52 flex-col justify-end overflow-hidden border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${colorClasses[program.color].bg}`}
                   >
                     <program.icon
                       aria-hidden
@@ -418,8 +443,8 @@ export default async function LandingPage() {
                       <div className="mb-2 sm:mb-3 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-card transition-transform duration-300 group-hover:scale-110">
                         <program.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colorClasses[program.color].text}`} />
                       </div>
-                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5">{program.name}</h3>
-                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty">{program.description}</p>
+                      <h3 className="font-sans text-sm sm:text-base font-semibold mb-1 sm:mb-1.5 line-clamp-1">{program.name}</h3>
+                      <p className="font-sans text-xs sm:text-sm text-muted-foreground text-pretty line-clamp-2">{program.description}</p>
                     </CardContent>
                   </Card>
                 </Reveal>
@@ -435,7 +460,7 @@ export default async function LandingPage() {
               <span className="text-sm font-semibold tracking-wide uppercase text-primary">Pricing</span>
               <h2 className="font-sans text-xl md:text-2xl font-semibold tracking-tight mt-2 mb-3">Simple, transparent pricing</h2>
               <p className="font-sans text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
-                Choose the plan that fits — whether you&apos;re a school or an independent learner.
+                Choose the plan that fits, whether you&apos;re a school or an independent learner.
               </p>
             </Reveal>
 
